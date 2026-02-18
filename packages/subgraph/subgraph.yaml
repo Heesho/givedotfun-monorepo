@@ -1,0 +1,291 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  # ==========================================================================
+  # MINE CORE - Launches MineRigs
+  # ==========================================================================
+  - kind: ethereum
+    name: MineCore
+    network: base
+    source:
+      address: "0x2744aD23F0Eb637a60eeEBeC9904BC68c899e057"
+      abi: MineCore
+      startBlock: 41874455
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Protocol
+        - Unit
+        - Rig
+        - MineRig
+        - Account
+      abis:
+        - name: MineCore
+          file: ./abis/MineCore.json
+        - name: MineRig
+          file: ./abis/MineRig.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: MineCore__Launched(indexed address,indexed address,indexed address,address,address,address,string,string,string,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256[],uint256,uint256,uint256,uint256,uint256)
+          handler: handleMineCoreLaunched
+      file: ./src/cores/mineCore.ts
+
+  # ==========================================================================
+  # SPIN CORE - Launches SpinRigs
+  # ==========================================================================
+  - kind: ethereum
+    name: SpinCore
+    network: base
+    source:
+      address: "0xa0293945C1b4D44debBD1d65cfa26E9B9e290328"
+      abi: SpinCore
+      startBlock: 41874455
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Protocol
+        - Unit
+        - Rig
+        - SpinRig
+        - Account
+      abis:
+        - name: SpinCore
+          file: ./abis/SpinCore.json
+        - name: SpinRig
+          file: ./abis/SpinRig.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: SpinCore__Launched(indexed address,indexed address,indexed address,address,address,address,string,string,string,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256[],uint256,uint256,uint256,uint256)
+          handler: handleSpinCoreLaunched
+      file: ./src/cores/spinCore.ts
+
+  # ==========================================================================
+  # FUND CORE - Launches FundRigs
+  # ==========================================================================
+  - kind: ethereum
+    name: FundCore
+    network: base
+    source:
+      address: "0x256565839afe074cD7998f707895dD14692F5a2c"
+      abi: FundCore
+      startBlock: 41874455
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Protocol
+        - Unit
+        - Rig
+        - FundRig
+        - Account
+      abis:
+        - name: FundCore
+          file: ./abis/FundCore.json
+        - name: FundRig
+          file: ./abis/FundRig.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: FundCore__Launched(indexed address,indexed address,indexed address,address,address,address,address,string,string,string,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleFundCoreLaunched
+      file: ./src/cores/fundCore.ts
+
+templates:
+  # ==========================================================================
+  # UNISWAP V2 PAIR - Price and Volume tracking
+  # ==========================================================================
+  - kind: ethereum
+    name: UniswapV2Pair
+    network: base
+    source:
+      abi: UniswapV2Pair
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Unit
+        - UnitMinuteData
+        - UnitHourData
+        - UnitDayData
+        - Swap
+        - Account
+      abis:
+        - name: UniswapV2Pair
+          file: ./abis/UniswapV2Pair.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
+        - event: Sync(uint112,uint112)
+          handler: handleSync
+      file: ./src/pair.ts
+
+  # ==========================================================================
+  # MINE RIG - Mining events
+  # ==========================================================================
+  - kind: ethereum
+    name: MineRig
+    network: base
+    source:
+      abi: MineRig
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Rig
+        - MineRig
+        - MineSlot
+        - MineAction
+        - Account
+        - Unit
+      abis:
+        - name: MineRig
+          file: ./abis/MineRig.json
+      eventHandlers:
+        - event: MineRig__Mine(address,indexed address,indexed uint256,indexed uint256,uint256,string)
+          handler: handleMine
+        - event: MineRig__MinerFee(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleMineMinerFee
+        - event: MineRig__Mint(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleMineMint
+        - event: MineRig__TreasuryFee(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleMineTreasuryFee
+        - event: MineRig__TeamFee(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleMineTeamFee
+        - event: MineRig__ProtocolFee(indexed address,indexed uint256,indexed uint256,uint256)
+          handler: handleMineProtocolFee
+        - event: MineRig__CapacitySet(uint256)
+          handler: handleMineCapacitySet
+        - event: MineRig__UriSet(string)
+          handler: handleMineUriSet
+        - event: MineRig__Claimed(indexed address,uint256)
+          handler: handleMineClaimed
+        - event: MineRig__TreasurySet(indexed address)
+          handler: handleMineTreasurySet
+        - event: MineRig__TeamSet(indexed address)
+          handler: handleMineTeamSet
+        - event: MineRig__UpsMultiplierSet(indexed uint256,indexed uint256,uint256)
+          handler: handleMineUpsMultiplierSet
+      file: ./src/rigs/mineRig.ts
+
+  # ==========================================================================
+  # SPIN RIG - Spin and Win events
+  # ==========================================================================
+  - kind: ethereum
+    name: SpinRig
+    network: base
+    source:
+      abi: SpinRig
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Rig
+        - SpinRig
+        - Spin
+        - Account
+        - Unit
+      abis:
+        - name: SpinRig
+          file: ./abis/SpinRig.json
+      eventHandlers:
+        - event: SpinRig__Spin(address,indexed address,indexed uint256,uint256,string)
+          handler: handleSpin
+        - event: SpinRig__Win(indexed address,indexed uint256,uint256,uint256)
+          handler: handleWin
+        - event: SpinRig__TreasuryFee(indexed address,indexed uint256,uint256)
+          handler: handleSpinTreasuryFee
+        - event: SpinRig__TeamFee(indexed address,indexed uint256,uint256)
+          handler: handleSpinTeamFee
+        - event: SpinRig__ProtocolFee(indexed address,indexed uint256,uint256)
+          handler: handleSpinProtocolFee
+        - event: SpinRig__EmissionMinted(indexed uint256,uint256)
+          handler: handleSpinEmissionMinted
+        - event: SpinRig__UriSet(string)
+          handler: handleSpinUriSet
+        - event: SpinRig__TreasurySet(indexed address)
+          handler: handleSpinTreasurySet
+        - event: SpinRig__TeamSet(indexed address)
+          handler: handleSpinTeamSet
+      file: ./src/rigs/spinRig.ts
+
+  # ==========================================================================
+  # FUND RIG - Donation events
+  # ==========================================================================
+  - kind: ethereum
+    name: FundRig
+    network: base
+    source:
+      abi: FundRig
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Rig
+        - FundRig
+        - Donation
+        - Account
+        - Unit
+      abis:
+        - name: FundRig
+          file: ./abis/FundRig.json
+        - name: FundCore
+          file: ./abis/FundCore.json
+      eventHandlers:
+        - event: FundRig__Funded(address,indexed address,indexed address,uint256,uint256,string)
+          handler: handleFunded
+        - event: FundRig__Claimed(indexed address,uint256,uint256)
+          handler: handleFundClaimed
+        - event: FundRig__TreasuryFee(indexed address,indexed uint256,uint256)
+          handler: handleFundTreasuryFee
+        - event: FundRig__TeamFee(indexed address,indexed uint256,uint256)
+          handler: handleFundTeamFee
+        - event: FundRig__ProtocolFee(indexed address,indexed uint256,uint256)
+          handler: handleFundProtocolFee
+        - event: FundRig__RecipientSet(indexed address,bool)
+          handler: handleFundRecipientSet
+        - event: FundRig__UriSet(string)
+          handler: handleFundUriSet
+        - event: FundRig__TreasurySet(indexed address)
+          handler: handleFundTreasurySet
+        - event: FundRig__TeamSet(indexed address)
+          handler: handleFundTeamSet
+      file: ./src/rigs/fundRig.ts
+
+  # ==========================================================================
+  # UNIT TOKEN - Transfer events for holder tracking (optional)
+  # ==========================================================================
+  - kind: ethereum
+    name: Unit
+    network: base
+    source:
+      abi: ERC20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Unit
+        - Account
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleUnitTransfer
+      file: ./src/unit.ts

@@ -1,0 +1,31 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI3MjEwOSwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDQ5REI1QTFjOWZlRjBFMkY5OTVCNDZiMEI3MWJFQmJEOTEyQkYwZTMifQ",
+    "payload": "eyJkb21haW4iOiJmYXJwbGFjZS5pbyJ9",
+    "signature": "/dC/Oe85TEm45j0j4apqrTRKXGvX1Cf7lsBTmm6qHN8af34C/TsVpMtBdevyVMYU91wD2ITrvG6AlugdbKtmXRs="
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Farplace",
+    "tagline": "Mine coins, not buy them",
+    "description": "A fair-launch coin launchpad on Base. Coins are distributed through mining games — not sales. No presales, no bundlers, no dev dumps.",
+    "iconUrl": "https://farplace.io/media/icon.png",
+    "homeUrl": "https://farplace.io/",
+    "splashImageUrl": "https://farplace.io/media/splash.png",
+    "splashBackgroundColor": "#000000",
+    "heroImageUrl": "https://farplace.io/media/hero.png",
+    "buttonTitle": "Start mining",
+    "ogTitle": "Farplace",
+    "ogDescription": "A fair-launch coin launchpad on Base. Mine coins, not buy them.",
+    "ogImageUrl": "https://farplace.io/media/hero.png",
+    "requiredChains": [
+      "eip155:8453"
+    ],
+    "primaryCategory": "finance",
+    "tags": [
+      "gaming",
+      "base",
+      "rewards"
+    ]
+  }
+}
