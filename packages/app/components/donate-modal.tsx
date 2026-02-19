@@ -403,7 +403,7 @@ export function DonateModal({
                           flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all
                           ${selectedPreset === amount
                             ? "bg-moss-400 text-concrete-800"
-                            : "bg-concrete-700 text-white hover:bg-concrete-600"
+                            : "bg-concrete-600 text-white hover:bg-concrete-500"
                           }
                         `}
                       >
@@ -412,7 +412,7 @@ export function DonateModal({
                     ))}
                     <button
                       onClick={handleCustomSelect}
-                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-concrete-700 text-white hover:bg-concrete-600"
+                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-concrete-600 text-white hover:bg-concrete-500"
                     >
                       Other
                     </button>
@@ -425,7 +425,7 @@ export function DonateModal({
                         setFundAmount("1");
                         setSelectedPreset(1);
                       }}
-                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-concrete-700 text-white hover:bg-concrete-600 transition-all"
+                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-concrete-600 text-white hover:bg-concrete-500 transition-all"
                     >
                       ✕
                     </button>
@@ -474,7 +474,7 @@ export function DonateModal({
                     <button
                       onClick={handleClaim}
                       disabled={txStatus === "pending" || txStatus === "success"}
-                      className={`px-5 py-2 text-[13px] font-semibold rounded-xl transition-all flex items-center gap-1.5 ${
+                      className={`px-5 py-2 text-[13px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 ${
                         txStatus === "success"
                           ? "bg-moss-300 text-concrete-800"
                           : txStatus === "error"

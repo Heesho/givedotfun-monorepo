@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createChart, ColorType, LineSeries, type IChartApi, type ISeriesApi, type Time, LineStyle } from "lightweight-charts";
+import { createChart, ColorType, LineSeries, AreaSeries, type IChartApi, type ISeriesApi, type Time, LineStyle } from "lightweight-charts";
 
 export type HoverData = {
   time: number;
@@ -110,7 +110,7 @@ export function PriceChart({
         },
       });
 
-      let priceSeries: ISeriesApi<"Line"> | null = null;
+      let priceSeries: ISeriesApi<"Area"> | null = null;
       let baselineSeries: ISeriesApi<"Line"> | null = null;
 
       if (realData.length > 0 && tokenFirstActiveTime) {
@@ -134,8 +134,10 @@ export function PriceChart({
           });
           baselineSeries.setData(baselineData);
 
-          priceSeries = chart.addSeries(LineSeries, {
-            color: color,
+          priceSeries = chart.addSeries(AreaSeries, {
+            lineColor: color,
+            topColor: "rgba(61, 220, 132, 0.15)",
+            bottomColor: "rgba(61, 220, 132, 0.0)",
             lineWidth: 2,
             priceLineVisible: false,
             lastValueVisible: false,
@@ -148,8 +150,10 @@ export function PriceChart({
           }
           priceSeries.setData(priceData);
         } else {
-          priceSeries = chart.addSeries(LineSeries, {
-            color: color,
+          priceSeries = chart.addSeries(AreaSeries, {
+            lineColor: color,
+            topColor: "rgba(61, 220, 132, 0.15)",
+            bottomColor: "rgba(61, 220, 132, 0.0)",
             lineWidth: 2,
             priceLineVisible: false,
             lastValueVisible: false,
@@ -158,8 +162,10 @@ export function PriceChart({
           priceSeries.setData(realData.map(d => ({ time: d.time as Time, value: d.value })));
         }
       } else if (realData.length > 0) {
-        priceSeries = chart.addSeries(LineSeries, {
-          color: color,
+        priceSeries = chart.addSeries(AreaSeries, {
+          lineColor: color,
+          topColor: "rgba(61, 220, 132, 0.15)",
+          bottomColor: "rgba(61, 220, 132, 0.0)",
           lineWidth: 2,
           priceLineVisible: false,
           lastValueVisible: false,
