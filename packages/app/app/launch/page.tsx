@@ -163,7 +163,7 @@ function EmissionPreview({
     return <div className="space-y-2">{content}</div>;
   }
 
-  return <div className="rounded-xl ring-1 ring-zinc-700 bg-zinc-800/40 p-3 space-y-2">{content}</div>;
+  return <div className="rounded-xl ring-1 ring-concrete-600 bg-concrete-800/40 p-3 space-y-2">{content}</div>;
 }
 
 // Settings summary component
@@ -195,29 +195,29 @@ function SettingsSummary({
   };
 
   return (
-    <div className="bg-zinc-800/50 rounded-lg p-3 space-y-3">
-      <div className="text-[13px] font-medium text-zinc-300">Current Parameters</div>
+    <div className="bg-concrete-800/50 rounded-lg p-3 space-y-3">
+      <div className="text-[13px] font-medium text-[#8E8E8E]">Current Parameters</div>
 
       {/* All settings as bullet points */}
       <div className="space-y-1">
-        <div className="text-[12px] text-zinc-400 flex items-center gap-2">
-          <span className="text-zinc-500">•</span>
+        <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
+          <span className="text-concrete-500">•</span>
           Initial LP: ${formatNum(usdcAmount)} + {formatNum(unitAmount)} coins
         </div>
-        <div className="text-[12px] text-zinc-400 flex items-center gap-2">
-          <span className="text-zinc-500">•</span>
+        <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
+          <span className="text-concrete-500">•</span>
           Starting price: ${(usdcAmount / unitAmount).toFixed(6)}
         </div>
-        <div className="text-[12px] text-zinc-400 flex items-center gap-2">
-          <span className="text-zinc-500">•</span>
+        <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
+          <span className="text-concrete-500">•</span>
           Emission: {formatNum(initialEmission)}/day initial → {formatNum(minEmission)}/day floor
         </div>
-        <div className="text-[12px] text-zinc-400 flex items-center gap-2">
-          <span className="text-zinc-500">•</span>
+        <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
+          <span className="text-concrete-500">•</span>
           Halving every {formatDur(halvingPeriod)}
         </div>
-        <div className="text-[12px] text-zinc-400 flex items-center gap-2">
-          <span className="text-zinc-500">•</span>
+        <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
+          <span className="text-concrete-500">•</span>
           Donation split: 50% recipient, 45% treasury, 4% team, 1% protocol
         </div>
       </div>
@@ -270,7 +270,7 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-zinc-700 rounded-full appearance-none cursor-pointer accent-white"
+        className="w-full h-2 bg-concrete-600 rounded-full appearance-none cursor-pointer accent-moss-400"
       />
       {description && (
         <p className="text-[11px] text-muted-foreground mt-1">{description}</p>
@@ -579,7 +579,7 @@ export default function LaunchPage() {
 
   // Launch form
   return (
-    <main className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -587,160 +587,201 @@ export default function LaunchPage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 120px)",
         }}
       >
+        {/* Corner moss decoration */}
+        <img
+          src="/botanicals/corner-moss.svg"
+          className="absolute top-4 right-4 w-16 opacity-40 pointer-events-none select-none"
+          aria-hidden="true"
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-xl hover:bg-concrete-600 transition-colors"
           >
             <X className="w-5 h-5" />
           </Link>
-          <span className="text-base font-semibold">
-            Launch Fundraiser
-          </span>
+          <div className="text-center">
+            <h1 className="headline-brutal text-xl">CREATE A FUNDRAISER</h1>
+            <p className="text-[#8E8E8E] text-[14px] mt-1">Launch a perpetual funding campaign on Base</p>
+          </div>
           <div className="w-9" />
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2">
           {/* Token Details Form */}
-            <div className="space-y-4">
-              {/* Logo + Name + Symbol Row */}
-              <div className="flex items-start gap-4">
-                {/* Logo Upload */}
-                <label className="cursor-pointer flex-shrink-0">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <div className="w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden hover:ring-zinc-500 transition-colors">
-                    {logoPreview ? (
-                      <img
-                        src={logoPreview}
-                        alt="Coin logo"
-                        className="w-full h-full object-cover"
+            <div className="space-y-3">
+              {/* Slab 1: Token Identity */}
+              <div className="slab p-4">
+                <h3 className="headline-brutal text-[13px] text-[#8E8E8E] mb-4 border-l-[3px] border-moss-400 pl-3">TOKEN IDENTITY</h3>
+                {/* Logo + Name + Symbol Row */}
+                <div className="flex items-start gap-4">
+                  {/* Logo Upload */}
+                  <label className="cursor-pointer flex-shrink-0">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    <div className="w-[88px] h-[88px] rounded-xl border-2 border-dashed border-moss-400/50 bg-concrete-800 flex items-center justify-center overflow-hidden hover:border-moss-400 hover:shadow-glow transition-all">
+                      {logoPreview ? (
+                        <img
+                          src={logoPreview}
+                          alt="Coin logo"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Upload className="w-6 h-6 text-[#8E8E8E]" />
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Name + Symbol */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div>
+                      <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">NAME</label>
+                      <input
+                        type="text"
+                        placeholder="Coin name"
+                        value={tokenName}
+                        onChange={(e) => setTokenName(e.target.value)}
+                        className="input-recessed w-full h-10 px-3 text-white placeholder:text-concrete-500 text-sm"
                       />
-                    ) : (
-                      <Upload className="w-6 h-6 text-zinc-500" />
+                    </div>
+                    <div>
+                      <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">SYMBOL</label>
+                      <input
+                        type="text"
+                        placeholder="SYMBOL"
+                        value={tokenSymbol}
+                        onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
+                        maxLength={10}
+                        className="input-recessed w-full h-10 px-3 text-white placeholder:text-concrete-500 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-3" aria-hidden="true" />
+
+              {/* Slab 2: Your Cause */}
+              <div className="slab p-4">
+                <h3 className="headline-brutal text-[13px] text-[#8E8E8E] mb-4 border-l-[3px] border-moss-400 pl-3">YOUR CAUSE</h3>
+
+                {/* Description */}
+                <div className="mb-3">
+                  <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">DESCRIPTION</label>
+                  <textarea
+                    placeholder="Description"
+                    value={tokenDescription}
+                    onChange={(e) => setTokenDescription(e.target.value)}
+                    rows={2}
+                    className="input-recessed w-full px-3 py-2 text-white placeholder:text-concrete-500 resize-none text-sm"
+                  />
+                </div>
+
+                {/* Donation Message */}
+                <div className="mb-3">
+                  <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">DEFAULT MESSAGE</label>
+                  <input
+                    type="text"
+                    placeholder="Donation message"
+                    value={donationMessage}
+                    onChange={(e) => setDonationMessage(e.target.value)}
+                    className="input-recessed w-full h-10 px-3 text-white placeholder:text-concrete-500 text-sm"
+                  />
+                </div>
+
+                {/* Links */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="headline-brutal text-[11px] text-[#8E8E8E]">LINKS</label>
+                    {links.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => setLinks([...links, ""])}
+                        className="text-[12px] text-moss-400 hover:text-moss-300 transition-colors"
+                      >
+                        + Add link
+                      </button>
                     )}
                   </div>
-                </label>
-
-                {/* Name + Symbol */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Coin name"
-                    value={tokenName}
-                    onChange={(e) => setTokenName(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="SYMBOL"
-                    value={tokenSymbol}
-                    onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                  />
+                  {links.map((link, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={link}
+                        onChange={(e) => {
+                          const updated = [...links];
+                          updated[i] = e.target.value;
+                          setLinks(updated);
+                        }}
+                        className="input-recessed flex-1 h-10 px-3 text-white placeholder:text-concrete-500 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                        className="px-2 text-[#8E8E8E] hover:text-white transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Description */}
-              <textarea
-                placeholder="Description"
-                value={tokenDescription}
-                onChange={(e) => setTokenDescription(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 resize-none text-sm"
-              />
+              <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-3" aria-hidden="true" />
 
-              {/* Donation Message */}
-              <input
-                type="text"
-                placeholder="Donation message"
-                value={donationMessage}
-                onChange={(e) => setDonationMessage(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-              />
-
-              {/* Links */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-zinc-400">Links</span>
-                  {links.length < 5 && (
-                    <button
-                      type="button"
-                      onClick={() => setLinks([...links, ""])}
-                      className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
-                    >
-                      + Add link
-                    </button>
+              {/* Slab 3: Recipient */}
+              <div className="slab p-4">
+                <h3 className="headline-brutal text-[13px] text-[#8E8E8E] mb-4 border-l-[3px] border-moss-400 pl-3">RECIPIENT</h3>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  The wallet that receives 50% of every donation.
+                </p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">NAME</label>
+                    <input
+                      type="text"
+                      placeholder="Recipient name"
+                      value={recipientName}
+                      onChange={(e) => setRecipientName(e.target.value)}
+                      className="input-recessed w-full h-10 px-3 text-white placeholder:text-concrete-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="headline-brutal text-[11px] text-[#8E8E8E] mb-1 block">WALLET ADDRESS</label>
+                    <input
+                      type="text"
+                      placeholder="Recipient wallet address (0x...)"
+                      value={recipientAddress}
+                      onChange={(e) => setRecipientAddress(e.target.value)}
+                      className={`input-recessed w-full h-10 px-3 text-white placeholder:text-concrete-500 text-sm ${
+                        recipientAddress.length > 0 && !isValidAddress(recipientAddress)
+                          ? "!border-red-500/50 focus:!border-red-500"
+                          : ""
+                      }`}
+                    />
+                  </div>
+                  {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
+                    <p className="text-[11px] text-[#8E8E8E]">Enter a valid Ethereum address</p>
                   )}
                 </div>
-                {links.map((link, i) => (
-                  <div key={i} className="flex gap-2">
-                    <input
-                      type="url"
-                      placeholder="https://..."
-                      value={link}
-                      onChange={(e) => {
-                        const updated = [...links];
-                        updated[i] = e.target.value;
-                        setLinks(updated);
-                      }}
-                      className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                      className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
               </div>
 
-              {/* Recipient */}
-              <div className="space-y-2 pt-2">
-                <div className="space-y-1 mb-2">
-                  <div className="text-[13px] font-semibold text-foreground">Recipient</div>
-                  <p className="text-[11px] text-muted-foreground">
-                    The wallet that receives 50% of every donation.
-                  </p>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Recipient name"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Recipient wallet address (0x...)"
-                  value={recipientAddress}
-                  onChange={(e) => setRecipientAddress(e.target.value)}
-                  className={`w-full h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm ${
-                    recipientAddress.length > 0 && !isValidAddress(recipientAddress)
-                      ? "ring-zinc-500/50 focus:ring-zinc-500"
-                      : "ring-zinc-700 focus:ring-zinc-500"
-                  }`}
-                />
-                {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
-                  <p className="text-[11px] text-zinc-400">Enter a valid Ethereum address</p>
-                )}
-              </div>
+              <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-3" aria-hidden="true" />
 
               {/* Advanced Settings Toggle */}
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="w-full flex items-center justify-between py-3 text-sm text-zinc-400 hover:text-zinc-300 transition-colors"
+                className="w-full flex items-center justify-between bg-concrete-600 hover:bg-concrete-500 text-[#8E8E8E] rounded-lg px-4 py-2 text-sm transition-colors"
               >
-                <span>Advanced Parameters</span>
+                <span className="headline-brutal text-[12px]">ADVANCED PARAMETERS</span>
                 {showAdvanced ? (
                   <ChevronUp className="w-4 h-4" />
                 ) : (
@@ -761,19 +802,20 @@ export default function LaunchPage() {
 
               {/* Advanced Settings */}
               {showAdvanced && (
-                <div className="space-y-6 pb-4">
+                <div className="space-y-3 pb-4">
                   <div className="flex justify-end">
                     <button
                       type="button"
                       onClick={resetAdvancedToDefaults}
-                      className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="text-[12px] text-moss-400 hover:text-moss-300 transition-colors"
                     >
                       Reset to defaults
                     </button>
                   </div>
-                  {/* Liquidity Section */}
-                  <div>
-                    <h3 className="text-[13px] font-semibold text-foreground mb-1">Launch Liquidity</h3>
+
+                  {/* Slab 4: Liquidity */}
+                  <div className="slab p-4">
+                    <h3 className="headline-brutal text-[13px] text-[#8E8E8E] mb-4 border-l-[3px] border-moss-400 pl-3">LAUNCH LIQUIDITY</h3>
                     <p className="text-muted-foreground text-[11px] mb-2">
                       Sets the initial coin/USDC pool and starting market price. Initial LP is locked at launch.
                     </p>
@@ -799,9 +841,8 @@ export default function LaunchPage() {
                     />
                     {/* Initial LP Summary */}
                     {(() => {
-                      // USDC = $1, so price in USD = usdcAmount / unitAmount
                       const initialPriceUsdc = usdcAmount / unitAmount;
-                      const initialPriceUsd = initialPriceUsdc; // USDC = $1
+                      const initialPriceUsd = initialPriceUsdc;
                       const marketCapUsd = unitAmount * initialPriceUsd;
 
                       const formatUsd = (n: number) => {
@@ -813,7 +854,7 @@ export default function LaunchPage() {
                       };
 
                       return (
-                        <div className="rounded-xl ring-1 ring-zinc-700 bg-zinc-800/40 p-3 space-y-2 mt-3">
+                        <div className="rounded-xl ring-1 ring-concrete-600 bg-concrete-800/40 p-3 space-y-2 mt-3">
                           <div className="text-[13px] font-semibold text-foreground">Launch Snapshot</div>
                           <div className="space-y-1.5 text-[12px]">
                             <div className="flex items-center justify-between">
@@ -842,9 +883,11 @@ export default function LaunchPage() {
                     })()}
                   </div>
 
-                  {/* Emission Section */}
-                  <div>
-                    <h3 className="text-[13px] font-semibold text-foreground mb-1">Emission Schedule</h3>
+                  <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-3" aria-hidden="true" />
+
+                  {/* Slab 5: Emission */}
+                  <div className="slab p-4">
+                    <h3 className="headline-brutal text-[13px] text-[#8E8E8E] mb-4 border-l-[3px] border-moss-400 pl-3">EMISSION SCHEDULE</h3>
                     <p className="text-muted-foreground text-[11px] mb-2">
                       Daily emissions distributed to donors based on contribution share.
                     </p>
@@ -877,7 +920,7 @@ export default function LaunchPage() {
                       onChange={setHalvingPeriod}
                       min={BOUNDS.halvingPeriod.min}
                       max={BOUNDS.halvingPeriod.max}
-                      step={86400} // 1 day steps
+                      step={86400}
                       formatValue={formatDuration}
                       description="Days between daily emission halvings."
                     />
@@ -918,7 +961,7 @@ export default function LaunchPage() {
                 <button
                   onClick={() => connect()}
                   disabled={isConnecting}
-                  className="w-40 h-10 text-[14px] font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  className="w-40 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg bg-moss-400 text-concrete-800 hover:bg-moss-300 hover:shadow-glow transition-all disabled:opacity-50"
                 >
                   {isConnecting ? "Connecting..." : "Connect Wallet"}
                 </button>
@@ -926,12 +969,12 @@ export default function LaunchPage() {
                 <button
                   onClick={handleLaunch}
                   disabled={!isFormValid || isLaunching || isUploading}
-                  className={`w-32 h-10 text-[14px] font-semibold rounded-xl transition-all ${
+                  className={`w-32 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg transition-all ${
                     launchError || txStatus === "error"
-                      ? "bg-zinc-700 text-zinc-300"
+                      ? "bg-concrete-700 text-[#8E8E8E]"
                       : !isFormValid || isLaunching || isUploading
-                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                      : "bg-white text-black hover:bg-zinc-200"
+                      ? "bg-concrete-800 text-concrete-500 cursor-not-allowed"
+                      : "bg-moss-400 text-concrete-800 hover:bg-moss-300 hover:shadow-glow"
                   }`}
                 >
                   {launchError || txStatus === "error"
@@ -949,7 +992,7 @@ export default function LaunchPage() {
 
       {/* Success */}
       {txStatus === "success" && txHash && (
-        <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+        <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
           <div
             className="relative flex h-full w-full max-w-[520px] flex-col bg-background items-center justify-center px-6"
             style={{
@@ -961,14 +1004,14 @@ export default function LaunchPage() {
               {/* Token preview first for visual hierarchy */}
               {logoPreview && (
                 <div className="flex justify-center">
-                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-full object-cover ring-2 ring-zinc-700" />
+                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-full object-cover ring-2 ring-moss-400" />
                 </div>
               )}
 
               {/* Message */}
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Fundraiser Launched!</h2>
-                <p className="text-zinc-400 text-[15px]">
+                <h2 className="headline-brutal text-2xl text-white mb-2">FUNDRAISER LAUNCHED!</h2>
+                <p className="text-[#8E8E8E] text-[15px]">
                   <span className="font-semibold text-white">{tokenName}</span>
                   {" "}({tokenSymbol}) is now live
                 </p>
@@ -978,7 +1021,7 @@ export default function LaunchPage() {
               <div className="space-y-3 pt-2 w-full">
                 <Link
                   href={launchedRigAddress ? `/fundraiser/${launchedRigAddress}` : "/explore"}
-                  className="block w-full py-3.5 px-4 bg-white text-black font-semibold text-[15px] rounded-xl hover:bg-zinc-200 transition-colors"
+                  className="block w-full py-3.5 px-4 bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider text-[15px] rounded-lg hover:bg-moss-300 hover:shadow-glow transition-all"
                 >
                   View Fundraiser
                 </Link>
@@ -986,7 +1029,7 @@ export default function LaunchPage() {
                   href={`https://basescan.org/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full py-3.5 px-4 bg-zinc-800 text-white font-semibold text-[15px] rounded-xl hover:bg-zinc-700 transition-colors"
+                  className="block w-full py-3.5 px-4 bg-concrete-700 text-white font-semibold text-[15px] rounded-lg hover:bg-concrete-600 transition-colors"
                 >
                   View on Basescan
                 </a>
