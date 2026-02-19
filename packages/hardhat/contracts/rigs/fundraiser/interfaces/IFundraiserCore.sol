@@ -2,11 +2,11 @@
 pragma solidity 0.8.19;
 
 /**
- * @title IFundCore
+ * @title IFundraiserCore
  * @author heesho
- * @notice Interface for the FundCore launchpad contract.
+ * @notice Interface for the FundraiserCore launchpad contract.
  */
-interface IFundCore {
+interface IFundraiserCore {
     struct LaunchParams {
         address launcher;
         address quoteToken;

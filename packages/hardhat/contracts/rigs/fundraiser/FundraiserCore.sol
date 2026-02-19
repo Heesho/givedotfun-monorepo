@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {FundRig} from "./FundRig.sol";
+import {Fundraiser} from "./Fundraiser.sol";
 import {IUnit} from "../../interfaces/IUnit.sol";
 import {IUnitFactory} from "../../interfaces/IUnitFactory.sol";
 import {IAuctionFactory} from "../../interfaces/IAuctionFactory.sol";
@@ -13,22 +13,22 @@ import {IUniswapV2Factory, IUniswapV2Router} from "../../interfaces/IUniswapV2.s
 import {IRegistry} from "../../interfaces/IRegistry.sol";
 
 /**
- * @title FundCore
+ * @title FundraiserCore
  * @author heesho
- * @notice The launchpad contract for deploying new FundRig instances.
+ * @notice The launchpad contract for deploying new Fundraiser instances.
  *         Users provide USDC tokens to launch a new donation-based token distribution.
- *         The FundCore contract:
+ *         The FundraiserCore contract:
  *         1. Deploys a new Unit token via UnitFactory
  *         2. Mints initial Unit tokens for liquidity
  *         3. Creates a Unit/USDC liquidity pool on Uniswap V2
  *         4. Burns the initial LP tokens
  *         5. Deploys an Auction contract to collect and auction treasury fees
- *         6. Deploys a FundRig contract
- *         7. Transfers Unit minting rights to the FundRig (permanently locked)
- *         8. Transfers ownership of the FundRig to the launcher
- *         9. Registers the FundRig with the central Registry
+ *         6. Deploys a Fundraiser contract
+ *         7. Transfers Unit minting rights to the Fundraiser (permanently locked)
+ *         8. Transfers ownership of the Fundraiser to the launcher
+ *         9. Registers the Fundraiser with the central Registry
  */
-contract FundCore is Ownable, ReentrancyGuard {
+contract FundraiserCore is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     /*----------  CONSTANTS  --------------------------------------------*/
@@ -59,7 +59,7 @@ contract FundCore is Ownable, ReentrancyGuard {
     /*----------  STRUCTS  ----------------------------------------------*/
 
     /**
-     * @notice Parameters for launching a new FundRig.
+     * @notice Parameters for launching a new Fundraiser.
      * @dev quoteToken must be a standard ERC20 (no rebasing or fee-on-transfer tokens).
      */
     struct LaunchParams {
@@ -83,16 +83,16 @@ contract FundCore is Ownable, ReentrancyGuard {
 
     /*----------  ERRORS  -----------------------------------------------*/
 
-    error FundCore__InsufficientUsdc();
-    error FundCore__EmptyTokenName();
-    error FundCore__EmptyTokenSymbol();
-    error FundCore__EmptyUri();
-    error FundCore__ZeroUnitAmount();
-    error FundCore__ZeroAddress();
+    error FundraiserCore__InsufficientUsdc();
+    error FundraiserCore__EmptyTokenName();
+    error FundraiserCore__EmptyTokenSymbol();
+    error FundraiserCore__EmptyUri();
+    error FundraiserCore__ZeroUnitAmount();
+    error FundraiserCore__ZeroAddress();
 
     /*----------  EVENTS  -----------------------------------------------*/
 
-    event FundCore__Launched(
+    event FundraiserCore__Launched(
         address indexed launcher,
         address indexed rig,
         address indexed unit,
@@ -114,13 +114,13 @@ contract FundCore is Ownable, ReentrancyGuard {
         uint256 auctionPriceMultiplier,
         uint256 auctionMinInitPrice
     );
-    event FundCore__ProtocolFeeAddressSet(address protocolFeeAddress);
-    event FundCore__MinUsdcForLaunchSet(uint256 minUsdcForLaunch);
+    event FundraiserCore__ProtocolFeeAddressSet(address protocolFeeAddress);
+    event FundraiserCore__MinUsdcForLaunchSet(uint256 minUsdcForLaunch);
 
     /*----------  CONSTRUCTOR  ------------------------------------------*/
 
     /**
-     * @notice Deploy the FundCore launchpad contract.
+     * @notice Deploy the FundraiserCore launchpad contract.
      * @param _registry Central registry for all rig types
      * @param _usdcToken USDC token address
      * @param _uniswapV2Factory Uniswap V2 factory address
@@ -145,7 +145,7 @@ contract FundCore is Ownable, ReentrancyGuard {
                 || _uniswapV2Router == address(0) || _unitFactory == address(0)
                 || _auctionFactory == address(0)
         ) {
-            revert FundCore__ZeroAddress();
+            revert FundraiserCore__ZeroAddress();
         }
 
         registry = _registry;
@@ -161,11 +161,11 @@ contract FundCore is Ownable, ReentrancyGuard {
     /*----------  EXTERNAL FUNCTIONS  -----------------------------------*/
 
     /**
-     * @notice Launch a new FundRig with associated Unit token, LP, and Auction.
+     * @notice Launch a new Fundraiser with associated Unit token, LP, and Auction.
      * @dev Caller must approve USDC tokens before calling.
      * @param params Launch parameters struct
      * @return unit Address of deployed Unit token
-     * @return rig Address of deployed FundRig contract
+     * @return rig Address of deployed Fundraiser contract
      * @return auction Address of deployed Auction contract
      * @return lpToken Address of Unit/USDC LP token
      */
@@ -180,7 +180,7 @@ contract FundCore is Ownable, ReentrancyGuard {
         // Transfer USDC from launcher
         IERC20(usdcToken).safeTransferFrom(msg.sender, address(this), params.usdcAmount);
 
-        // Deploy Unit token via factory (FundCore becomes initial minter)
+        // Deploy Unit token via factory (FundraiserCore becomes initial minter)
         unit = IUnitFactory(unitFactory).deploy(params.tokenName, params.tokenSymbol);
 
         // Mint initial Unit tokens for LP seeding
@@ -217,18 +217,18 @@ contract FundCore is Ownable, ReentrancyGuard {
             params.auctionMinInitPrice
         );
 
-        // Deploy FundRig inline
+        // Deploy Fundraiser inline
         // Recipient receives 50% of donations
         // Treasury is the Auction contract (receives 45% of donations)
         // Team is the launcher (receives 4% of donations)
-        FundRig.Config memory rigConfig = FundRig.Config({
+        Fundraiser.Config memory rigConfig = Fundraiser.Config({
             initialEmission: params.initialEmission,
             minEmission: params.minEmission,
             halvingPeriod: params.halvingPeriod,
             epochDuration: params.epochDuration
         });
 
-        FundRig fundRig = new FundRig(
+        Fundraiser fundRig = new Fundraiser(
             unit,
             params.quoteToken,
             address(this), // core
@@ -240,10 +240,10 @@ contract FundCore is Ownable, ReentrancyGuard {
         );
         rig = address(fundRig);
 
-        // Transfer Unit minting rights to FundRig (permanently locked)
+        // Transfer Unit minting rights to Fundraiser (permanently locked)
         IUnit(unit).setRig(rig);
 
-        // Transfer FundRig ownership to launcher
+        // Transfer Fundraiser ownership to launcher
         fundRig.transferOwnership(params.launcher);
 
         // Update local registry
@@ -256,7 +256,7 @@ contract FundCore is Ownable, ReentrancyGuard {
         // Register with central registry
         IRegistry(registry).register(rig, unit, params.launcher);
 
-        emit FundCore__Launched(
+        emit FundraiserCore__Launched(
             params.launcher,
             rig,
             unit,
@@ -291,7 +291,7 @@ contract FundCore is Ownable, ReentrancyGuard {
      */
     function setProtocolFeeAddress(address _protocolFeeAddress) external onlyOwner {
         protocolFeeAddress = _protocolFeeAddress;
-        emit FundCore__ProtocolFeeAddressSet(_protocolFeeAddress);
+        emit FundraiserCore__ProtocolFeeAddressSet(_protocolFeeAddress);
     }
 
     /**
@@ -300,7 +300,7 @@ contract FundCore is Ownable, ReentrancyGuard {
      */
     function setMinUsdcForLaunch(uint256 _minUsdcForLaunch) external onlyOwner {
         minUsdcForLaunch = _minUsdcForLaunch;
-        emit FundCore__MinUsdcForLaunchSet(_minUsdcForLaunch);
+        emit FundraiserCore__MinUsdcForLaunchSet(_minUsdcForLaunch);
     }
 
     /*----------  INTERNAL FUNCTIONS  -----------------------------------*/
@@ -311,14 +311,14 @@ contract FundCore is Ownable, ReentrancyGuard {
      * @param params Launch parameters to validate
      */
     function _validateLaunchParams(LaunchParams calldata params) internal view {
-        if (params.launcher == address(0)) revert FundCore__ZeroAddress();
-        if (params.quoteToken == address(0)) revert FundCore__ZeroAddress();
-        if (params.recipient == address(0)) revert FundCore__ZeroAddress();
-        if (params.usdcAmount < minUsdcForLaunch) revert FundCore__InsufficientUsdc();
-        if (bytes(params.tokenName).length == 0) revert FundCore__EmptyTokenName();
-        if (bytes(params.tokenSymbol).length == 0) revert FundCore__EmptyTokenSymbol();
-        if (bytes(params.uri).length == 0) revert FundCore__EmptyUri();
-        if (params.unitAmount == 0) revert FundCore__ZeroUnitAmount();
+        if (params.launcher == address(0)) revert FundraiserCore__ZeroAddress();
+        if (params.quoteToken == address(0)) revert FundraiserCore__ZeroAddress();
+        if (params.recipient == address(0)) revert FundraiserCore__ZeroAddress();
+        if (params.usdcAmount < minUsdcForLaunch) revert FundraiserCore__InsufficientUsdc();
+        if (bytes(params.tokenName).length == 0) revert FundraiserCore__EmptyTokenName();
+        if (bytes(params.tokenSymbol).length == 0) revert FundraiserCore__EmptyTokenSymbol();
+        if (bytes(params.uri).length == 0) revert FundraiserCore__EmptyUri();
+        if (params.unitAmount == 0) revert FundraiserCore__ZeroUnitAmount();
     }
 
     /*----------  VIEW FUNCTIONS  ---------------------------------------*/

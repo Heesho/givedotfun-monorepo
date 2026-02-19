@@ -3,25 +3,25 @@ pragma solidity 0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IFundRig} from "./interfaces/IFundRig.sol";
-import {IFundCore} from "./interfaces/IFundCore.sol";
+import {IFundraiser} from "./interfaces/IFundraiser.sol";
+import {IFundraiserCore} from "./interfaces/IFundraiserCore.sol";
 import {IAuction} from "../../interfaces/IAuction.sol";
 
 /**
- * @title FundMulticall
+ * @title FundraiserMulticall
  * @author heesho
- * @notice Helper contract for batched operations and aggregated view functions for FundRig.
+ * @notice Helper contract for batched operations and aggregated view functions for Fundraiser.
  * @dev Provides donation batching, claim batching, and comprehensive state queries.
  *      Payment token is read from each rig - users must approve this contract for the rig's payment token.
  */
-contract FundMulticall {
+contract FundraiserMulticall {
     using SafeERC20 for IERC20;
 
     /*----------  ERRORS  -----------------------------------------------*/
 
-    error FundMulticall__ZeroAddress();
-    error FundMulticall__InvalidRig();
-    error FundMulticall__EmptyArray();
+    error FundraiserMulticall__ZeroAddress();
+    error FundraiserMulticall__InvalidRig();
+    error FundraiserMulticall__EmptyArray();
 
     /*----------  IMMUTABLES  -------------------------------------------*/
 
@@ -31,7 +31,7 @@ contract FundMulticall {
     /*----------  STRUCTS  ----------------------------------------------*/
 
     /**
-     * @notice Aggregated state for a FundRig.
+     * @notice Aggregated state for a Fundraiser.
      */
     struct RigState {
         // Rig state
@@ -81,11 +81,11 @@ contract FundMulticall {
 
     /**
      * @notice Deploy the Multicall helper contract.
-     * @param _core FundCore contract address
+     * @param _core FundraiserCore contract address
      * @param _usdc USDC token address
      */
     constructor(address _core, address _usdc) {
-        if (_core == address(0) || _usdc == address(0)) revert FundMulticall__ZeroAddress();
+        if (_core == address(0) || _usdc == address(0)) revert FundraiserMulticall__ZeroAddress();
         core = _core;
         usdc = _usdc;
     }
@@ -105,13 +105,13 @@ contract FundMulticall {
         uint256 amount,
         string calldata _uri
     ) external {
-        if (!IFundCore(core).rigToIsRig(rig)) revert FundMulticall__InvalidRig();
+        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
 
-        address quoteToken = IFundRig(rig).quote();
+        address quoteToken = IFundraiser(rig).quote();
         IERC20(quoteToken).safeTransferFrom(msg.sender, address(this), amount);
         IERC20(quoteToken).safeApprove(rig, 0);
         IERC20(quoteToken).safeApprove(rig, amount);
-        IFundRig(rig).fund(account, amount, _uri);
+        IFundraiser(rig).fund(account, amount, _uri);
     }
 
     /**
@@ -121,8 +121,8 @@ contract FundMulticall {
      * @param epoch The epoch to claim
      */
     function claim(address rig, address account, uint256 epoch) external {
-        if (!IFundCore(core).rigToIsRig(rig)) revert FundMulticall__InvalidRig();
-        IFundRig(rig).claim(account, epoch);
+        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
+        IFundraiser(rig).claim(account, epoch);
     }
 
     /**
@@ -133,19 +133,19 @@ contract FundMulticall {
      * @param epochIds Array of epochs to claim
      */
     function claimMultiple(address rig, address account, uint256[] calldata epochIds) external {
-        if (!IFundCore(core).rigToIsRig(rig)) revert FundMulticall__InvalidRig();
+        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
         uint256 length = epochIds.length;
-        if (length == 0) revert FundMulticall__EmptyArray();
+        if (length == 0) revert FundraiserMulticall__EmptyArray();
 
-        uint256 currentEpoch = IFundRig(rig).currentEpoch();
+        uint256 currentEpoch = IFundraiser(rig).currentEpoch();
         for (uint256 i = 0; i < length;) {
             // Skip if already claimed, no donation, or epoch hasn't ended
             if (
-                !IFundRig(rig).epochAccountToHasClaimed(epochIds[i], account) &&
-                IFundRig(rig).epochAccountToDonation(epochIds[i], account) > 0 &&
+                !IFundraiser(rig).epochAccountToHasClaimed(epochIds[i], account) &&
+                IFundraiser(rig).epochAccountToDonation(epochIds[i], account) > 0 &&
                 epochIds[i] < currentEpoch
             ) {
-                IFundRig(rig).claim(account, epochIds[i]);
+                IFundraiser(rig).claim(account, epochIds[i]);
             }
             unchecked { ++i; }
         }
@@ -160,12 +160,12 @@ contract FundMulticall {
      * @param maxPaymentTokenAmount Maximum LP tokens willing to pay
      */
     function buy(address rig, uint256 epochId, uint256 deadline, uint256 maxPaymentTokenAmount) external {
-        if (!IFundCore(core).rigToIsRig(rig)) revert FundMulticall__InvalidRig();
-        address auction = IFundCore(core).rigToAuction(rig);
+        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
+        address auction = IFundraiserCore(core).rigToAuction(rig);
         address lpToken = IAuction(auction).paymentToken();
         uint256 price = IAuction(auction).getPrice();
         address[] memory assets = new address[](1);
-        assets[0] = IFundRig(rig).quote();
+        assets[0] = IFundraiser(rig).quote();
 
         IERC20(lpToken).safeTransferFrom(msg.sender, address(this), price);
         IERC20(lpToken).safeApprove(auction, 0);
@@ -182,7 +182,7 @@ contract FundMulticall {
      * @return auction Address of deployed Auction contract
      * @return lpToken Address of Unit/USDC LP token
      */
-    function launch(IFundCore.LaunchParams calldata params)
+    function launch(IFundraiserCore.LaunchParams calldata params)
         external
         returns (address unit, address rig, address auction, address lpToken)
     {
@@ -192,7 +192,7 @@ contract FundMulticall {
         IERC20(usdc).safeApprove(core, params.usdcAmount);
 
         // Build params with msg.sender as launcher
-        IFundCore.LaunchParams memory launchParams = IFundCore.LaunchParams({
+        IFundraiserCore.LaunchParams memory launchParams = IFundraiserCore.LaunchParams({
             launcher: msg.sender,
             quoteToken: params.quoteToken,
             recipient: params.recipient,
@@ -211,33 +211,33 @@ contract FundMulticall {
             auctionMinInitPrice: params.auctionMinInitPrice
         });
 
-        return IFundCore(core).launch(launchParams);
+        return IFundraiserCore(core).launch(launchParams);
     }
 
     /*----------  VIEW FUNCTIONS  ---------------------------------------*/
 
     /**
-     * @notice Get aggregated state for a FundRig and user balances.
+     * @notice Get aggregated state for a Fundraiser and user balances.
      * @param rig Rig contract address
      * @param account User address (or address(0) to skip balance queries)
      * @return state Aggregated rig state
      */
     function getRig(address rig, address account) external view returns (RigState memory state) {
-        uint256 epoch = IFundRig(rig).currentEpoch();
+        uint256 epoch = IFundraiser(rig).currentEpoch();
 
         state.currentEpoch = epoch;
-        state.currentEpochEmission = IFundRig(rig).getEpochEmission(epoch);
-        state.currentEpochTotalDonated = IFundRig(rig).epochToTotalDonated(epoch);
-        state.startTime = IFundRig(rig).startTime();
-        state.recipient = IFundRig(rig).recipient();
-        state.treasury = IFundRig(rig).treasury();
-        state.team = IFundRig(rig).team();
+        state.currentEpochEmission = IFundraiser(rig).getEpochEmission(epoch);
+        state.currentEpochTotalDonated = IFundraiser(rig).epochToTotalDonated(epoch);
+        state.startTime = IFundraiser(rig).startTime();
+        state.recipient = IFundraiser(rig).recipient();
+        state.treasury = IFundraiser(rig).treasury();
+        state.team = IFundraiser(rig).team();
 
-        address unitToken = IFundRig(rig).unit();
+        address unitToken = IFundraiser(rig).unit();
 
         // Calculate Unit price in USDC from LP reserves
         // USDC has 6 decimals, Unit has 18. Multiply by 1e30 (= 1e12 normalization * 1e18 precision)
-        address lpToken = IFundCore(core).rigToLP(rig);
+        address lpToken = IFundraiserCore(core).rigToLP(rig);
         if (lpToken != address(0)) {
             uint256 usdcInLP = IERC20(usdc).balanceOf(lpToken);
             uint256 unitInLP = IERC20(unitToken).balanceOf(lpToken);
@@ -245,14 +245,14 @@ contract FundMulticall {
         }
 
         // Rig metadata
-        state.rigUri = IFundRig(rig).uri();
+        state.rigUri = IFundraiser(rig).uri();
 
         // User balances
-        address quoteToken = IFundRig(rig).quote();
+        address quoteToken = IFundraiser(rig).quote();
         state.accountQuoteBalance = account == address(0) ? 0 : IERC20(quoteToken).balanceOf(account);
         state.accountUsdcBalance = account == address(0) ? 0 : IERC20(usdc).balanceOf(account);
         state.accountUnitBalance = account == address(0) ? 0 : IERC20(unitToken).balanceOf(account);
-        state.accountCurrentEpochDonation = account == address(0) ? 0 : IFundRig(rig).epochAccountToDonation(epoch, account);
+        state.accountCurrentEpochDonation = account == address(0) ? 0 : IFundraiser(rig).epochAccountToDonation(epoch, account);
 
         return state;
     }
@@ -282,9 +282,9 @@ contract FundMulticall {
             uint256 epoch = startEpoch + i;
             claimableEpochs[i] = ClaimableEpoch({
                 epoch: epoch,
-                donation: IFundRig(rig).epochAccountToDonation(epoch, account),
-                pendingReward: IFundRig(rig).getPendingReward(epoch, account),
-                hasClaimed: IFundRig(rig).epochAccountToHasClaimed(epoch, account)
+                donation: IFundraiser(rig).epochAccountToDonation(epoch, account),
+                pendingReward: IFundraiser(rig).getPendingReward(epoch, account),
+                hasClaimed: IFundraiser(rig).epochAccountToHasClaimed(epoch, account)
             });
             unchecked { ++i; }
         }
@@ -314,7 +314,7 @@ contract FundMulticall {
         // First pass: count unclaimed epochs
         uint256 unclaimedCount = 0;
         for (uint256 epoch = startEpoch; epoch < endEpoch;) {
-            uint256 pending = IFundRig(rig).getPendingReward(epoch, account);
+            uint256 pending = IFundraiser(rig).getPendingReward(epoch, account);
             if (pending > 0) {
                 totalPending += pending;
                 unclaimedCount++;
@@ -326,7 +326,7 @@ contract FundMulticall {
         unclaimedEpochs = new uint256[](unclaimedCount);
         uint256 index = 0;
         for (uint256 epoch = startEpoch; epoch < endEpoch;) {
-            if (IFundRig(rig).getPendingReward(epoch, account) > 0) {
+            if (IFundraiser(rig).getPendingReward(epoch, account) > 0) {
                 unclaimedEpochs[index] = epoch;
                 unchecked { ++index; }
             }
@@ -347,11 +347,11 @@ contract FundMulticall {
         view
         returns (uint256[] memory emissions)
     {
-        uint256 currentEpoch = IFundRig(rig).currentEpoch();
+        uint256 currentEpoch = IFundraiser(rig).currentEpoch();
         emissions = new uint256[](numEpochs);
 
         for (uint256 i = 0; i < numEpochs;) {
-            emissions[i] = IFundRig(rig).getEpochEmission(currentEpoch + i);
+            emissions[i] = IFundraiser(rig).getEpochEmission(currentEpoch + i);
             unchecked { ++i; }
         }
 
@@ -359,12 +359,12 @@ contract FundMulticall {
     }
 
     /**
-     * @notice Get the recipient address for a FundRig.
+     * @notice Get the recipient address for a Fundraiser.
      * @param rig Rig contract address
      * @return recipient The recipient address that receives 50% of donations
      */
     function getRecipient(address rig) external view returns (address) {
-        return IFundRig(rig).recipient();
+        return IFundraiser(rig).recipient();
     }
 
     /**
@@ -374,7 +374,7 @@ contract FundMulticall {
      * @return state Aggregated auction state
      */
     function getAuction(address rig, address account) external view returns (AuctionState memory state) {
-        address auction = IFundCore(core).rigToAuction(rig);
+        address auction = IFundraiserCore(core).rigToAuction(rig);
 
         state.epochId = IAuction(auction).epochId();
         state.initPrice = IAuction(auction).initPrice();
@@ -388,7 +388,7 @@ contract FundMulticall {
         state.lpTokenPrice =
             lpTotalSupply == 0 ? 0 : IERC20(usdc).balanceOf(state.lpToken) * 2e30 / lpTotalSupply;
 
-        address quoteToken = IFundRig(rig).quote();
+        address quoteToken = IFundraiser(rig).quote();
         state.quoteAccumulated = IERC20(quoteToken).balanceOf(auction);
         state.accountQuoteBalance = account == address(0) ? 0 : IERC20(quoteToken).balanceOf(account);
         state.accountLpTokenBalance = account == address(0) ? 0 : IERC20(state.lpToken).balanceOf(account);

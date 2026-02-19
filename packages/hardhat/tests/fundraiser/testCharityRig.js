@@ -19,7 +19,7 @@ const THIRTY_DAYS = ONE_DAY * 30;
 const INITIAL_EMISSION = ethers.utils.parseUnits("345600", 18);
 const MIN_EMISSION = ethers.utils.parseUnits("864", 18);
 
-describe("FundRig Tests", function () {
+describe("Fundraiser Tests", function () {
   before("Initial set up", async function () {
     await network.provider.send("hardhat_reset");
     console.log("Begin Initialization");
@@ -36,13 +36,13 @@ describe("FundRig Tests", function () {
     mockCore = await mockCoreArtifact.deploy(protocol.address);
     console.log("- MockCore Initialized");
 
-    // Deploy Unit token (owner is initial rig, will transfer to FundRig)
+    // Deploy Unit token (owner is initial rig, will transfer to Fundraiser)
     const unitArtifact = await ethers.getContractFactory("Unit");
     unitToken = await unitArtifact.deploy("Test Unit", "TUNIT", owner.address);
     console.log("- Unit Token Initialized");
 
-    // Deploy FundRig (recipient is now required in constructor)
-    const rigArtifact = await ethers.getContractFactory("FundRig");
+    // Deploy Fundraiser (recipient is now required in constructor)
+    const rigArtifact = await ethers.getContractFactory("Fundraiser");
     rig = await rigArtifact.deploy(
       unitToken.address,
       paymentToken.address,
@@ -53,11 +53,11 @@ describe("FundRig Tests", function () {
       [INITIAL_EMISSION, MIN_EMISSION, 30, ONE_DAY], // Config: {initialEmission, minEmission, halvingPeriod}
       "" // uri
     );
-    console.log("- FundRig Initialized (with recipient)");
+    console.log("- Fundraiser Initialized (with recipient)");
 
     // Transfer minting rights to Rig
     await unitToken.setRig(rig.address);
-    console.log("- Minting rights transferred to FundRig");
+    console.log("- Minting rights transferred to Fundraiser");
 
     // Mint payment tokens to users
     await paymentToken.mint(user0.address, convert("5000", 6));
@@ -69,7 +69,7 @@ describe("FundRig Tests", function () {
   });
 
   describe("Unit Token Tests", function () {
-    it("Should have FundRig as rig", async function () {
+    it("Should have Fundraiser as rig", async function () {
       expect(await unitToken.rig()).to.equal(rig.address);
     });
 
@@ -132,7 +132,7 @@ describe("FundRig Tests", function () {
     });
   });
 
-  describe("FundRig Configuration Tests", function () {
+  describe("Fundraiser Configuration Tests", function () {
     it("Should have correct initial state", async function () {
       expect(await rig.quote()).to.equal(paymentToken.address);
       expect(await rig.unit()).to.equal(unitToken.address);
@@ -196,7 +196,7 @@ describe("FundRig Tests", function () {
     it("Should prevent setting zero address for treasury", async function () {
       await expect(
         rig.connect(owner).setTreasury(AddressZero)
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should allow setting team address to zero", async function () {
@@ -209,7 +209,7 @@ describe("FundRig Tests", function () {
     it("Should prevent setting zero address as recipient", async function () {
       await expect(
         rig.connect(owner).setRecipient(AddressZero)
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
   });
 
@@ -226,7 +226,7 @@ describe("FundRig Tests", function () {
 
     it("Should revert deployment with zero recipient address", async function () {
       // Deploying with zero address recipient should revert
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           unitToken.address,
@@ -238,11 +238,11 @@ describe("FundRig Tests", function () {
           [INITIAL_EMISSION, MIN_EMISSION, 30, ONE_DAY], // Config
           "" // uri
         )
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should revert deployment with halving period too low", async function () {
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           unitToken.address,
@@ -254,11 +254,11 @@ describe("FundRig Tests", function () {
           [INITIAL_EMISSION, MIN_EMISSION, 6, ONE_DAY], // Config: halvingPeriod too low (min is 7)
           "" // uri
         )
-      ).to.be.revertedWith("FundRig__HalvingPeriodOutOfRange()");
+      ).to.be.revertedWith("Fundraiser__HalvingPeriodOutOfRange()");
     });
 
     it("Should revert deployment with halving period too high", async function () {
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           unitToken.address,
@@ -270,7 +270,7 @@ describe("FundRig Tests", function () {
           [INITIAL_EMISSION, MIN_EMISSION, 366, ONE_DAY], // Config: halvingPeriod too high (max is 365)
           "" // uri
         )
-      ).to.be.revertedWith("FundRig__HalvingPeriodOutOfRange()");
+      ).to.be.revertedWith("Fundraiser__HalvingPeriodOutOfRange()");
     });
 
     it("Should correctly split donations (50/45/4/1)", async function () {
@@ -313,14 +313,14 @@ describe("FundRig Tests", function () {
       console.log("- Split verification passed!");
     });
 
-    it("Should emit FundRig__Funded event", async function () {
+    it("Should emit Fundraiser__Funded event", async function () {
       const donationAmount = convert("100", 6);
       await paymentToken.connect(user1).approve(rig.address, donationAmount);
 
       const currentDay = await rig.currentEpoch();
 
       await expect(rig.connect(user1).fund(user1.address, donationAmount, ""))
-        .to.emit(rig, "FundRig__Funded")
+        .to.emit(rig, "Fundraiser__Funded")
         .withArgs(user1.address, user1.address, donationAmount, currentDay, "");
     });
 
@@ -336,14 +336,14 @@ describe("FundRig Tests", function () {
     it("Should prevent zero amount donation", async function () {
       await expect(
         rig.connect(user0).fund(user0.address, 0, "")
-      ).to.be.revertedWith("FundRig__BelowMinDonation()");
+      ).to.be.revertedWith("Fundraiser__BelowMinDonation()");
     });
 
     it("Should prevent donation to zero address account", async function () {
       await paymentToken.connect(user0).approve(rig.address, convert("100", 6));
       await expect(
         rig.connect(user0).fund(AddressZero, convert("100", 6), "")
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should redirect team fees to treasury when team address is zero", async function () {
@@ -396,7 +396,7 @@ describe("FundRig Tests", function () {
       const currentDay = await rig.currentEpoch();
       await expect(
         rig.connect(user0).claim(user0.address, currentDay)
-      ).to.be.revertedWith("FundRig__EpochNotEnded()");
+      ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
     });
 
     it("Should distribute Unit proportionally (25%/75%)", async function () {
@@ -467,17 +467,17 @@ describe("FundRig Tests", function () {
       const previousDay = (await rig.currentEpoch()).sub(1);
       await expect(
         rig.connect(user0).claim(user0.address, previousDay)
-      ).to.be.revertedWith("FundRig__AlreadyClaimed()");
+      ).to.be.revertedWith("Fundraiser__AlreadyClaimed()");
     });
 
     it("Should prevent claiming with no donation", async function () {
       const previousDay = (await rig.currentEpoch()).sub(1);
       await expect(
         rig.connect(user2).claim(user2.address, previousDay)
-      ).to.be.revertedWith("FundRig__NoDonation()");
+      ).to.be.revertedWith("Fundraiser__NoDonation()");
     });
 
-    it("Should emit FundRig__Claimed event", async function () {
+    it("Should emit Fundraiser__Claimed event", async function () {
       // Setup a new day with donation
       await increaseTime(ONE_DAY + 1);
       const newDay = await rig.currentEpoch();
@@ -491,7 +491,7 @@ describe("FundRig Tests", function () {
       const expectedReward = await rig.getPendingReward(newDay, user2.address);
 
       await expect(rig.connect(user2).claim(user2.address, newDay))
-        .to.emit(rig, "FundRig__Claimed")
+        .to.emit(rig, "Fundraiser__Claimed")
         .withArgs(user2.address, expectedReward, newDay);
     });
 
@@ -602,14 +602,14 @@ describe("FundRig Tests", function () {
     const ONE_HOUR = 3600;
 
     before(async function () {
-      // Deploy a FundRig with 1 hour epoch duration
+      // Deploy a Fundraiser with 1 hour epoch duration
       const unitArtifact = await ethers.getContractFactory("Unit");
       shortUnit = await unitArtifact.deploy("Short Epoch Unit", "SUNIT", owner.address);
 
       const mockCoreArtifact = await ethers.getContractFactory("MockCore");
       const shortMockCore = await mockCoreArtifact.deploy(protocol.address);
 
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       shortRig = await rigArtifact.deploy(
         shortUnit.address,
         paymentToken.address,
@@ -667,7 +667,7 @@ describe("FundRig Tests", function () {
       const unitArtifact = await ethers.getContractFactory("Unit");
       const tmpUnit = await unitArtifact.deploy("Tmp", "TMP", owner.address);
 
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           tmpUnit.address,
@@ -679,14 +679,14 @@ describe("FundRig Tests", function () {
           [INITIAL_EMISSION, MIN_EMISSION, 30, 3599], // Config: less than 1 hour
           ""
         )
-      ).to.be.revertedWith("FundRig__EpochDurationOutOfRange()");
+      ).to.be.revertedWith("Fundraiser__EpochDurationOutOfRange()");
     });
 
     it("Should revert deployment with epoch duration too long", async function () {
       const unitArtifact = await ethers.getContractFactory("Unit");
       const tmpUnit = await unitArtifact.deploy("Tmp2", "TMP2", owner.address);
 
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           tmpUnit.address,
@@ -698,14 +698,14 @@ describe("FundRig Tests", function () {
           [INITIAL_EMISSION, MIN_EMISSION, 30, 7 * 86400 + 1], // Config: more than 7 days
           ""
         )
-      ).to.be.revertedWith("FundRig__EpochDurationOutOfRange()");
+      ).to.be.revertedWith("Fundraiser__EpochDurationOutOfRange()");
     });
   });
 
   describe("RecipientSet Event Tests", function () {
     it("Should emit RecipientSet event when changing recipient", async function () {
       await expect(rig.connect(owner).setRecipient(user2.address))
-        .to.emit(rig, "FundRig__RecipientSet")
+        .to.emit(rig, "Fundraiser__RecipientSet")
         .withArgs(user2.address);
 
       // Cleanup
@@ -721,7 +721,7 @@ describe("FundRig Tests", function () {
       const epoch = await rig.currentEpoch();
 
       await expect(rig.connect(user0).fund(user0.address, amount, "test-uri"))
-        .to.emit(rig, "FundRig__Funded")
+        .to.emit(rig, "Fundraiser__Funded")
         .withArgs(user0.address, user0.address, amount, epoch, "test-uri");
     });
   });
@@ -731,7 +731,7 @@ describe("FundRig Tests", function () {
       await paymentToken.connect(user0).approve(rig.address, 9999);
       await expect(
         rig.connect(user0).fund(user0.address, 9999, "")
-      ).to.be.revertedWith("FundRig__BelowMinDonation()");
+      ).to.be.revertedWith("Fundraiser__BelowMinDonation()");
     });
 
     it("Should accept donation at exactly MIN_DONATION (10000)", async function () {
@@ -753,7 +753,7 @@ describe("FundRig Tests", function () {
       const mockCoreArtifact = await ethers.getContractFactory("MockCore");
       const precMockCore = await mockCoreArtifact.deploy(protocol.address);
 
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       precisionRig = await rigArtifact.deploy(
         precisionUnit.address,
         paymentToken.address,
@@ -793,7 +793,7 @@ describe("FundRig Tests", function () {
       const mockCoreArtifact = await ethers.getContractFactory("MockCore");
       const tmpCore = await mockCoreArtifact.deploy(protocol.address);
 
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       const tmpRig = await rigArtifact.deploy(
         tmpUnit.address,
         paymentToken.address,
@@ -813,7 +813,7 @@ describe("FundRig Tests", function () {
       // Still in epoch 0 — cannot claim
       await expect(
         tmpRig.claim(user0.address, 0)
-      ).to.be.revertedWith("FundRig__EpochNotEnded()");
+      ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
 
       // Advance past epoch boundary
       await increaseTime(TWO_HOURS);
@@ -833,7 +833,7 @@ describe("FundRig Tests", function () {
       const tmpCore = await mockCoreArtifact.deploy(protocol.address);
 
       const ONE_HOUR = 3600;
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       const tmpRig = await rigArtifact.deploy(
         tmpUnit.address,
         paymentToken.address,

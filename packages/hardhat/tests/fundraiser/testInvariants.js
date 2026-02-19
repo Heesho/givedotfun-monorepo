@@ -1,5 +1,5 @@
 /**
- * @title FundRig Invariant and Business Logic Tests
+ * @title Fundraiser Invariant and Business Logic Tests
  * @notice Comprehensive tests verifying donation mechanics and daily pool distribution
  * @dev Tests focus on daily pools, emission halving, fee distribution, and claim mechanics
  */
@@ -25,7 +25,7 @@ const ONE_HOUR = 3600;
 const ONE_DAY = 86400;
 const THIRTY_DAYS = ONE_DAY * 30;
 
-describe("FundRig Invariant Tests", function () {
+describe("Fundraiser Invariant Tests", function () {
   let owner, treasury, team, protocol, recipient, user0, user1, user2;
   let paymentToken, unitToken, rig, mockCore;
 
@@ -42,13 +42,13 @@ describe("FundRig Invariant Tests", function () {
     const mockCoreArtifact = await ethers.getContractFactory("MockCore");
     mockCore = await mockCoreArtifact.deploy(protocol.address);
 
-    // Deploy Unit token (owner is initial rig, will transfer to FundRig)
+    // Deploy Unit token (owner is initial rig, will transfer to Fundraiser)
     const unitArtifact = await ethers.getContractFactory("Unit");
     unitToken = await unitArtifact.deploy("Fund Test Unit", "CTUNIT", owner.address);
 
-    // Deploy FundRig with correct constructor arguments:
+    // Deploy Fundraiser with correct constructor arguments:
     // unit, quote, core, treasury, team, recipient, Config{initialEmission, minEmission, halvingPeriod}
-    const rigArtifact = await ethers.getContractFactory("FundRig");
+    const rigArtifact = await ethers.getContractFactory("Fundraiser");
     rig = await rigArtifact.deploy(
       unitToken.address,     // unit
       paymentToken.address,  // quote
@@ -248,7 +248,7 @@ describe("FundRig Invariant Tests", function () {
     it("Should revert on second claim attempt", async function () {
       await expect(
         rig.claim(user2.address, testDay)
-      ).to.be.revertedWith("FundRig__AlreadyClaimed()");
+      ).to.be.revertedWith("Fundraiser__AlreadyClaimed()");
     });
   });
 
@@ -261,7 +261,7 @@ describe("FundRig Invariant Tests", function () {
 
       await expect(
         rig.claim(user0.address, currentDay)
-      ).to.be.revertedWith("FundRig__EpochNotEnded()");
+      ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
     });
 
     it("Should revert when claiming future day", async function () {
@@ -269,7 +269,7 @@ describe("FundRig Invariant Tests", function () {
 
       await expect(
         rig.claim(user0.address, currentDay.add(10))
-      ).to.be.revertedWith("FundRig__EpochNotEnded()");
+      ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
     });
   });
 
@@ -316,7 +316,7 @@ describe("FundRig Invariant Tests", function () {
   });
 });
 
-describe("FundRig Business Logic Tests", function () {
+describe("Fundraiser Business Logic Tests", function () {
   let owner, treasury, team, protocol, recipient, user0, user1, user2;
   let paymentToken, unitToken, rig, mockCore;
 
@@ -335,7 +335,7 @@ describe("FundRig Business Logic Tests", function () {
     const unitArtifact = await ethers.getContractFactory("Unit");
     unitToken = await unitArtifact.deploy("BL Fund Unit", "BLCUNIT", owner.address);
 
-    const rigArtifact = await ethers.getContractFactory("FundRig");
+    const rigArtifact = await ethers.getContractFactory("Fundraiser");
     rig = await rigArtifact.deploy(
       unitToken.address,     // unit
       paymentToken.address,  // quote
@@ -357,7 +357,7 @@ describe("FundRig Business Logic Tests", function () {
   describe("Recipient Management", function () {
     it("Should revert deployment with zero recipient address", async function () {
       // Deploying with zero address recipient should revert
-      const rigArtifact = await ethers.getContractFactory("FundRig");
+      const rigArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
         rigArtifact.deploy(
           unitToken.address,
@@ -369,7 +369,7 @@ describe("FundRig Business Logic Tests", function () {
           [convert("1000", 18), convert("10", 18), 30, ONE_DAY], // Config
           "" // uri
         )
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should allow owner to set recipient", async function () {
@@ -386,7 +386,7 @@ describe("FundRig Business Logic Tests", function () {
     it("Should prevent setting zero address as recipient", async function () {
       await expect(
         rig.connect(owner).setRecipient(AddressZero)
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Only owner can set recipient", async function () {
@@ -400,7 +400,7 @@ describe("FundRig Business Logic Tests", function () {
     it("Should revert on zero donation amount", async function () {
       await expect(
         rig.connect(user0).fund(user0.address, 0, "")
-      ).to.be.revertedWith("FundRig__BelowMinDonation()");
+      ).to.be.revertedWith("Fundraiser__BelowMinDonation()");
     });
 
     it("Should revert on zero account address", async function () {
@@ -408,7 +408,7 @@ describe("FundRig Business Logic Tests", function () {
 
       await expect(
         rig.connect(user0).fund(AddressZero, convert("100", 6), "")
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should allow donating on behalf of another account", async function () {
@@ -444,13 +444,13 @@ describe("FundRig Business Logic Tests", function () {
       // user2 never donated on donationDay
       await expect(
         rig.claim(user2.address, donationDay)
-      ).to.be.revertedWith("FundRig__NoDonation()");
+      ).to.be.revertedWith("Fundraiser__NoDonation()");
     });
 
     it("Should revert on zero account address", async function () {
       await expect(
         rig.claim(AddressZero, donationDay)
-      ).to.be.revertedWith("FundRig__ZeroAddress()");
+      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Anyone can trigger claim for any account", async function () {
@@ -553,7 +553,7 @@ describe("FundRig Business Logic Tests", function () {
 
       await expect(
         rig.connect(user0).fund(user0.address, donationAmount, "")
-      ).to.emit(rig, "FundRig__Funded");
+      ).to.emit(rig, "Fundraiser__Funded");
     });
 
     it("Should emit Claimed event on claim", async function () {
@@ -567,7 +567,7 @@ describe("FundRig Business Logic Tests", function () {
 
       await expect(
         rig.claim(user2.address, claimableDay)
-      ).to.emit(rig, "FundRig__Claimed");
+      ).to.emit(rig, "Fundraiser__Claimed");
     });
   });
 });

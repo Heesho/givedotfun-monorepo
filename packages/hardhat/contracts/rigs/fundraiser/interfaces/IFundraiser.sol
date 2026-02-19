@@ -2,11 +2,11 @@
 pragma solidity 0.8.19;
 
 /**
- * @title IFundRig
+ * @title IFundraiser
  * @author heesho
- * @notice Interface for the FundRig contract.
+ * @notice Interface for the Fundraiser contract.
  */
-interface IFundRig {
+interface IFundraiser {
     // Constants
     function MIN_EPOCH_DURATION() external view returns (uint256);
     function MAX_EPOCH_DURATION() external view returns (uint256);
