@@ -80,7 +80,7 @@ function formatPeriod(seconds: string | undefined): string {
 // Loading skeleton for the page
 function LoadingSkeleton() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -88,6 +88,11 @@ function LoadingSkeleton() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
+        <img
+          src="/botanicals/fern-frond.svg"
+          className="absolute top-0 left-0 w-40 opacity-[0.10] pointer-events-none select-none rotate-180"
+          aria-hidden="true"
+        />
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
@@ -323,7 +328,7 @@ export default function RigDetailPage() {
   }
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -331,6 +336,11 @@ export default function RigDetailPage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
+        <img
+          src="/botanicals/fern-frond.svg"
+          className="absolute top-0 left-0 w-40 opacity-[0.10] pointer-events-none select-none rotate-180"
+          aria-hidden="true"
+        />
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
@@ -359,10 +369,12 @@ export default function RigDetailPage() {
           {/* Token Info Section */}
           <div ref={tokenInfoRef} className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
-              <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
+              <div className="glow-pedestal">
+                <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" showVineRing={true} />
+              </div>
               <div>
                 <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                <div className="text-[15px] font-medium">{tokenSymbol}</div>
+                <div className="headline-brutal text-[15px]">{tokenSymbol}</div>
               </div>
             </div>
             <div className="text-right">
@@ -372,11 +384,11 @@ export default function RigDetailPage() {
                   : formatPrice(priceUsd)}
               </div>
               {hoverData ? (
-                <div className="text-[13px] font-medium text-zinc-400">
+                <div className="text-[13px] font-medium text-[#8E8E8E]">
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className="text-[13px] font-medium text-zinc-400">
+                <div className="text-[13px] font-medium text-[#8E8E8E]">
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -402,7 +414,7 @@ export default function RigDetailPage() {
                 onClick={() => setTimeframe(tf)}
                 className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
                   timeframe === tf
-                    ? "bg-zinc-700 text-white"
+                    ? "bg-concrete-700 text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
@@ -414,7 +426,7 @@ export default function RigDetailPage() {
           {/* User Position Section */}
           {hasPosition && (
             <div className="mb-6">
-              <div className="font-semibold text-[18px] mb-3">Your position</div>
+              <h2 className="headline-brutal text-[16px] mb-3">YOUR POSITION</h2>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
@@ -435,41 +447,41 @@ export default function RigDetailPage() {
 
           {/* Global Stats Grid */}
           <div className="mb-6">
-            <div className="font-semibold text-[18px] mb-3">Stats</div>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+            <h2 className="headline-brutal text-[16px] mb-3">STATS</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="slab slab-accent p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Market cap</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   {formatMarketCap(marketCapUsd)}
                 </div>
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+              <div className="slab p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Total supply</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   {formatNumber(totalSupply)}
                 </div>
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+              <div className="slab p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Liquidity</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   ${formatNumber(liquidityUsd)}
                 </div>
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+              <div className="slab p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">24h volume</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   ${formatNumber(volume24h)}
                 </div>
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+              <div className="slab p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Treasury</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   ${treasuryRevenue.toFixed(2)}
                 </div>
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                <div className="font-semibold text-[15px] tabular-nums">
+              <div className="slab p-3">
+                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Team</div>
+                <div className="text-[15px] font-bold text-white tabular-nums">
                   ${teamRevenue.toFixed(2)}
                 </div>
               </div>
@@ -478,10 +490,10 @@ export default function RigDetailPage() {
 
           {/* About Section */}
           <div className="mb-6">
-            <div className="font-semibold text-[18px] mb-3">About</div>
+            <h2 className="headline-brutal text-[16px] mb-3">ABOUT</h2>
 
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-              <span className="text-zinc-400">Fundraiser</span>
+              <span className="text-[#8E8E8E]">Fundraiser</span>
               <span className="text-muted-foreground/60">·</span>
               <span>Deployed by</span>
               {launcherAddress ? (
@@ -556,6 +568,7 @@ export default function RigDetailPage() {
             </div>
 
             {/* Fundraiser Parameters */}
+            <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-4" aria-hidden="true" />
             <div className="grid grid-cols-2 gap-y-4 gap-x-6">
               {!subgraphRig?.fundraiser && (
                 <>
@@ -628,7 +641,7 @@ export default function RigDetailPage() {
         )}
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-concrete-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
           <div className="flex items-center justify-between w-full max-w-[520px] px-4 py-3 bg-background">
             <div>
               <div className="text-muted-foreground text-[12px]">Market Cap</div>
@@ -647,7 +660,7 @@ export default function RigDetailPage() {
                           setTradeMode("buy");
                           setShowTradeModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
                       >
                         Buy
                       </button>
@@ -657,7 +670,7 @@ export default function RigDetailPage() {
                           setTradeMode("sell");
                           setShowTradeModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
                       >
                         Sell
                       </button>
@@ -666,7 +679,7 @@ export default function RigDetailPage() {
                           setShowActionMenu(false);
                           setShowDonateModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-lg bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider text-[14px] transition-colors"
                       >
                         Donate
                       </button>
@@ -675,7 +688,7 @@ export default function RigDetailPage() {
                           setShowActionMenu(false);
                           setShowAuctionModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-lg bg-prism-400 text-concrete-800 font-bold uppercase tracking-wider pulse-reward text-[14px] transition-colors"
                       >
                         Auction
                       </button>
@@ -684,7 +697,7 @@ export default function RigDetailPage() {
                           setShowActionMenu(false);
                           setShowLiquidityModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
                       >
                         Liquidity
                       </button>
@@ -694,7 +707,7 @@ export default function RigDetailPage() {
                             setShowActionMenu(false);
                             setShowAdminModal(true);
                           }}
-                          className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
+                          className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
                         >
                           Admin
                         </button>
@@ -703,10 +716,10 @@ export default function RigDetailPage() {
                   )}
                   <button
                     onClick={() => setShowActionMenu(!showActionMenu)}
-                    className={`w-32 h-10 text-[14px] font-semibold rounded-xl transition-all ${
+                    className={`w-32 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg transition-all ${
                       showActionMenu
-                        ? "bg-black border-2 border-white text-white"
-                        : "bg-white text-black"
+                        ? "bg-concrete-800 border-2 border-moss-400 text-moss-400"
+                        : "bg-moss-400 text-concrete-800"
                     }`}
                   >
                     {showActionMenu ? "\u2715" : "Actions"}
@@ -716,7 +729,7 @@ export default function RigDetailPage() {
                 <button
                   onClick={() => connect()}
                   disabled={isConnecting || isInFrame === true}
-                  className="w-40 h-10 text-[14px] font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  className="w-40 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg bg-moss-400 text-concrete-800 hover:bg-moss-400/90 transition-colors disabled:opacity-50"
                 >
                   {isConnecting ? "Connecting..." : "Connect Wallet"}
                 </button>
