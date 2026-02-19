@@ -1,8 +1,9 @@
 /**
- * @title Comprehensive Fuzz Test Suite for Farplace Security Audit
- * @notice Tests correctness of core arithmetic under random inputs across all rig types
- * @dev 7 categories: fee splits, halving UPS, time-based emissions, Dutch auction decay,
- *      proportional claims, odds drawing, and capacity-based UPS division
+ * @title Comprehensive Fuzz Test Suite for give.fun Security Audit
+ * @notice Tests correctness of core arithmetic under random inputs
+ * @dev Categories include: fee splits, halving, time-based emissions, Dutch auction decay,
+ *      proportional claims. NOTE: Some tests reference removed MineRig/SpinRig contracts
+ *      from the original Farplace codebase and may not compile until updated.
  */
 
 const { expect } = require("chai");

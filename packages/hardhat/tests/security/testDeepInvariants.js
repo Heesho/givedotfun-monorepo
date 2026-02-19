@@ -1,8 +1,9 @@
 /**
  * @title Deep Invariant Test Suite (First Half)
- * @notice Cross-contract accounting, self-displacement, multi-slot flow, quote token
- *         conservation, and SpinRig prize pool invariants.
- * @dev INV-DEEP-1 through INV-DEEP-14
+ * @notice Cross-contract accounting and quote token conservation invariants.
+ * @dev INV-DEEP-1 through INV-DEEP-14.
+ *      NOTE: Some tests reference removed MineRig/SpinRig contracts from the
+ *      original Farplace codebase and may not compile until updated.
  */
 
 const { expect } = require("chai");

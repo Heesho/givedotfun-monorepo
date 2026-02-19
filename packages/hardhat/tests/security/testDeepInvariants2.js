@@ -1,9 +1,10 @@
 /**
  * @title Deep Invariant Test Suite 2
- * @notice Comprehensive invariant tests covering FundRig fee conservation, multi-day claiming
- *         across halving boundaries, Registry consistency, randomized MineRig stress testing,
- *         and MineRig claim accounting.
+ * @notice Comprehensive invariant tests covering Fundraiser fee conservation, multi-day claiming
+ *         across halving boundaries, and Registry consistency.
  * @dev Each section uses a fresh hardhat_reset to ensure isolation.
+ *      NOTE: Some tests reference removed MineRig contracts from the
+ *      original Farplace codebase and may not compile until updated.
  */
 
 const { expect } = require("chai");

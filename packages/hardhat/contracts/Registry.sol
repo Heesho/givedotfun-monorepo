@@ -6,8 +6,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title Registry
  * @author heesho
- * @notice Central registry for all rig types in the Farplace ecosystem.
- *         Each rig type (mine, spin, fund) has its own Core/Factory
+ * @notice Central registry for all fundraiser types in the give.fun ecosystem.
+ *         Each fundraiser type has its own Core/Factory
  *         that registers deployed rigs here. This provides a single source of truth
  *         for discovering all rigs across the platform.
  *

@@ -1,23 +1,18 @@
-# Farplace Documentation
+# give.fun Documentation
 
-Farplace is a gamified token launchpad on Base. Instead of traditional token sales, tokens are distributed through interactive mechanisms -- mining, spinning, and funding.
+give.fun is a perpetual funding platform on Base -- crypto GoFundMe. Instead of traditional token sales, tokens are distributed through donation-based fundraisers where communities fund recipients and earn proportional token emissions.
 
 ## Table of Contents
 
 ### Getting Started
 
-- [Overview](./overview.md) -- What is Farplace, how it works, key properties
+- [Overview](./overview.md) -- What is give.fun, how it works, key properties
 - [Architecture](./architecture.md) -- System design, contract hierarchy, launch flow, fee architecture
-- [Launch Guide](./launch-guide.md) -- Parameter reference and recommendations for launching a token
-
-### Rig Types
-
-- [MineRig](./mine-rig.md) -- Competitive slot mining with Dutch auction pricing and Bitcoin-like halvings
-- [SpinRig](./spin-rig.md) -- Slot machine with VRF-powered payouts from a growing prize pool
-- [FundRig](./fund-rig.md) -- Donation-based distribution with daily emission pools
+- [Launch Guide](./launch-guide.md) -- Parameter reference and recommendations for launching a fundraiser
 
 ### Reference
 
+- [Fundraiser](./fund-rig.md) -- Donation-based distribution with daily emission pools
 - [Auction](./auction.md) -- Treasury Dutch auction for selling accumulated tokens
 - [Security](./security.md) -- Trust assumptions, known trade-offs, and security measures
 
@@ -25,16 +20,15 @@ Farplace is a gamified token launchpad on Base. Instead of traditional token sal
 
 | Topic | Description |
 |---|---|
-| [Fee Splits](./architecture.md#fee-architecture) | How fees are distributed for each rig type |
-| [Halving Schedules](./mine-rig.md#halving-schedule) | MineRig supply-based vs SpinRig/FundRig time-based halvings |
-| [VRF Integration](./mine-rig.md#ups-multipliers-vrf) | Pyth Entropy randomness for multipliers and spin payouts |
-| [Owner Controls](./security.md#owner-capabilities) | What rig owners can and cannot change post-deployment |
+| [Fee Splits](./architecture.md#fee-architecture) | How fees are distributed |
+| [Halving Schedules](./fund-rig.md#emission-schedule) | Day-based emission halvings |
+| [Owner Controls](./security.md#owner-capabilities) | What fundraiser owners can and cannot change post-deployment |
 | [Parameter Recommendations](./launch-guide.md#parameter-recommendations) | Guidance on choosing good launch parameters |
 
 ## Tech Stack
 
 - **Chain**: Base (chain ID 8453)
-- **Contracts**: Solidity 0.8.19, Hardhat, OpenZeppelin, Solmate, Pyth Entropy
+- **Contracts**: Solidity 0.8.19, Hardhat, OpenZeppelin, Solmate
 - **Frontend**: Next.js, React, TypeScript, wagmi/viem
 - **Indexing**: The Graph (AssemblyScript)
 - **Integration**: Farcaster mini-app

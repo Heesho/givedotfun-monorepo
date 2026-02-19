@@ -1,8 +1,10 @@
 /**
  * @title Edge Case Security Audit Tests
- * @notice Comprehensive edge case tests for MineRig, SpinRig, FundRig, and Auction contracts.
+ * @notice Comprehensive edge case tests for Fundraiser and Auction contracts.
  * @dev Tests zero values, maximum values, boundary conditions, time edge cases,
  *      multi-user scenarios, and parameter validation.
+ *      NOTE: Some tests reference removed MineRig/SpinRig contracts from the
+ *      original Farplace codebase and may not compile until updated.
  */
 
 const { expect } = require("chai");

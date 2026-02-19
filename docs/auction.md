@@ -2,7 +2,7 @@
 
 ## Overview
 
-Every rig launch on Farplace creates an **Auction** contract alongside the rig and its Unit token. The Auction serves as the rig's treasury marketplace -- it accumulates quote tokens (USDC) from the rig's fee splits and allows anyone to purchase those accumulated tokens via a repeating Dutch auction.
+Every fundraiser launch on give.fun creates an **Auction** contract alongside the fundraiser and its Unit token. The Auction serves as the fundraiser's treasury marketplace -- it accumulates quote tokens (USDC) from the fundraiser's fee splits and allows anyone to purchase those accumulated tokens via a repeating Dutch auction.
 
 The Auction contract is forked and modified from [Euler Fee Flow](https://github.com/euler-xyz/fee-flow). It provides a permissionless, automated mechanism for converting treasury assets into LP token burns, creating sustained deflationary pressure on the liquidity pool.
 
@@ -50,21 +50,19 @@ If `timePassed > epochPeriod`, the price is 0.
 
 ### Payment in LP Tokens
 
-Unlike the rigs themselves (which accept USDC), the Auction requires payment in **LP tokens**. To participate, a buyer must first acquire LP tokens by providing liquidity to the Unit/USDC Uniswap V2 pool.
+Unlike the fundraiser itself (which accepts USDC), the Auction requires payment in **LP tokens**. To participate, a buyer must first acquire LP tokens by providing liquidity to the Unit/USDC Uniswap V2 pool.
 
 ### Deflationary LP Burns
 
-All LP tokens paid to the Auction are sent to the dead address (`0x000...dEaD`). This permanently removes those LP tokens from circulation. As the LP supply decreases, each remaining LP token represents a larger share of the underlying pool reserves, effectively increasing the price floor per LP token.
+All LP tokens paid to the Auction are sent to the dead address (`0x000...dEaD`). This permanently removes those LP tokens from circulation. As the LP supply decreases, each remaining LP token represents a larger share of the underlying pool reserves.
 
 ### Continuous Asset Accumulation
 
-Assets accumulate in the Auction contract from rig fee splits:
+Assets accumulate in the Auction contract from the fundraiser's fee split:
 
-| Rig Type | Treasury Fee (to Auction) |
+| Source | Treasury Fee (to Auction) |
 |----------|--------------------------|
-| MineRig  | 15% of slot purchase price |
-| SpinRig  | 95% of spin price |
-| FundRig  | 45% of donation amount |
+| Fundraiser | 45% of donation amount |
 
 The Auction can hold multiple asset types simultaneously. When a buyer calls `buy()`, they specify which asset token addresses to claim, and the contract transfers the full balance of each.
 

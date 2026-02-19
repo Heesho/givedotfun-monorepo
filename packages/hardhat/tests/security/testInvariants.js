@@ -1,7 +1,9 @@
 /**
  * @title Comprehensive Security Invariant Test Suite
- * @notice 23 invariants across Unit, MineRig, SpinRig, FundRig, and Auction contracts
- * @dev Each invariant is tested as a separate test case with self-contained setup
+ * @notice Invariants across Unit, Fundraiser, and Auction contracts
+ * @dev Each invariant is tested as a separate test case with self-contained setup.
+ *      NOTE: Some tests reference removed MineRig/SpinRig contracts from the
+ *      original Farplace codebase and may not compile until updated.
  */
 
 const { expect } = require("chai");

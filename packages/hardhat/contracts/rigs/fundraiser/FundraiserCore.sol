@@ -228,7 +228,7 @@ contract FundraiserCore is Ownable, ReentrancyGuard {
             epochDuration: params.epochDuration
         });
 
-        Fundraiser fundRig = new Fundraiser(
+        Fundraiser fundraiser = new Fundraiser(
             unit,
             params.quoteToken,
             address(this), // core
@@ -238,13 +238,13 @@ contract FundraiserCore is Ownable, ReentrancyGuard {
             rigConfig,
             params.uri
         );
-        rig = address(fundRig);
+        rig = address(fundraiser);
 
         // Transfer Unit minting rights to Fundraiser (permanently locked)
         IUnit(unit).setRig(rig);
 
         // Transfer Fundraiser ownership to launcher
-        fundRig.transferOwnership(params.launcher);
+        fundraiser.transferOwnership(params.launcher);
 
         // Update local registry
         rigToIsRig[rig] = true;

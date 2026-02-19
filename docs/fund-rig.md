@@ -1,12 +1,12 @@
-# FundRig
+# Fundraiser
 
 ## Overview
 
-FundRig is a donation-based token distribution mechanism within the Farplace launchpad. It allows communities to fund a recipient -- such as a creator, charity, or project -- while earning proportional Unit token emissions in return.
+Fundraiser is a donation-based token distribution mechanism within the give.fun platform. It allows communities to fund a recipient -- such as a creator, charity, or project -- while earning proportional Unit token emissions in return.
 
 Users donate a payment token (typically USDC) into daily pools. Donations are split immediately upon deposit: 50% goes directly to the designated recipient, with the remaining 50% distributed among the treasury, team, and protocol. After each 24-hour day concludes, donors can claim their proportional share of that day's Unit token emission based on how much they contributed relative to the total pool.
 
-FundRig is one of three rig types on Farplace, alongside MineRig (competitive slot mining) and SpinRig (slot machine). It is the simplest of the three -- there is no Dutch auction pricing, no VRF randomness, and no competitive displacement. The incentive model is straightforward: donate to fund a recipient, receive tokens proportional to your contribution.
+The Fundraiser is the core mechanism of give.fun. There is no Dutch auction pricing, no VRF randomness, and no competitive displacement. The incentive model is straightforward: donate to fund a recipient, receive tokens proportional to your contribution.
 
 ---
 
@@ -14,7 +14,7 @@ FundRig is one of three rig types on Farplace, alongside MineRig (competitive sl
 
 ### Donating
 
-To donate, call `fund(account, amount, uri)` on the FundRig contract.
+To donate, call `fund(account, amount, uri)` on the Fundraiser contract.
 
 ```solidity
 function fund(address account, uint256 amount, string calldata _uri) external;
@@ -24,7 +24,7 @@ function fund(address account, uint256 amount, string calldata _uri) external;
 - **`amount`** -- The amount of the quote token (e.g., USDC) to donate. Must be at least `MIN_DONATION` (10,000 raw units, equivalent to $0.01 for USDC with 6 decimals).
 - **`_uri`** -- An arbitrary metadata string attached to the donation event (e.g., a message, link, or identifier).
 
-The caller (`msg.sender`) must have approved the FundRig contract to transfer `amount` of the quote token beforehand. The tokens are transferred from `msg.sender`, but the donation is credited to `account`.
+The caller (`msg.sender`) must have approved the Fundraiser contract to transfer `amount` of the quote token beforehand. The tokens are transferred from `msg.sender`, but the donation is credited to `account`.
 
 Upon calling `fund()`:
 
@@ -85,7 +85,7 @@ Key rules:
 
 ## Emission Schedule
 
-FundRig distributes a fixed number of Unit tokens per day, following a halving schedule:
+Fundraiser distributes a fixed number of Unit tokens per day, following a halving schedule:
 
 - **Initial emission**: Set by `initialEmission` at launch. Valid range: `1e18` to `1e30`.
 - **Halving**: Every `halvingPeriod` days (measured in wall-clock time from deployment), the daily emission halves.
@@ -123,7 +123,7 @@ Once the halved emission drops below `minEmission`, the floor value is used inde
 
 ### Comparison with Other Rig Types
 
-Unlike MineRig (which uses supply-based halvings triggered by total tokens minted) or SpinRig (which uses time-based UPS halvings measured in seconds), FundRig uses day-based halvings. The emission is a discrete daily amount, not a continuous rate.
+Fundraiser uses day-based halvings. The emission is a discrete daily amount, not a continuous rate.
 
 ---
 
@@ -136,7 +136,7 @@ Every `fund()` call distributes the donated amount immediately according to fixe
 | Recipient   | 5,000       | 50%        | The designated recipient address                  |
 | Treasury    | Remainder   | ~45%       | Absorbs rounding dust; receives the balance       |
 | Team        | 400         | 4%         | The launcher/team address                         |
-| Protocol    | 100         | 1%         | The Farplace protocol fee address                 |
+| Protocol    | 100         | 1%         | The give.fun protocol fee address                 |
 
 ### How Fees Are Calculated
 
@@ -150,7 +150,7 @@ treasuryFee     = amount - recipientAmount - teamFee - protocolFee;  // remainde
 ### Special Cases
 
 - **Team is zero address**: If the owner sets the `team` address to `address(0)`, the 4% team fee is not sent. It is absorbed into the treasury remainder.
-- **Protocol is zero address**: If the FundCore's `protocolFeeAddress` is set to `address(0)`, the 1% protocol fee is not sent. It is absorbed into the treasury remainder.
+- **Protocol is zero address**: If the FundraiserCore's `protocolFeeAddress` is set to `address(0)`, the 1% protocol fee is not sent. It is absorbed into the treasury remainder.
 - **Both zero**: If both team and protocol are the zero address, the treasury receives the full 50% (the non-recipient half).
 - **Rounding dust**: Because the treasury fee is calculated as a remainder (`amount - recipientAmount - teamFee - protocolFee`), any fractional wei lost to integer division in the other three calculations is captured by the treasury.
 
@@ -160,13 +160,13 @@ Fees are distributed immediately on each `fund()` call via direct ERC-20 transfe
 
 ### Default Treasury Setup
 
-When launched through FundCore, the treasury is initially set to the **Auction contract** associated with the rig. This means the 45% treasury share flows into the Auction, which can sell Unit tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
+When launched through FundraiserCore, the treasury is initially set to the **Auction contract** associated with the rig. This means the 45% treasury share flows into the Auction, which can sell Unit tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
 
 ---
 
 ## Recipient Model
 
-The `recipient` address is central to FundRig's purpose. It represents the entity that the community is funding -- a creator, charity, public good, or any cause.
+The `recipient` address is central to Fundraiser's purpose. It represents the entity that the community is funding -- a creator, charity, public good, or any cause.
 
 ### How It Works
 
@@ -176,13 +176,13 @@ The `recipient` address is central to FundRig's purpose. It represents the entit
 
 ### Constraints
 
-- **Must be non-zero**: The constructor enforces `_recipient != address(0)`, and `setRecipient()` enforces the same check. A FundRig cannot operate without a recipient.
+- **Must be non-zero**: The constructor enforces `_recipient != address(0)`, and `setRecipient()` enforces the same check. A Fundraiser cannot operate without a recipient.
 - **No special permissions**: The recipient address has no privileged role in the contract beyond receiving funds. It cannot pause the rig, change parameters, or claim tokens.
 - **Owner-controlled**: Only the rig owner can change the recipient address via `setRecipient()`.
 
 ### Use Cases
 
-- **Creator funding**: A community launches a FundRig for a content creator. The creator's address is set as the recipient. Donations fund the creator while donors earn the community token.
+- **Creator funding**: A community launches a Fundraiser for a content creator. The creator's address is set as the recipient. Donations fund the creator while donors earn the community token.
 - **Charity**: A charity wallet is set as the recipient. Donors contribute to the cause and receive tokens representing their participation.
 - **Protocol treasury**: A DAO treasury is set as the recipient, with donations serving as a fundraising mechanism that simultaneously distributes governance tokens.
 
@@ -190,9 +190,9 @@ The `recipient` address is central to FundRig's purpose. It represents the entit
 
 ## Launch Parameters
 
-The following parameters are set at launch time (via `FundCore.launch()`) and are **immutable** once the contract is deployed.
+The following parameters are set at launch time (via `FundraiserCore.launch()`) and are **immutable** once the contract is deployed.
 
-### FundRig Configuration
+### Fundraiser Configuration
 
 | Parameter          | Type      | Valid Range                | Description                                                                 |
 |--------------------|-----------|----------------------------|-----------------------------------------------------------------------------|
@@ -209,7 +209,7 @@ The following parameters are set at launch time (via `FundCore.launch()`) and ar
 
 ### Auction Configuration
 
-Each FundRig is deployed alongside an Auction contract for treasury token sales. These parameters configure that auction.
+Each Fundraiser is deployed alongside an Auction contract for treasury token sales. These parameters configure that auction.
 
 | Parameter                 | Type      | Description                                                        |
 |---------------------------|-----------|--------------------------------------------------------------------|
@@ -220,15 +220,15 @@ Each FundRig is deployed alongside an Auction contract for treasury token sales.
 
 ### What Happens at Launch
 
-When `FundCore.launch()` is called:
+When `FundraiserCore.launch()` is called:
 
 1. A new **Unit** ERC-20 token is deployed.
 2. `unitAmount` of the Unit token is minted and paired with `usdcAmount` of USDC to create a **Uniswap V2 liquidity pool**.
 3. The initial LP tokens are **burned** (sent to the dead address `0x...dEaD`), permanently locking the liquidity.
 4. An **Auction** contract is deployed (configured with the auction parameters) to handle treasury token sales.
-5. The **FundRig** contract is deployed with the emission configuration.
-6. Unit minting rights are transferred to the FundRig (only the rig can mint new Unit tokens going forward).
-7. Ownership of the FundRig is transferred to the launcher.
+5. The **Fundraiser** contract is deployed with the emission configuration.
+6. Unit minting rights are transferred to the Fundraiser (only the rig can mint new Unit tokens going forward).
+7. Ownership of the Fundraiser is transferred to the launcher.
 8. The rig is registered in the central Registry.
 
 ---
@@ -253,7 +253,7 @@ The following are fixed at deployment and can never be modified:
 
 - `unit` -- The Unit token address
 - `quote` -- The payment token address
-- `core` -- The FundCore contract address
+- `core` -- The FundraiserCore contract address
 - `startTime` -- The deployment timestamp (determines day boundaries)
 - `initialEmission` -- The starting daily emission
 - `minEmission` -- The emission floor
@@ -309,7 +309,7 @@ These public mappings are accessible as view functions:
 |---------------------|-------------|-------------------------------------------------------|
 | `unit()`            | `address`   | The Unit (ERC-20) token address.                      |
 | `quote()`           | `address`   | The quote (payment) token address.                    |
-| `core()`            | `address`   | The FundCore contract address.                        |
+| `core()`            | `address`   | The FundraiserCore contract address.                        |
 | `startTime()`       | `uint256`   | The contract deployment timestamp.                    |
 | `initialEmission()` | `uint256`   | The starting daily emission amount.                   |
 | `minEmission()`     | `uint256`   | The minimum daily emission floor.                     |
@@ -338,12 +338,12 @@ These public mappings are accessible as view functions:
 
 ## Events
 
-### `FundRig__Funded`
+### `Fundraiser__Funded`
 
 Emitted when a donation is made via `fund()`.
 
 ```solidity
-event FundRig__Funded(address sender, address indexed funder, uint256 amount, uint256 day, string uri);
+event Fundraiser__Funded(address sender, address indexed funder, uint256 amount, uint256 day, string uri);
 ```
 
 | Parameter | Indexed | Description                                                        |
@@ -354,12 +354,12 @@ event FundRig__Funded(address sender, address indexed funder, uint256 amount, ui
 | `day`     | No      | The day number the donation was recorded in.                       |
 | `uri`     | No      | The metadata URI string attached to this donation.                 |
 
-### `FundRig__Claimed`
+### `Fundraiser__Claimed`
 
 Emitted when Unit tokens are claimed for a completed day via `claim()`.
 
 ```solidity
-event FundRig__Claimed(address indexed account, uint256 amount, uint256 day);
+event Fundraiser__Claimed(address indexed account, uint256 amount, uint256 day);
 ```
 
 | Parameter | Indexed | Description                                                  |
@@ -368,12 +368,12 @@ event FundRig__Claimed(address indexed account, uint256 amount, uint256 day);
 | `amount`  | No      | The number of Unit tokens minted and sent to the account.    |
 | `day`     | No      | The day number that was claimed.                             |
 
-### `FundRig__TreasuryFee`
+### `Fundraiser__TreasuryFee`
 
 Emitted on every `fund()` call when the treasury fee is transferred.
 
 ```solidity
-event FundRig__TreasuryFee(address indexed treasury, uint256 indexed day, uint256 amount);
+event Fundraiser__TreasuryFee(address indexed treasury, uint256 indexed day, uint256 amount);
 ```
 
 | Parameter  | Indexed | Description                                        |
@@ -382,12 +382,12 @@ event FundRig__TreasuryFee(address indexed treasury, uint256 indexed day, uint25
 | `day`      | Yes     | The day number when the fee was collected.         |
 | `amount`   | No      | The treasury fee amount in quote token units.      |
 
-### `FundRig__TeamFee`
+### `Fundraiser__TeamFee`
 
 Emitted on `fund()` calls when the team fee is transferred (only if `team != address(0)`).
 
 ```solidity
-event FundRig__TeamFee(address indexed team, uint256 indexed day, uint256 amount);
+event Fundraiser__TeamFee(address indexed team, uint256 indexed day, uint256 amount);
 ```
 
 | Parameter | Indexed | Description                                    |
@@ -396,12 +396,12 @@ event FundRig__TeamFee(address indexed team, uint256 indexed day, uint256 amount
 | `day`     | Yes     | The day number when the fee was collected.      |
 | `amount`  | No      | The team fee amount in quote token units.       |
 
-### `FundRig__ProtocolFee`
+### `Fundraiser__ProtocolFee`
 
 Emitted on `fund()` calls when the protocol fee is transferred (only if `protocol != address(0)`).
 
 ```solidity
-event FundRig__ProtocolFee(address indexed protocol, uint256 indexed day, uint256 amount);
+event Fundraiser__ProtocolFee(address indexed protocol, uint256 indexed day, uint256 amount);
 ```
 
 | Parameter  | Indexed | Description                                      |
@@ -410,48 +410,48 @@ event FundRig__ProtocolFee(address indexed protocol, uint256 indexed day, uint25
 | `day`      | Yes     | The day number when the fee was collected.       |
 | `amount`   | No      | The protocol fee amount in quote token units.    |
 
-### `FundRig__RecipientSet`
+### `Fundraiser__RecipientSet`
 
 Emitted when the owner changes the recipient address.
 
 ```solidity
-event FundRig__RecipientSet(address indexed recipient);
+event Fundraiser__RecipientSet(address indexed recipient);
 ```
 
 | Parameter   | Indexed | Description                          |
 |-------------|---------|--------------------------------------|
 | `recipient` | Yes     | The new recipient address.           |
 
-### `FundRig__TreasurySet`
+### `Fundraiser__TreasurySet`
 
 Emitted when the owner changes the treasury address.
 
 ```solidity
-event FundRig__TreasurySet(address indexed treasury);
+event Fundraiser__TreasurySet(address indexed treasury);
 ```
 
 | Parameter  | Indexed | Description                          |
 |------------|---------|--------------------------------------|
 | `treasury` | Yes     | The new treasury address.            |
 
-### `FundRig__TeamSet`
+### `Fundraiser__TeamSet`
 
 Emitted when the owner changes the team address.
 
 ```solidity
-event FundRig__TeamSet(address indexed team);
+event Fundraiser__TeamSet(address indexed team);
 ```
 
 | Parameter | Indexed | Description                                                  |
 |-----------|---------|--------------------------------------------------------------|
 | `team`    | Yes     | The new team address (or `address(0)` to disable team fees). |
 
-### `FundRig__UriSet`
+### `Fundraiser__UriSet`
 
 Emitted when the owner updates the metadata URI.
 
 ```solidity
-event FundRig__UriSet(string uri);
+event Fundraiser__UriSet(string uri);
 ```
 
 | Parameter | Indexed | Description                |
