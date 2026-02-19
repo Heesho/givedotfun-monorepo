@@ -32,7 +32,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 100 100"
-      className="w-16 h-8 text-zinc-400"
+      className="w-16 h-8 text-moss-400"
       preserveAspectRatio="none"
     >
       <polyline
@@ -89,7 +89,7 @@ export default function ExplorePage() {
   const showEmpty = !isLoading && rigs.length === 0;
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -100,7 +100,7 @@ export default function ExplorePage() {
         {/* Header */}
         <div className="px-4 pb-2">
           <div className="mb-4">
-            <h1 className="text-2xl font-semibold tracking-tight">Explore</h1>
+            <h1 className="headline-brutal text-xl">EXPLORE FUNDRAISERS</h1>
           </div>
 
           {/* Search Bar */}
@@ -108,10 +108,10 @@ export default function ExplorePage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search coins..."
+              placeholder="Search fundraisers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-10 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
+              className="w-full h-11 pl-10 pr-10 rounded-xl input-recessed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-moss-400/40 text-[15px] transition-shadow"
             />
             {searchQuery && (
               <button
@@ -133,10 +133,10 @@ export default function ExplorePage() {
               <button
                 key={tab.key}
                 onClick={() => setSortBy(tab.key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 pb-2 pt-1 text-[13px] font-medium transition-all ${
                   sortBy === tab.key
-                    ? "bg-white text-black"
-                    : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                    ? "bg-transparent text-foreground border-b-[3px] border-moss-400 rounded-none"
+                    : "bg-transparent text-muted-foreground hover:text-foreground border-b-[3px] border-transparent rounded-none"
                 }`}
               >
                 <tab.icon className="w-3.5 h-3.5" />
@@ -172,7 +172,7 @@ export default function ExplorePage() {
                   >
                     <Link
                       href={`/fundraiser/${rig.address}`}
-                      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
+                      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-moss-400/[0.04]"
                     >
                       {/* Left side - Logo, Symbol, Name */}
                       <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export default function ExplorePage() {
                             ? formatMarketCap(rig.marketCapUsd)
                             : "--"}
                         </div>
-                        <div className="text-[13px] tabular-nums text-zinc-400">
+                        <div className={`text-[13px] tabular-nums ${rig.change24h >= 0 ? "text-prism-400" : "text-red-400"}`}>
                           {rig.marketCapUsd > 0
                             ? `${rig.change24h >= 0 ? "+" : ""}${rig.change24h.toFixed(2)}%`
                             : "--"}
@@ -231,20 +231,27 @@ export default function ExplorePage() {
           {/* Empty states */}
           {showEmpty && isSearching && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Search className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-[15px] font-medium">No coins found</p>
-              <p className="text-[13px] mt-1 opacity-70">Try a different search term</p>
+              <img src="/botanicals/empty-garden.svg" className="w-24 h-24 mb-4 opacity-60" alt="" />
+              <p className="headline-brutal text-[15px]">No fundraisers found</p>
+              <p className="text-[13px] mt-1 text-muted-foreground">Try a different search term</p>
             </div>
           )}
 
           {showEmpty && !isSearching && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Zap className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-[15px] font-medium">No coins launched yet</p>
-              <p className="text-[13px] mt-1 opacity-70">Be the first to launch a coin</p>
+              <img src="/botanicals/empty-garden.svg" className="w-24 h-24 mb-4 opacity-60" alt="" />
+              <p className="headline-brutal text-[15px]">No fundraisers yet</p>
+              <p className="text-[13px] mt-1 text-muted-foreground">Be the first to launch</p>
             </div>
           )}
         </div>
+
+        {/* Decorative fern frond */}
+        <img
+          src="/botanicals/fern-frond.svg"
+          className="absolute bottom-20 right-0 w-48 opacity-[0.08] pointer-events-none select-none"
+          aria-hidden="true"
+        />
       </div>
       <NavBar />
     </main>
