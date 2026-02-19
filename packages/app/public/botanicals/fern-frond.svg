@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 500">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Main stem curving from bottom-left to top-right -->
+    <path d="M30 480 C40 440, 60 380, 90 320 S140 220, 170 170 S210 110, 240 70 S260 40, 270 25" stroke="#3DDC84" stroke-width="2.5" opacity="0.35"/>
+    <!-- Left-side pinnate leaflets -->
+    <path d="M42 460 C30 450, 20 445, 14 450 C20 448, 28 452, 38 458" fill="#3DDC84" fill-opacity="0.2" stroke="#3DDC84" stroke-width="0.8" opacity="0.35"/>
+    <path d="M55 420 C38 408, 24 400, 16 406 C24 404, 36 410, 50 418" fill="#3DDC84" fill-opacity="0.2" stroke="#3DDC84" stroke-width="0.8" opacity="0.35"/>
+    <path d="M72 376 C52 362, 36 352, 26 358 C36 356, 50 364, 66 374" fill="#3DDC84" fill-opacity="0.2" stroke="#3DDC84" stroke-width="0.8" opacity="0.32"/>
+    <path d="M92 332 C70 316, 52 306, 42 312 C52 310, 68 318, 86 330" fill="#3DDC84" fill-opacity="0.18" stroke="#3DDC84" stroke-width="0.8" opacity="0.3"/>
+    <path d="M112 290 C88 272, 68 262, 58 268 C68 266, 86 274, 106 288" fill="#3DDC84" fill-opacity="0.18" stroke="#3DDC84" stroke-width="0.7" opacity="0.28"/>
+    <path d="M135 248 C110 230, 90 220, 80 226 C90 224, 108 232, 128 246" fill="#3DDC84" fill-opacity="0.16" stroke="#3DDC84" stroke-width="0.7" opacity="0.26"/>
+    <path d="M155 210 C130 194, 112 186, 104 190 C112 188, 128 196, 148 208" fill="#3DDC84" fill-opacity="0.16" stroke="#3DDC84" stroke-width="0.6" opacity="0.24"/>
+    <path d="M175 175 C152 160, 136 154, 130 158 C136 156, 150 162, 168 174" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.6" opacity="0.22"/>
+    <path d="M198 140 C178 126, 164 122, 160 126 C164 124, 176 128, 192 138" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.5" opacity="0.2"/>
+    <path d="M218 108 C200 96, 190 92, 186 96 C190 94, 198 98, 212 106" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.5" opacity="0.18"/>
+    <path d="M238 78 C224 68, 216 66, 214 68 C216 67, 222 70, 234 76" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.4" opacity="0.17"/>
+    <path d="M255 52 C244 44, 238 42, 237 44 C238 43, 243 46, 252 51" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.4" opacity="0.16"/>
+    <!-- Right-side pinnate leaflets -->
+    <path d="M50 450 C62 440, 74 438, 78 444 C72 441, 60 443, 48 450" fill="#3DDC84" fill-opacity="0.2" stroke="#3DDC84" stroke-width="0.8" opacity="0.4"/>
+    <path d="M65 412 C80 400, 94 396, 100 402 C92 399, 78 402, 62 412" fill="#3DDC84" fill-opacity="0.2" stroke="#3DDC84" stroke-width="0.8" opacity="0.38"/>
+    <path d="M82 370 C100 356, 116 350, 122 356 C114 353, 98 358, 78 368" fill="#3DDC84" fill-opacity="0.18" stroke="#3DDC84" stroke-width="0.8" opacity="0.35"/>
+    <path d="M100 328 C120 312, 138 306, 144 312 C136 309, 118 314, 96 326" fill="#3DDC84" fill-opacity="0.18" stroke="#3DDC84" stroke-width="0.7" opacity="0.32"/>
+    <path d="M120 286 C142 270, 160 264, 166 270 C158 267, 140 272, 116 284" fill="#3DDC84" fill-opacity="0.16" stroke="#3DDC84" stroke-width="0.7" opacity="0.28"/>
+    <path d="M142 246 C164 232, 180 226, 186 232 C178 229, 162 234, 138 244" fill="#3DDC84" fill-opacity="0.16" stroke="#3DDC84" stroke-width="0.6" opacity="0.25"/>
+    <path d="M162 208 C182 196, 196 192, 200 196 C194 194, 180 198, 158 206" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.6" opacity="0.22"/>
+    <path d="M184 172 C200 162, 212 160, 216 163 C210 161, 198 164, 180 171" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.5" opacity="0.2"/>
+    <path d="M206 138 C220 130, 230 128, 233 131 C228 129, 218 132, 202 137" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.5" opacity="0.18"/>
+    <path d="M226 106 C238 100, 246 98, 248 101 C244 99, 236 102, 222 105" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.4" opacity="0.17"/>
+    <path d="M246 76 C254 72, 260 70, 262 72 C258 71, 252 73, 243 75" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.4" opacity="0.16"/>
+    <path d="M262 48 C268 44, 272 44, 273 46 C270 45, 266 46, 260 48" fill="#3DDC84" fill-opacity="0.15" stroke="#3DDC84" stroke-width="0.3" opacity="0.15"/>
+  </g>
+</svg>

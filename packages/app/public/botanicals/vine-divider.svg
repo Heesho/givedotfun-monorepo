@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 30">
+  <g fill="none" stroke="#3DDC84" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Main stem -->
+    <path d="M0 15 C20 12, 40 18, 60 14 S100 10, 130 16 S170 20, 200 14 S240 8, 270 16 S310 22, 340 14 S370 10, 400 15" stroke-width="1.8" opacity="0.5"/>
+    <!-- Tendrils and leaves -->
+    <path d="M45 16 C42 10, 48 7, 50 11" stroke-width="1" opacity="0.4"/>
+    <path d="M48 10 C52 6, 56 8, 53 12" stroke-width="0.8" opacity="0.35" fill="#3DDC84" fill-opacity="0.15"/>
+    <path d="M95 12 C92 6, 88 4, 90 9" stroke-width="1" opacity="0.45"/>
+    <path d="M90 7 C86 4, 83 6, 87 10" stroke-width="0.8" opacity="0.3" fill="#3DDC84" fill-opacity="0.12"/>
+    <path d="M145 18 C148 24, 152 26, 150 21" stroke-width="1" opacity="0.4"/>
+    <path d="M150 23 C154 27, 157 25, 153 20" stroke-width="0.8" opacity="0.35" fill="#3DDC84" fill-opacity="0.15"/>
+    <path d="M200 14 C197 8, 193 6, 195 11" stroke-width="1" opacity="0.5"/>
+    <path d="M195 8 C191 5, 188 7, 192 12" stroke-width="0.8" opacity="0.3" fill="#3DDC84" fill-opacity="0.12"/>
+    <path d="M255 14 C258 20, 262 23, 260 18" stroke-width="1" opacity="0.4"/>
+    <path d="M260 20 C264 24, 266 22, 263 17" stroke-width="0.8" opacity="0.35" fill="#3DDC84" fill-opacity="0.15"/>
+    <path d="M310 19 C307 25, 303 27, 305 22" stroke-width="1" opacity="0.45"/>
+    <path d="M305 24 C301 28, 298 25, 302 20" stroke-width="0.8" opacity="0.3" fill="#3DDC84" fill-opacity="0.12"/>
+    <path d="M360 13 C363 7, 367 5, 365 10" stroke-width="1" opacity="0.4"/>
+    <path d="M365 7 C369 3, 372 6, 368 11" stroke-width="0.8" opacity="0.35" fill="#3DDC84" fill-opacity="0.15"/>
+  </g>
+</svg>
