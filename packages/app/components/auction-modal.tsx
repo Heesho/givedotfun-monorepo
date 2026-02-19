@@ -15,7 +15,7 @@ import { useFarcaster } from "@/hooks/useFarcaster";
 import {
   CONTRACT_ADDRESSES,
   ERC20_ABI,
-  MULTICALL_ABI,
+  FUNDRAISER_MULTICALL_ABI,
   QUOTE_TOKEN_DECIMALS,
 } from "@/lib/contracts";
 import { DEADLINE_BUFFER_SECONDS } from "@/lib/constants";
@@ -125,7 +125,7 @@ export function AuctionModal({
     calls.push(
       encodeContractCall(
         multicallAddr,
-        MULTICALL_ABI,
+        FUNDRAISER_MULTICALL_ABI,
         "buy",
         [rigAddress, auctionState.epochId, deadline, auctionState.price],
         0n

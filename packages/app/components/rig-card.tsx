@@ -126,7 +126,7 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
   }, [rig.rigUri]);
 
   return (
-    <Link href={`/rig/${rig.address}`} className="block">
+    <Link href={`/fundraiser/${rig.address}`} className="block">
       <div
         className={cn(
           "flex items-center gap-3 py-4 transition-colors hover:bg-white/[0.02] border-b border-border",

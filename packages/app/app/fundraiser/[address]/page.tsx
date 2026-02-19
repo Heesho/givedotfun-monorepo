@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getRig } from "@/lib/subgraph-launchpad";
 import RigDetailPage from "./client-page";
 
-const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://farplace.app";
+const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://give.fun";
 const heroImageUrl = `${appDomain}/media/hero.png`;
 const splashImageUrl = `${appDomain}/media/splash.png`;
 
@@ -17,19 +17,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Fetch rig info from subgraph
   const rig = await getRig(rigAddress);
 
-  const tokenName = rig?.unit?.name || "Rig";
+  const tokenName = rig?.unit?.name || "Fundraiser";
   const tokenSymbol = rig?.unit?.symbol || "TOKEN";
-  const rigUrl = `${appDomain}/rig/${rigAddress}`;
+  const rigUrl = `${appDomain}/fundraiser/${rigAddress}`;
 
   // Mini app embed with rig-specific URL
   const miniAppEmbed = {
     version: "1",
     imageUrl: heroImageUrl,
     button: {
-      title: `$${tokenSymbol} on Farplace`,
+      title: `$${tokenSymbol} on give.fun`,
       action: {
         type: "launch_miniapp" as const,
-        name: "Farplace",
+        name: "give.fun",
         url: rigUrl,
         splashImageUrl,
         splashBackgroundColor: "#000000",
@@ -38,11 +38,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 
   return {
-    title: `${tokenName} ($${tokenSymbol}) | Farplace`,
-    description: `${tokenName} ($${tokenSymbol}) on Farplace. Start earning tokens now!`,
+    title: `${tokenName} ($${tokenSymbol}) | give.fun`,
+    description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating and earning tokens now!`,
     openGraph: {
-      title: `${tokenName} ($${tokenSymbol}) | Farplace`,
-      description: `${tokenName} ($${tokenSymbol}) on Farplace. Start earning tokens now!`,
+      title: `${tokenName} ($${tokenSymbol}) | give.fun`,
+      description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating and earning tokens now!`,
       url: rigUrl,
       images: [
         {

@@ -5,10 +5,10 @@ import { X, Loader2, CheckCircle } from "lucide-react";
 import { formatUnits, formatEther, parseUnits } from "viem";
 import { useReadContract } from "wagmi";
 import { useFarcaster } from "@/hooks/useFarcaster";
-import { useFundRigState } from "@/hooks/useFundRigState";
+import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useRigLeaderboard } from "@/hooks/useRigLeaderboard";
-import { useFundHistory, type DonationEvent } from "@/hooks/useFundHistory";
+import { useDonationHistory, type DonationEvent } from "@/hooks/useDonationHistory";
 import {
   useBatchedTransaction,
   encodeApproveCall,
@@ -18,7 +18,7 @@ import {
 import {
   CONTRACT_ADDRESSES,
   ERC20_ABI,
-  FUND_MULTICALL_ABI,
+  FUNDRAISER_MULTICALL_ABI,
   QUOTE_TOKEN_DECIMALS,
 } from "@/lib/contracts";
 import { Leaderboard } from "@/components/leaderboard";
@@ -33,7 +33,7 @@ const PRESET_AMOUNTS = [1, 10, 100];
 // Types
 // ---------------------------------------------------------------------------
 
-type FundModalProps = {
+type DonateModalProps = {
   isOpen: boolean;
   onClose: () => void;
   rigAddress: `0x${string}`;
@@ -60,7 +60,7 @@ function formatCountdown(seconds: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function FundModal({
+export function DonateModal({
   isOpen,
   onClose,
   rigAddress,
@@ -68,7 +68,7 @@ export function FundModal({
   tokenName = "Token",
   tokenLogoUrl,
   recipientName,
-}: FundModalProps) {
+}: DonateModalProps) {
   // ---------- Local UI state ----------
   const [fundAmount, setFundAmount] = useState("1");
   const [selectedPreset, setSelectedPreset] = useState<number | null>(1);
@@ -91,7 +91,7 @@ export function FundModal({
     totalPending,
     refetch: refetchFund,
     isLoading: isFundLoading,
-  } = useFundRigState(rigAddress, account);
+  } = useFundraiserState(rigAddress, account);
 
   const { metadata } = useTokenMetadata(fundState?.rigUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
@@ -105,7 +105,7 @@ export function FundModal({
   } = useBatchedTransaction();
 
   // Allowance check — skip approve when sufficient
-  const fundMulticallAddress = CONTRACT_ADDRESSES.fundMulticall as `0x${string}`;
+  const multicallAddress = CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
   const fundAmountWei = (() => {
     try {
       const v = parseFloat(fundAmount);
@@ -117,7 +117,7 @@ export function FundModal({
     address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "allowance",
-    args: [account!, fundMulticallAddress],
+    args: [account!, multicallAddress],
     query: {
       enabled: !!account && fundAmountWei > 0n,
     },
@@ -132,7 +132,7 @@ export function FundModal({
   const {
     donations,
     isLoading: isHistoryLoading,
-  } = useFundHistory(rigAddress, 10);
+  } = useDonationHistory(rigAddress, 10);
 
   // ---------- Derived display values ----------
 
@@ -168,12 +168,12 @@ export function FundModal({
   // Epoch countdown from chain data
   const startTime = fundState ? Number(fundState.startTime) : 0;
   const currentEpoch = fundState ? Number(fundState.currentEpoch) : 0;
-  const epochDuration = subgraphRig?.fundRig?.epochDuration ? Number(subgraphRig.fundRig.epochDuration) : 86400;
+  const epochDuration = subgraphRig?.fundraiser?.epochDuration ? Number(subgraphRig.fundraiser.epochDuration) : 86400;
   const dayEndTime = startTime > 0 ? startTime + (currentEpoch + 1) * epochDuration : 0;
   const dayEndsIn = Math.max(0, dayEndTime - now);
 
   // Recipient address (gets 50% of donations) — from subgraph data
-  const recipientAddress = subgraphRig?.fundRig?.recipients?.[0]?.recipient ?? null;
+  const recipientAddress = subgraphRig?.fundraiser?.recipients?.[0]?.recipient ?? null;
 
   // Parsed amount from input
   const parsedAmount = parseFloat(fundAmount) || 0;
@@ -268,7 +268,7 @@ export function FundModal({
       calls.push(
         encodeApproveCall(
           CONTRACT_ADDRESSES.usdc as `0x${string}`,
-          fundMulticallAddress,
+          multicallAddress,
           amount
         )
       );
@@ -277,23 +277,23 @@ export function FundModal({
     // Fund call
     calls.push(
       encodeContractCall(
-        fundMulticallAddress,
-        FUND_MULTICALL_ABI,
+        multicallAddress,
+        FUNDRAISER_MULTICALL_ABI,
         "fund",
         [rigAddress, account, recipientAddress, amount, message || defaultMessage]
       )
     );
 
     await execute(calls);
-  }, [account, fundState, fundAmount, rigAddress, recipientAddress, execute, txStatus, currentAllowance, fundMulticallAddress]);
+  }, [account, fundState, fundAmount, rigAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
 
   const handleClaim = useCallback(async () => {
     if (!account || claimableEpochs.length === 0 || txStatus === "pending") return;
     const dayIds = claimableEpochs.map((d) => d.epoch);
     const calls: Call[] = [
       encodeContractCall(
-        CONTRACT_ADDRESSES.fundMulticall as `0x${string}`,
-        FUND_MULTICALL_ABI,
+        CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`,
+        FUNDRAISER_MULTICALL_ABI,
         "claimMultiple",
         [rigAddress, account, dayIds]
       ),
@@ -322,7 +322,7 @@ export function FundModal({
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">Fund</span>
+          <span className="text-base font-semibold">Donate</span>
           <div className="w-9" />
         </div>
 
@@ -515,7 +515,7 @@ export function FundModal({
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                   <div>
-                    <div className="text-muted-foreground text-[12px] mb-1">Mined</div>
+                    <div className="text-muted-foreground text-[12px] mb-1">Earned</div>
                     <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
                       <TokenLogo name={tokenSymbol} logoUrl={tokenLogoUrl} size="sm" />
                       {(userUnitBalance + pendingTokens) >= 1000
@@ -549,14 +549,14 @@ export function FundModal({
 
               {/* Recent Mines */}
               <div className="mt-6">
-                <h2 className="text-[18px] font-semibold mb-3">Recent Mines</h2>
+                <h2 className="text-[18px] font-semibold mb-3">Recent Donations</h2>
                 {isHistoryLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   </div>
                 ) : donations.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground text-[13px]">
-                    No mines yet
+                    No donations yet
                   </div>
                 ) : (
                   <div>
@@ -588,7 +588,7 @@ export function FundModal({
                 userRank={userRank ?? null}
                 tokenSymbol={tokenSymbol}
                 tokenName={tokenName}
-                rigUrl={typeof window !== "undefined" ? `${window.location.origin}/rig/${rigAddress}` : ""}
+                rigUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${rigAddress}` : ""}
                 isLoading={isLeaderboardLoading}
               />
             </div>
@@ -651,7 +651,7 @@ export function FundModal({
                   ? "Success"
                   : txStatus === "error"
                   ? txError?.message?.includes("cancelled") ? "Rejected" : "Failed"
-                  : "Mine"}
+                  : "Donate"}
               </button>
             </div>
           </div>

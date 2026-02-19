@@ -91,7 +91,7 @@ export default function AuctionsPage() {
                         <TokenLogo
                           name={auction.tokenName}
                           logoUrl={getLogoUrl(auction.rigUri)}
-                          rigType={auction.rigType}
+
                           size="md-lg"
                         />
                         {selectedIndex === index && (
@@ -160,7 +160,6 @@ export default function AuctionsPage() {
                       <TokenLogo
                         name={selectedAuction.tokenName}
                         logoUrl={getLogoUrl(selectedAuction.rigUri)}
-                        rigType={selectedAuction.rigType}
                         size="md-lg"
                       />
                       <div>
@@ -199,7 +198,7 @@ export default function AuctionsPage() {
                     : `-$${Math.abs(selectedAuction.profit).toFixed(2)} loss`}
                 </div>
                 <Link
-                  href={`/rig/${selectedAuction.rigAddress}`}
+                  href={`/fundraiser/${selectedAuction.rigAddress}`}
                   className="h-10 px-6 bg-white text-black text-[14px] font-semibold rounded-xl hover:bg-zinc-200 transition-colors inline-flex items-center justify-center"
                 >
                   Buy Auction

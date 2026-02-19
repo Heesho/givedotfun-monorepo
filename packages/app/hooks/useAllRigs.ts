@@ -14,7 +14,6 @@ export type RigListItem = {
   lpPairAddress: `0x${string}`;   // LP pair address
   tokenName: string;
   tokenSymbol: string;
-  rigType: string;                // "mine", "spin", "fund"
   rigUri: string;
   launcher: `0x${string}`;
   // Market data (from subgraph)
@@ -113,7 +112,6 @@ function unitToRigListItem(u: SubgraphUnitListItem): RigListItem {
     lpPairAddress: (u.lpPair?.toLowerCase() ?? "0x0") as `0x${string}`,
     tokenName: u.name,
     tokenSymbol: u.symbol,
-    rigType: u.rig.rigType,
     rigUri: u.rig.uri,
     launcher: u.rig.launcher.id.toLowerCase() as `0x${string}`,
     priceUsd,

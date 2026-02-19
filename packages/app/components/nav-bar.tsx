@@ -9,7 +9,7 @@ export function NavBar() {
   const pathname = usePathname();
 
   // Check if we're on a rig detail page
-  const isRigPage = pathname.startsWith("/rig/");
+  const isRigPage = pathname.startsWith("/fundraiser/");
 
   const navItems: Array<{
     href: "/explore" | "/launch" | "/info" | "/profile";

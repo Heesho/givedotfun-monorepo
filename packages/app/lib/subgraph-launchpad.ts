@@ -3,7 +3,7 @@ import { GraphQLClient, gql } from "graphql-request";
 // Subgraph URL (Goldsky)
 export const LAUNCHPAD_SUBGRAPH_URL =
   process.env.NEXT_PUBLIC_LAUNCHPAD_SUBGRAPH_URL ||
-  "https://api.goldsky.com/api/public/project_cmgscxhw81j5601xmhgd42rej/subgraphs/farplace/1.0.0/gn";
+  "https://api.goldsky.com/api/public/project_cmgscxhw81j5601xmhgd42rej/subgraphs/givedotfun/1.0.0/gn";
 
 const client = new GraphQLClient(LAUNCHPAD_SUBGRAPH_URL);
 
@@ -37,7 +37,6 @@ export type SubgraphRig = {
     lastActivityAt: string; // BigInt timestamp
     createdAt: string;
   };
-  rigType: string; // "mine", "spin", "fund"
   launcher: { id: string };
   auction: string; // Bytes
   quoteToken: string; // Bytes
@@ -51,27 +50,7 @@ export type SubgraphRig = {
   lastActivityAt: string; // BigInt
   createdAt: string;
   createdAtBlock: string;
-  mineRig: {
-    id: string;
-    capacity: string;
-    initialUps: string;
-    tailUps: string;
-    halvingAmount: string;
-    epochPeriod: string;
-    priceMultiplier: string;
-    minInitPrice: string;
-  } | null;
-  spinRig: {
-    id: string;
-    initialUps: string;
-    tailUps: string;
-    halvingPeriod: string;
-    epochPeriod: string;
-    priceMultiplier: string;
-    minInitPrice: string;
-    currentOdds: string[];
-  } | null;
-  fundRig: {
+  fundraiser: {
     id: string;
     initialEmission: string;
     minEmission: string;
@@ -102,7 +81,6 @@ export type SubgraphUnitListItem = {
   dayData?: { close: string; open: string; timestamp: string }[];
   rig: {
     id: string; // Rig contract address
-    rigType: string;
     uri: string;
     launcher: { id: string };
     auction: string;
@@ -113,39 +91,8 @@ export type SubgraphAccount = {
   id: string;
   totalSwapVolume: string;
   totalRigSpend: string;
-  totalMined: string;
-  totalWon: string;
+  totalDonated: string;
   lastActivityAt: string;
-};
-
-// Mine event for activity feed
-export type SubgraphMineEvent = {
-  id: string;
-  mineRig: { id: string };
-  miner: { id: string };
-  prevMiner: { id: string } | null;
-  slotIndex: string;
-  epochId: string;
-  uri: string;
-  price: string; // What new miner paid
-  minted: string; // Tokens minted for prev miner
-  earned: string; // Fee earned by prev miner
-  timestamp: string;
-  blockNumber: string;
-  txHash: string;
-};
-
-export type SubgraphSpin = {
-  id: string;
-  spinner: { id: string };
-  epochId: string;
-  price: string; // BigDecimal (USDC amount)
-  uri: string;
-  won: boolean;
-  winAmount: string; // BigDecimal (Unit tokens won)
-  oddsBps: string;
-  timestamp: string;
-  txHash: string;
 };
 
 export type SubgraphDonation = {
@@ -190,7 +137,6 @@ const RIG_FIELDS = `
     lastActivityAt
     createdAt
   }
-  rigType
   launcher { id }
   auction
   quoteToken
@@ -204,27 +150,7 @@ const RIG_FIELDS = `
   lastActivityAt
   createdAt
   createdAtBlock
-  mineRig {
-    id
-    capacity
-    initialUps
-    tailUps
-    halvingAmount
-    epochPeriod
-    priceMultiplier
-    minInitPrice
-  }
-  spinRig {
-    id
-    initialUps
-    tailUps
-    halvingPeriod
-    epochPeriod
-    priceMultiplier
-    minInitPrice
-    currentOdds
-  }
-  fundRig {
+  fundraiser {
     id
     initialEmission
     minEmission
@@ -261,7 +187,6 @@ const UNIT_LIST_FIELDS = `
   }
   rig {
     id
-    rigType
     uri
     launcher { id }
     auction
@@ -275,7 +200,7 @@ const UNIT_LIST_FIELDS = `
 // Get global protocol stats
 export const GET_LAUNCHPAD_STATS_QUERY = gql`
   query GetProtocolStats {
-    protocol(id: "farplace") {
+    protocol(id: "givedotfun") {
       id
       totalUnits
       totalRigs
@@ -339,7 +264,6 @@ export const SEARCH_RIGS_QUERY = gql`
       createdAt
       rig {
         id
-        rigType
         uri
         launcher { id }
         auction
@@ -375,59 +299,6 @@ export const GET_TOP_RIGS_QUERY = gql`
   }
 `;
 
-// Get mine actions for a rig (activity feed)
-export const GET_MINES_QUERY = gql`
-  query GetMines($rigId: String!, $first: Int!, $skip: Int!) {
-    mineActions(
-      where: { mineRig_: { id: $rigId } }
-      orderBy: timestamp
-      orderDirection: desc
-      first: $first
-      skip: $skip
-    ) {
-      id
-      mineRig { id }
-      miner { id }
-      prevMiner { id }
-      slotIndex
-      epochId
-      uri
-      price
-      minted
-      earned
-      timestamp
-      blockNumber
-      txHash
-    }
-  }
-`;
-
-// Get all recent mine actions (global activity feed)
-export const GET_ALL_MINES_QUERY = gql`
-  query GetAllMines($first: Int!, $skip: Int!) {
-    mineActions(
-      orderBy: timestamp
-      orderDirection: desc
-      first: $first
-      skip: $skip
-    ) {
-      id
-      mineRig { id }
-      miner { id }
-      prevMiner { id }
-      slotIndex
-      epochId
-      uri
-      price
-      minted
-      earned
-      timestamp
-      blockNumber
-      txHash
-    }
-  }
-`;
-
 // Get account stats
 export const GET_ACCOUNT_QUERY = gql`
   query GetAccount($id: ID!) {
@@ -435,43 +306,17 @@ export const GET_ACCOUNT_QUERY = gql`
       id
       totalSwapVolume
       totalRigSpend
-      totalMined
-      totalWon
+      totalDonated
       lastActivityAt
     }
   }
 `;
 
-// Get spins for a SpinRig
-export const GET_SPINS_QUERY = gql`
-  query GetSpins($rigAddress: String!, $limit: Int!) {
-    spins(
-      where: { spinRig: $rigAddress }
-      orderBy: timestamp
-      orderDirection: desc
-      first: $limit
-    ) {
-      id
-      spinner {
-        id
-      }
-      epochId
-      price
-      uri
-      won
-      winAmount
-      oddsBps
-      timestamp
-      txHash
-    }
-  }
-`;
-
-// Get donations for a FundRig
+// Get donations for a Fundraiser
 export const GET_DONATIONS_QUERY = gql`
   query GetDonations($rigAddress: String!, $limit: Int!) {
     donations(
-      where: { fundRig: $rigAddress }
+      where: { fundraiser: $rigAddress }
       orderBy: timestamp
       orderDirection: desc
       first: $limit
@@ -708,48 +553,6 @@ export async function getRig(id: string): Promise<SubgraphRig | null> {
   }
 }
 
-// Get mine actions for a rig (activity feed)
-export async function getMines(
-  rigId: string,
-  first = 50,
-  skip = 0
-): Promise<SubgraphMineEvent[]> {
-  try {
-    const data = await client.request<{ mineActions: SubgraphMineEvent[] }>(
-      GET_MINES_QUERY,
-      {
-        rigId: rigId.toLowerCase(),
-        first,
-        skip,
-      }
-    );
-    return data.mineActions ?? [];
-  } catch (error) {
-    console.error("[getMines] Error:", error);
-    return [];
-  }
-}
-
-// Get all recent mine actions (global activity feed)
-export async function getAllMines(
-  first = 50,
-  skip = 0
-): Promise<SubgraphMineEvent[]> {
-  try {
-    const data = await client.request<{ mineActions: SubgraphMineEvent[] }>(
-      GET_ALL_MINES_QUERY,
-      {
-        first,
-        skip,
-      }
-    );
-    return data.mineActions ?? [];
-  } catch (error) {
-    console.error("[getAllMines] Error:", error);
-    return [];
-  }
-}
-
 export async function getAccount(id: string): Promise<SubgraphAccount | null> {
   try {
     const data = await client.request<{ account: SubgraphAccount | null }>(
@@ -858,27 +661,7 @@ export function formatSubgraphAddress(address: string): `0x${string}` {
   return address.toLowerCase() as `0x${string}`;
 }
 
-// Get spins for a SpinRig
-export async function getSpins(
-  rigAddress: string,
-  limit = 20
-): Promise<SubgraphSpin[]> {
-  try {
-    const data = await client.request<{ spins: SubgraphSpin[] }>(
-      GET_SPINS_QUERY,
-      {
-        rigAddress: rigAddress.toLowerCase(),
-        limit,
-      }
-    );
-    return data.spins ?? [];
-  } catch (error) {
-    console.error("[getSpins] Error:", error);
-    return [];
-  }
-}
-
-// Get donations for a FundRig
+// Get donations for a Fundraiser
 export async function getDonations(
   rigAddress: string,
   limit = 20

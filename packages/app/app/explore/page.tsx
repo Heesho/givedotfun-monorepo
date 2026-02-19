@@ -171,7 +171,7 @@ export default function ExplorePage() {
                     exit={{ opacity: 0 }}
                   >
                     <Link
-                      href={`/rig/${rig.address}`}
+                      href={`/fundraiser/${rig.address}`}
                       className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
                     >
                       {/* Left side - Logo, Symbol, Name */}
@@ -179,7 +179,6 @@ export default function ExplorePage() {
                         <TokenLogo
                           name={rig.tokenName}
                           logoUrl={getLogoUrl(rig.rigUri)}
-                          rigType={rig.rigType}
                           size="md-lg"
                         />
                         <div>

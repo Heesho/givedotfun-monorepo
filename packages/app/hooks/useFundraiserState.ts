@@ -3,21 +3,21 @@ import { base } from "wagmi/chains";
 import { zeroAddress } from "viem";
 import {
   CONTRACT_ADDRESSES,
-  FUND_MULTICALL_ABI,
-  type FundRigState,
+  FUNDRAISER_MULTICALL_ABI,
+  type FundraiserState,
   type ClaimableEpoch,
 } from "@/lib/contracts";
 
-export function useFundRigState(
+export function useFundraiserState(
   rigAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined,
   enabled: boolean = true,
 ) {
-  const multicallAddr = CONTRACT_ADDRESSES.fundMulticall as `0x${string}`;
+  const multicallAddr = CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
 
   const { data: rawState, refetch, isLoading } = useReadContract({
     address: multicallAddr,
-    abi: FUND_MULTICALL_ABI,
+    abi: FUNDRAISER_MULTICALL_ABI,
     functionName: "getRig",
     args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
@@ -27,13 +27,13 @@ export function useFundRigState(
     },
   });
 
-  const fundState = rawState as FundRigState | undefined;
-  const currentEpoch = fundState?.currentEpoch ?? 0n;
+  const fundraiserState = rawState as FundraiserState | undefined;
+  const currentEpoch = fundraiserState?.currentEpoch ?? 0n;
 
   // Fetch claimable epochs (from epoch 0 to currentEpoch)
   const { data: rawClaimable } = useReadContract({
     address: multicallAddr,
-    abi: FUND_MULTICALL_ABI,
+    abi: FUNDRAISER_MULTICALL_ABI,
     functionName: "getClaimableEpochs",
     args: rigAddress && account
       ? [rigAddress, account, 0n, currentEpoch]
@@ -48,7 +48,7 @@ export function useFundRigState(
   // Fetch total pending rewards
   const { data: rawPending } = useReadContract({
     address: multicallAddr,
-    abi: FUND_MULTICALL_ABI,
+    abi: FUNDRAISER_MULTICALL_ABI,
     functionName: "getTotalPendingRewards",
     args: rigAddress && account
       ? [rigAddress, account, 0n, currentEpoch]
@@ -69,7 +69,7 @@ export function useFundRigState(
     : 0n;
 
   return {
-    fundState,
+    fundraiserState,
     claimableEpochs,
     totalPending,
     refetch,

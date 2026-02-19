@@ -1,14 +1,9 @@
 import { useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
-import { zeroAddress } from "viem";
 import {
   CONTRACT_ADDRESSES,
-  MULTICALL_ABI,
-  CORE_ABI,
   RIG_ABI,
   ERC20_ABI,
-  type RigType,
-  type RigState,
 } from "@/lib/contracts";
 
 export type RigInfo = {
@@ -22,43 +17,29 @@ export type RigInfo = {
   tokenSymbol: string;
 };
 
-export function useRigState(
-  rigAddress: `0x${string}` | undefined,
-  account: `0x${string}` | undefined,
-  slotIndex: bigint = 0n, // Default to slot 0 for single-slot rigs
-  multicallAddress?: `0x${string}`,
-  enabled: boolean = true,
-) {
-  const { data: rawRigState, refetch, isLoading, error } = useReadContract({
-    address: multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`,
-    abi: MULTICALL_ABI,
-    functionName: "getRig",
-    args: rigAddress ? [rigAddress, slotIndex, account ?? zeroAddress] : undefined,
-    chainId: base.id,
-    query: {
-      enabled: !!rigAddress && enabled,
-      refetchInterval: 5_000,
-      refetchOnWindowFocus: false,
-    },
-  });
-
-  const rigState = rawRigState as RigState | undefined;
-
-  return {
-    rigState,
-    refetch,
-    isLoading,
-    error,
-  };
-}
+// Simplified core ABI for reading rig-to-auction and rig-to-LP mappings
+const CORE_ABI = [
+  {
+    inputs: [{ internalType: "address", name: "rig", type: "address" }],
+    name: "rigToAuction",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "rig", type: "address" }],
+    name: "rigToLP",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
 
 export function useRigInfo(
   rigAddress: `0x${string}` | undefined,
   coreAddress?: `0x${string}`,
-  rigType?: RigType,
 ) {
   const resolvedCore = coreAddress ?? CONTRACT_ADDRESSES.core as `0x${string}`;
-  const hasRigType = !!rigType;
 
   // Get unit token address from rig contract
   const { data: unitAddress } = useReadContract({
@@ -78,18 +59,7 @@ export function useRigInfo(
     functionName: "quote",
     chainId: base.id,
     query: {
-      enabled: !!rigAddress && hasRigType && rigType !== "fund",
-    },
-  });
-
-  // Fund rigs also use quote
-  const { data: fundQuoteAddress } = useReadContract({
-    address: rigAddress,
-    abi: RIG_ABI,
-    functionName: "quote",
-    chainId: base.id,
-    query: {
-      enabled: !!rigAddress && hasRigType && rigType === "fund",
+      enabled: !!rigAddress,
     },
   });
 
@@ -165,7 +135,7 @@ export function useRigInfo(
           unitAddress: unitAddress as `0x${string}`,
           auctionAddress: auctionAddress as `0x${string}`,
           lpAddress: lpAddress as `0x${string}`,
-          quoteAddress: (fundQuoteAddress as `0x${string}`) ?? (quoteAddress as `0x${string}`) ?? CONTRACT_ADDRESSES.usdc,
+          quoteAddress: (quoteAddress as `0x${string}`) ?? CONTRACT_ADDRESSES.usdc,
           launcher: launcher as `0x${string}`,
           tokenName: (tokenName as string) ?? "",
           tokenSymbol: (tokenSymbol as string) ?? "",

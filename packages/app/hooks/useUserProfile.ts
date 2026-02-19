@@ -15,7 +15,6 @@ export type UserHolding = {
   unitAddress: `0x${string}`;   // Unit token address
   tokenName: string;
   tokenSymbol: string;
-  rigType: string;
   rigUri: string;
   balance: bigint;              // Raw token balance (18 decimals)
   balanceNum: number;           // Formatted balance
@@ -27,7 +26,6 @@ export type UserLaunchedRig = {
   address: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  rigType: string;
   rigUri: string;
   totalMinted: number;
   unitPrice: number;
@@ -102,7 +100,6 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
         unitAddress: unit.id.toLowerCase() as `0x${string}`,
         tokenName: unit.name,
         tokenSymbol: unit.symbol,
-        rigType: unit.rig?.rigType ?? "mine",
         rigUri: unit.rig?.uri ?? "",
         balance,
         balanceNum,
@@ -135,7 +132,6 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
           address: (u.rig?.id?.toLowerCase() ?? "0x0") as `0x${string}`,
           tokenName: u.name,
           tokenSymbol: u.symbol,
-          rigType: u.rig?.rigType ?? "mine",
           rigUri: u.rig?.uri ?? "",
           totalMinted,
           unitPrice,

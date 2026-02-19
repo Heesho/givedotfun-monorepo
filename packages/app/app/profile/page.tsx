@@ -35,7 +35,7 @@ function HoldingRow({ holding }: { holding: UserHolding }) {
   const { logoUrl } = useTokenMetadata(holding.rigUri);
 
   return (
-    <Link href={`/rig/${holding.address}`} className="block">
+    <Link href={`/fundraiser/${holding.address}`} className="block">
       <div className="flex items-center justify-between py-3 hover:bg-secondary/30 -mx-4 px-4 transition-colors rounded-lg">
         <div className="flex items-center gap-3 min-w-0">
           <TokenLogo name={holding.tokenName} logoUrl={logoUrl} size="md-lg" />
@@ -71,7 +71,7 @@ function LaunchedRow({ rig }: { rig: UserLaunchedRig }) {
   const { logoUrl } = useTokenMetadata(rig.rigUri);
 
   return (
-    <Link href={`/rig/${rig.address}`} className="block">
+    <Link href={`/fundraiser/${rig.address}`} className="block">
       <div className="flex items-center justify-between py-3 hover:bg-secondary/30 -mx-4 px-4 transition-colors rounded-lg">
         <div className="flex items-center gap-3 min-w-0">
           <TokenLogo name={rig.tokenName} logoUrl={logoUrl} size="md-lg" />
@@ -412,7 +412,7 @@ export default function ProfilePage() {
                     No holdings yet
                   </div>
                   <div className="text-[13px] text-muted-foreground mb-4">
-                    Mine, spin, or trade to earn coins
+                    Donate or trade to earn coins
                   </div>
                   <Link
                     href="/explore"

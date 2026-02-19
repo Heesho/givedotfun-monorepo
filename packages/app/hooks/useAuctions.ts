@@ -3,13 +3,10 @@ import { useReadContracts } from "wagmi";
 import { base } from "wagmi/chains";
 import { zeroAddress, formatUnits } from "viem";
 import {
-  MULTICALL_ABI,
-  SPIN_MULTICALL_ABI,
-  FUND_MULTICALL_ABI,
+  FUNDRAISER_MULTICALL_ABI,
   getMulticallAddress,
   QUOTE_TOKEN_DECIMALS,
   type AuctionState,
-  type RigType,
 } from "@/lib/contracts";
 import { useRigList } from "./useAllRigs";
 import { useFarcaster } from "./useFarcaster";
@@ -19,7 +16,6 @@ export type AuctionItem = {
   rigAddress: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  rigType: string;
   rigUri: string;
   // Auction state
   lpPrice: bigint; // Current LP cost (18 dec)
@@ -36,24 +32,14 @@ export type AuctionItem = {
 
 type IndexedRig = {
   rigAddress: `0x${string}`;
-  rigType: string;
   unit: SubgraphUnitListItem;
 };
-
-function getMulticallAbi(rigType: RigType) {
-  switch (rigType) {
-    case "spin": return SPIN_MULTICALL_ABI;
-    case "fund": return FUND_MULTICALL_ABI;
-    case "mine":
-    default: return MULTICALL_ABI;
-  }
-}
 
 export function useAuctions() {
   const { units: allUnits, isLoading: isLoadingList } = useRigList("top", 100);
   const { address: account } = useFarcaster();
 
-  // Build flat contract call array, using the correct multicall + ABI per rig type
+  // Build flat contract call array — all rigs use fundraiser multicall
   const { contracts, indexToRig } = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contractCalls: any[] = [];
@@ -61,19 +47,17 @@ export function useAuctions() {
 
     for (const u of allUnits) {
       if (!u.rig?.uri?.startsWith("ipfs://")) continue;
-      const rigType = u.rig.rigType as RigType;
       const rigAddr = u.rig.id.toLowerCase() as `0x${string}`;
-      const multicall = getMulticallAddress(rigType);
-      const abi = getMulticallAbi(rigType);
+      const multicall = getMulticallAddress();
 
       contractCalls.push({
         address: multicall,
-        abi,
+        abi: FUNDRAISER_MULTICALL_ABI,
         functionName: "getAuction" as const,
         args: [rigAddr, account ?? zeroAddress] as const,
         chainId: base.id,
       });
-      mapping.push({ rigAddress: rigAddr, rigType, unit: u });
+      mapping.push({ rigAddress: rigAddr, unit: u });
     }
 
     return { contracts: contractCalls, indexToRig: mapping };
@@ -96,9 +80,9 @@ export function useAuctions() {
         if (result.status !== "success" || !result.result) return null;
         const state = result.result as AuctionState;
 
-        const { rigAddress, rigType, unit } = indexToRig[index];
+        const { rigAddress, unit } = indexToRig[index];
 
-        // Calculate profit/loss (same math as useAuctionState.ts)
+        // Calculate profit/loss
         const lpCostInQuote = (state.price * state.lpTokenPrice) / BigInt(1e18);
         const lpCostScaled = lpCostInQuote / BigInt(1e12); // normalize to 6 decimals
 
@@ -112,7 +96,6 @@ export function useAuctions() {
           rigAddress,
           tokenName: unit.name,
           tokenSymbol: unit.symbol,
-          rigType,
           rigUri: unit.rig.uri,
           lpPrice: state.price,
           quoteAccumulated: state.quoteAccumulated,

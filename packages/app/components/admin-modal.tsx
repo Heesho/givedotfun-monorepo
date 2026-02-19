@@ -1,30 +1,22 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Plus, Minus, Camera, Loader2 } from "lucide-react";
+import { X, Camera, Loader2 } from "lucide-react";
 import { encodeFunctionData } from "viem";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useBatchedTransaction, type Call } from "@/hooks/useBatchedTransaction";
 import { ipfsToHttp } from "@/lib/constants";
 
-type RigType = "mine" | "spin" | "fund";
-
 type AdminModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  rigType: RigType;
   rigAddress?: `0x${string}`;
   tokenSymbol?: string;
   tokenName?: string;
   currentConfig: {
-    // Common
     treasury: string;
     team: string | null;
     uri: string;
-    // Mine specific
-    capacity?: number;
-    entropyEnabled?: boolean;
-    // Fund specific
     recipient?: string | null;
   };
 };
@@ -32,8 +24,6 @@ type AdminModalProps = {
 function isValidAddress(address: string): boolean {
   return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
-
-const MAX_CAPACITY = 25;
 
 // ABI fragments for setter functions
 const SET_URI_ABI = [
@@ -66,26 +56,6 @@ const SET_TEAM_ABI = [
   },
 ] as const;
 
-const SET_CAPACITY_ABI = [
-  {
-    inputs: [{ internalType: "uint256", name: "_capacity", type: "uint256" }],
-    name: "setCapacity",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
-const SET_ENTROPY_ABI = [
-  {
-    inputs: [{ internalType: "bool", name: "_enabled", type: "bool" }],
-    name: "setEntropyEnabled",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
-
 const SET_RECIPIENT_ABI = [
   {
     inputs: [{ internalType: "address", name: "_recipient", type: "address" }],
@@ -99,7 +69,6 @@ const SET_RECIPIENT_ABI = [
 export function AdminModal({
   isOpen,
   onClose,
-  rigType,
   rigAddress,
   tokenSymbol = "TOKEN",
   tokenName = "Token",
@@ -121,11 +90,7 @@ export function AdminModal({
   const [treasury, setTreasury] = useState(currentConfig.treasury);
   const [team, setTeam] = useState(currentConfig.team || "");
 
-  // Mine specific state
-  const [capacity, setCapacity] = useState(currentConfig.capacity || 1);
-  const [entropyEnabled, setEntropyEnabled] = useState(currentConfig.entropyEnabled ?? false);
-
-  // Fund specific state
+  // Recipient state
   const [recipient, setRecipient] = useState(currentConfig.recipient || "");
 
   // Transaction state
@@ -145,8 +110,6 @@ export function AdminModal({
       metadataLoadedRef.current = false;
       setTreasury(currentConfig.treasury);
       setTeam(currentConfig.team || "");
-      setCapacity(currentConfig.capacity || 1);
-      setEntropyEnabled(currentConfig.entropyEnabled ?? false);
       setRecipient(currentConfig.recipient || "");
       setLogoFile(null);
       setLogoPreview(null);
@@ -194,7 +157,7 @@ export function AdminModal({
   // Validation
   const isTreasuryValid = isValidAddress(treasury);
   const isTeamValid = team === "" || isValidAddress(team);
-  const isRecipientValid = rigType !== "fund" || isValidAddress(recipient);
+  const isRecipientValid = isValidAddress(recipient);
   // Check if metadata changed
   const metadataChanged =
     description !== (existingMetadata?.description || "") ||
@@ -302,24 +265,6 @@ export function AdminModal({
         call = { to: rigAddress, data, value: 0n };
         break;
       }
-      case "capacity": {
-        const data = encodeFunctionData({
-          abi: SET_CAPACITY_ABI,
-          functionName: "setCapacity",
-          args: [BigInt(capacity)],
-        });
-        call = { to: rigAddress, data, value: 0n };
-        break;
-      }
-      case "multipliers": {
-        const data = encodeFunctionData({
-          abi: SET_ENTROPY_ABI,
-          functionName: "setEntropyEnabled",
-          args: [entropyEnabled],
-        });
-        call = { to: rigAddress, data, value: 0n };
-        break;
-      }
       case "recipient": {
         const data = encodeFunctionData({
           abi: SET_RECIPIENT_ABI,
@@ -338,25 +283,6 @@ export function AdminModal({
         setPendingField(null);
       }
     }
-  };
-
-  // Capacity controls
-  const minCapacity = currentConfig.capacity || 1;
-
-  // Ensure local capacity is never below on-chain minimum (can happen when data loads late)
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (capacity < minCapacity) setCapacity(minCapacity);
-  }, [capacity, minCapacity]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-  const canIncreaseCapacity = capacity < MAX_CAPACITY;
-
-  const increaseCapacity = () => {
-    if (capacity < MAX_CAPACITY) setCapacity(capacity + 1);
-  };
-
-  const decreaseCapacity = () => {
-    if (capacity > minCapacity) setCapacity(capacity - 1);
   };
 
   if (!isOpen) return null;
@@ -438,7 +364,7 @@ export function AdminModal({
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your coin..."
+              placeholder="Describe your fundraiser..."
               rows={3}
               className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600 resize-none"
             />
@@ -456,19 +382,17 @@ export function AdminModal({
             />
           </div>
 
-          {/* Recipient Name (fund rigs only, stored in metadata) */}
-          {rigType === "fund" && (
-            <div className="mb-4">
-              <label className={labelClass}>Recipient Name</label>
-              <input
-                type="text"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Who receives donations"
-                className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
-              />
-            </div>
-          )}
+          {/* Recipient Name (stored in metadata) */}
+          <div className="mb-4">
+            <label className={labelClass}>Recipient Name</label>
+            <input
+              type="text"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+              placeholder="Who receives donations"
+              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
+            />
+          </div>
 
           {/* Links */}
           <div className="mb-4">
@@ -539,30 +463,28 @@ export function AdminModal({
             )}
           </button>
 
-          {/* Fund-specific: Recipient */}
-          {rigType === "fund" && (
-            <div className="mb-4">
-              <label className={labelClass}>Recipient</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={recipient}
-                  onChange={(e) => setRecipient(e.target.value)}
-                  placeholder="0x..."
-                  className={inputClass}
-                />
-                <button
-                  onClick={() => handleSave("recipient")}
-                  disabled={isSaving || !isRecipientValid || recipient === currentConfig.recipient}
-                  className={saveBtnClass("recipient", isRecipientValid && recipient !== currentConfig.recipient)}
-                >
-                  {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : "Save"}
-                </button>
-              </div>
+          {/* Recipient */}
+          <div className="mb-4">
+            <label className={labelClass}>Recipient</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                placeholder="0x..."
+                className={inputClass}
+              />
+              <button
+                onClick={() => handleSave("recipient")}
+                disabled={isSaving || !isRecipientValid || recipient === currentConfig.recipient}
+                className={saveBtnClass("recipient", isRecipientValid && recipient !== currentConfig.recipient)}
+              >
+                {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : "Save"}
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Treasury */}
           <div className="mb-4">
@@ -609,103 +531,6 @@ export function AdminModal({
               </button>
             </div>
           </div>
-
-          {/* Mine-specific: Capacity */}
-          {rigType === "mine" && (
-            <div className="mb-4">
-              <label className={labelClass}>Slots</label>
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={decreaseCapacity}
-                  disabled={capacity <= minCapacity}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                    capacity <= minCapacity
-                      ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-                      : "bg-zinc-800 text-white hover:bg-zinc-700"
-                  }`}
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <div className="flex-1 text-center">
-                  <div className="text-2xl font-bold tabular-nums">{capacity}</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {capacity === minCapacity ? "Slots can only be added" : `+${capacity - minCapacity} from current`}
-                  </div>
-                </div>
-                <button
-                  onClick={increaseCapacity}
-                  disabled={!canIncreaseCapacity}
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-                    !canIncreaseCapacity
-                      ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-                      : "bg-zinc-800 text-white hover:bg-zinc-700"
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-              <button
-                onClick={() => handleSave("capacity")}
-                disabled={isSaving || capacity <= minCapacity}
-                className={`w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all ${
-                  successField === "capacity"
-                    ? "bg-zinc-300 text-black"
-                    : isSaving && pendingField === "capacity"
-                    ? "bg-zinc-700 text-zinc-400"
-                    : capacity > minCapacity
-                    ? "bg-white text-black hover:bg-zinc-200"
-                    : "bg-zinc-800 text-zinc-600"
-                }`}
-              >
-                {successField === "capacity" ? (
-                  "Saved"
-                ) : isSaving && pendingField === "capacity" ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Saving...
-                  </span>
-                ) : capacity > minCapacity ? (
-                  "Save"
-                ) : (
-                  "Save"
-                )}
-              </button>
-            </div>
-          )}
-
-          {/* Mine-specific: Multipliers */}
-          {rigType === "mine" && (
-            <div className="mb-4 flex items-center justify-between">
-              <label className="text-muted-foreground text-[12px]">Multipliers</label>
-              <button
-                onClick={() => {
-                  const newValue = !entropyEnabled;
-                  setEntropyEnabled(newValue);
-                  if (!rigAddress) return;
-                  setPendingField("multipliers");
-                  const data = encodeFunctionData({
-                    abi: SET_ENTROPY_ABI,
-                    functionName: "setEntropyEnabled",
-                    args: [newValue],
-                  });
-                  execute([{ to: rigAddress, data, value: 0n }]).catch(() => {
-                    setPendingField(null);
-                    setEntropyEnabled(!newValue);
-                  });
-                }}
-                disabled={isSaving}
-                className={saveBtnClass("multipliers", true)}
-              >
-                {successField === "multipliers" ? "Saved" : isSaving && pendingField === "multipliers" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : entropyEnabled ? (
-                  "Disable"
-                ) : (
-                  "Enable"
-                )}
-              </button>
-            </div>
-          )}
 
           <div className="pb-6" />
         </div>

@@ -12,37 +12,20 @@ const sizeClasses = {
 
 export type TokenLogoSize = keyof typeof sizeClasses;
 
-function rigTypeGradient(rigType: string): string {
-  switch (rigType) {
-    case "spin":
-      return "from-purple-500 to-purple-700";
-    case "fund":
-      return "from-emerald-500 to-emerald-700";
-    case "mine":
-    default:
-      return "from-blue-500 to-blue-700";
-  }
-}
-
 type TokenLogoProps = {
   name: string;
   logoUrl?: string | null;
   size?: TokenLogoSize;
-  rigType?: string;
 };
 
 export function TokenLogo({
   name,
   logoUrl,
   size = "md-lg",
-  rigType,
 }: TokenLogoProps) {
   const [imgError, setImgError] = useState(false);
   const classes = sizeClasses[size];
-  const gradient = rigType
-    ? rigTypeGradient(rigType)
-    : "from-zinc-500 to-zinc-700";
-  const shadowClass = rigType ? " shadow-lg" : "";
+  const gradient = "from-emerald-500 to-emerald-700";
 
   if (logoUrl && !imgError) {
     return (
@@ -57,7 +40,7 @@ export function TokenLogo({
 
   return (
     <div
-      className={`${classes.container} rounded-full flex items-center justify-center font-semibold bg-gradient-to-br ${gradient} text-white${shadowClass}`}
+      className={`${classes.container} rounded-full flex items-center justify-center font-semibold bg-gradient-to-br ${gradient} text-white shadow-lg`}
     >
       {name.charAt(0).toUpperCase()}
     </div>
