@@ -1,26 +1,26 @@
 import { BigDecimal, BigInt, Address } from '@graphprotocol/graph-ts'
 import {
-  FundRig__Funded as FundedEvent,
-  FundRig__Claimed as ClaimedEvent,
-  FundRig__TreasuryFee as FundTreasuryFeeEvent,
-  FundRig__TeamFee as FundTeamFeeEvent,
-  FundRig__ProtocolFee as ProtocolFeeEvent,
-  FundRig__RecipientSet as RecipientSetEvent,
-  FundRig__UriSet as UriSetEvent,
-  FundRig__TreasurySet as TreasurySetEvent,
-  FundRig__TeamSet as TeamSetEvent,
-  FundRig as FundRigContract,
-} from '../../generated/templates/FundRig/FundRig'
-import { FundCore as FundCoreContract } from '../../generated/templates/FundRig/FundCore'
+  Fundraiser__Funded as FundedEvent,
+  Fundraiser__Claimed as ClaimedEvent,
+  Fundraiser__TreasuryFee as FundTreasuryFeeEvent,
+  Fundraiser__TeamFee as FundTeamFeeEvent,
+  Fundraiser__ProtocolFee as ProtocolFeeEvent,
+  Fundraiser__RecipientSet as RecipientSetEvent,
+  Fundraiser__UriSet as UriSetEvent,
+  Fundraiser__TreasurySet as TreasurySetEvent,
+  Fundraiser__TeamSet as TeamSetEvent,
+  Fundraiser as FundraiserContract,
+} from '../../generated/templates/Fundraiser/Fundraiser'
+import { FundraiserCore as FundraiserCoreContract } from '../../generated/templates/Fundraiser/FundraiserCore'
 import {
   Rig,
-  FundRig,
-  FundRecipient,
-  FundDayData,
+  Fundraiser,
+  Recipient,
+  FundraiserDayData,
   Donation,
-  FundClaim,
-  FundDonor,
-  FundDayDonor,
+  Claim,
+  Donor,
+  DayDonor,
   Account,
   Unit,
   Protocol,
@@ -39,7 +39,7 @@ import {
   getOrCreateAccount,
 } from '../helpers'
 
-// Fee constants for FundRig (basis points)
+// Fee constants for Fundraiser (basis points)
 const RECIPIENT_BPS = BigInt.fromI32(5000) // 50%
 const TEAM_BPS = BigInt.fromI32(400) // 4%
 const PROTOCOL_BPS = BigInt.fromI32(100) // 1%
@@ -53,21 +53,21 @@ function isZeroAddress(address: Address): bool {
   return address.toHexString() == ADDRESS_ZERO
 }
 
-function getFundDonorId(fundRigId: string, donorId: string): string {
-  return fundRigId + '-' + donorId
+function getDonorId(fundraiserId: string, donorId: string): string {
+  return fundraiserId + '-' + donorId
 }
 
-function getFundDayDonorId(fundRigId: string, day: BigInt, donorId: string): string {
-  return fundRigId + '-' + day.toString() + '-' + donorId
+function getDayDonorId(fundraiserId: string, day: BigInt, donorId: string): string {
+  return fundraiserId + '-' + day.toString() + '-' + donorId
 }
 
-// Helper to get or create FundDayData
-function getOrCreateFundDayData(fundRig: FundRig, day: BigInt, timestamp: BigInt): FundDayData {
-  let id = fundRig.id + '-' + day.toString()
-  let dayData = FundDayData.load(id)
+// Helper to get or create FundraiserDayData
+function getOrCreateFundraiserDayData(fundraiser: Fundraiser, day: BigInt, timestamp: BigInt): FundraiserDayData {
+  let id = fundraiser.id + '-' + day.toString()
+  let dayData = FundraiserDayData.load(id)
   if (dayData === null) {
-    dayData = new FundDayData(id)
-    dayData.fundRig = fundRig.id
+    dayData = new FundraiserDayData(id)
+    dayData.fundraiser = fundraiser.id
     dayData.day = day
     dayData.totalDonated = ZERO_BD
     dayData.donorCount = ZERO_BI
@@ -79,8 +79,8 @@ function getOrCreateFundDayData(fundRig: FundRig, day: BigInt, timestamp: BigInt
 
 export function handleFunded(event: FundedEvent): void {
   let rigAddress = event.address.toHexString()
-  let fundRig = FundRig.load(rigAddress)
-  if (fundRig === null) return
+  let fundraiser = Fundraiser.load(rigAddress)
+  if (fundraiser === null) return
 
   let rig = Rig.load(rigAddress)
   if (rig === null) return
@@ -99,16 +99,16 @@ export function handleFunded(event: FundedEvent): void {
   donor.lastActivityAt = event.block.timestamp
   donor.save()
 
-  let fundRigContract = FundRigContract.bind(event.address)
+  let fundraiserContract = FundraiserContract.bind(event.address)
 
   // Resolve dynamic fee toggles (team/protocol can be disabled by setting address(0))
-  let teamResult = fundRigContract.try_team()
+  let teamResult = fundraiserContract.try_team()
   let hasTeam = !teamResult.reverted && !isZeroAddress(teamResult.value)
 
   let hasProtocol = false
-  let coreResult = fundRigContract.try_core()
+  let coreResult = fundraiserContract.try_core()
   if (!coreResult.reverted) {
-    let coreContract = FundCoreContract.bind(coreResult.value)
+    let coreContract = FundraiserCoreContract.bind(coreResult.value)
     let protocolResult = coreContract.try_protocolFeeAddress()
     hasProtocol = !protocolResult.reverted && !isZeroAddress(protocolResult.value)
   }
@@ -122,7 +122,7 @@ export function handleFunded(event: FundedEvent): void {
   // Create Donation entity
   let donationId = event.transaction.hash.toHexString() + '-' + event.logIndex.toString()
   let donation = new Donation(donationId)
-  donation.fundRig = fundRig.id
+  donation.fundraiser = fundraiser.id
   donation.donor = donor.id
   donation.recipient = event.params.recipient
   donation.day = day
@@ -136,19 +136,19 @@ export function handleFunded(event: FundedEvent): void {
   donation.txHash = event.transaction.hash
   donation.save()
 
-  // Update FundDayData
-  let dayData = getOrCreateFundDayData(fundRig, day, event.block.timestamp)
-  let dayEmissionResult = fundRigContract.try_getEpochEmission(day)
+  // Update FundraiserDayData
+  let dayData = getOrCreateFundraiserDayData(fundraiser, day, event.block.timestamp)
+  let dayEmissionResult = fundraiserContract.try_getEpochEmission(day)
   if (!dayEmissionResult.reverted) {
     dayData.emission = convertTokenToDecimal(dayEmissionResult.value, BI_18)
   }
 
   // Track unique donor for this day.
-  let dayDonorId = getFundDayDonorId(fundRig.id, day, donor.id)
-  let dayDonor = FundDayDonor.load(dayDonorId)
+  let dayDonorId = getDayDonorId(fundraiser.id, day, donor.id)
+  let dayDonor = DayDonor.load(dayDonorId)
   if (dayDonor === null) {
-    dayDonor = new FundDayDonor(dayDonorId)
-    dayDonor.fundRig = fundRig.id
+    dayDonor = new DayDonor(dayDonorId)
+    dayDonor.fundraiser = fundraiser.id
     dayDonor.day = day
     dayDonor.donor = donor.id
     dayDonor.firstDonationAt = event.block.timestamp
@@ -159,20 +159,20 @@ export function handleFunded(event: FundedEvent): void {
   dayData.totalDonated = dayData.totalDonated.plus(amount)
   dayData.save()
 
-  // Update FundRig state
-  fundRig.currentDay = day
-  fundRig.totalDonated = fundRig.totalDonated.plus(amount)
-  let fundDonorId = getFundDonorId(fundRig.id, donor.id)
-  let fundDonor = FundDonor.load(fundDonorId)
-  if (fundDonor === null) {
-    fundDonor = new FundDonor(fundDonorId)
-    fundDonor.fundRig = fundRig.id
-    fundDonor.donor = donor.id
-    fundDonor.firstDonationAt = event.block.timestamp
-    fundDonor.save()
-    fundRig.uniqueDonors = fundRig.uniqueDonors.plus(ONE_BI)
+  // Update Fundraiser state
+  fundraiser.currentDay = day
+  fundraiser.totalDonated = fundraiser.totalDonated.plus(amount)
+  let donorEntityId = getDonorId(fundraiser.id, donor.id)
+  let donorEntity = Donor.load(donorEntityId)
+  if (donorEntity === null) {
+    donorEntity = new Donor(donorEntityId)
+    donorEntity.fundraiser = fundraiser.id
+    donorEntity.donor = donor.id
+    donorEntity.firstDonationAt = event.block.timestamp
+    donorEntity.save()
+    fundraiser.uniqueDonors = fundraiser.uniqueDonors.plus(ONE_BI)
   }
-  fundRig.save()
+  fundraiser.save()
 
   // Update Rig activity (revenue tracking handled by TreasuryFee/TeamFee event handlers)
   rig.lastActivityAt = event.block.timestamp
@@ -186,8 +186,8 @@ export function handleFunded(event: FundedEvent): void {
 
 export function handleFundClaimed(event: ClaimedEvent): void {
   let rigAddress = event.address.toHexString()
-  let fundRig = FundRig.load(rigAddress)
-  if (fundRig === null) return
+  let fundraiser = Fundraiser.load(rigAddress)
+  if (fundraiser === null) return
 
   let rig = Rig.load(rigAddress)
   if (rig === null) return
@@ -206,10 +206,10 @@ export function handleFundClaimed(event: ClaimedEvent): void {
   claimer.lastActivityAt = event.block.timestamp
   claimer.save()
 
-  // Create FundClaim entity
+  // Create Claim entity
   let claimId = event.transaction.hash.toHexString() + '-' + event.logIndex.toString()
-  let claim = new FundClaim(claimId)
-  claim.fundRig = fundRig.id
+  let claim = new Claim(claimId)
+  claim.fundraiser = fundraiser.id
   claim.claimer = claimer.id
   claim.day = day
   claim.amount = amount
@@ -218,9 +218,9 @@ export function handleFundClaimed(event: ClaimedEvent): void {
   claim.txHash = event.transaction.hash
   claim.save()
 
-  // Update FundRig total minted
-  fundRig.totalMinted = fundRig.totalMinted.plus(amount)
-  fundRig.save()
+  // Update Fundraiser total minted
+  fundraiser.totalMinted = fundraiser.totalMinted.plus(amount)
+  fundraiser.save()
 
   // Update Rig total minted
   rig.totalMinted = rig.totalMinted.plus(amount)
@@ -290,20 +290,20 @@ export function handleFundProtocolFee(event: ProtocolFeeEvent): void {
 
 export function handleFundRecipientSet(event: RecipientSetEvent): void {
   let rigAddress = event.address.toHexString()
-  let fundRig = FundRig.load(rigAddress)
-  if (fundRig === null) return
+  let fundraiser = Fundraiser.load(rigAddress)
+  if (fundraiser === null) return
 
   let recipientId = rigAddress + '-' + event.params.recipient.toHexString()
-  let fundRecipient = FundRecipient.load(recipientId)
-  if (fundRecipient === null) {
-    fundRecipient = new FundRecipient(recipientId)
-    fundRecipient.fundRig = fundRig.id
-    fundRecipient.recipient = event.params.recipient
-    fundRecipient.totalReceived = ZERO_BD
-    fundRecipient.addedAt = event.block.timestamp
+  let recipient = Recipient.load(recipientId)
+  if (recipient === null) {
+    recipient = new Recipient(recipientId)
+    recipient.fundraiser = fundraiser.id
+    recipient.recipient = event.params.recipient
+    recipient.totalReceived = ZERO_BD
+    recipient.addedAt = event.block.timestamp
   }
-  fundRecipient.isActive = event.params.active
-  fundRecipient.save()
+  recipient.isActive = true
+  recipient.save()
 }
 
 export function handleFundUriSet(event: UriSetEvent): void {
@@ -317,18 +317,18 @@ export function handleFundUriSet(event: UriSetEvent): void {
 
 export function handleFundTreasurySet(event: TreasurySetEvent): void {
   let rigAddress = event.address.toHexString()
-  let fundRig = FundRig.load(rigAddress)
-  if (fundRig === null) return
+  let fundraiser = Fundraiser.load(rigAddress)
+  if (fundraiser === null) return
 
-  fundRig.treasury = event.params.treasury
-  fundRig.save()
+  fundraiser.treasury = event.params.treasury
+  fundraiser.save()
 }
 
 export function handleFundTeamSet(event: TeamSetEvent): void {
   let rigAddress = event.address.toHexString()
-  let fundRig = FundRig.load(rigAddress)
-  if (fundRig === null) return
+  let fundraiser = Fundraiser.load(rigAddress)
+  if (fundraiser === null) return
 
-  fundRig.team = event.params.team
-  fundRig.save()
+  fundraiser.team = event.params.team
+  fundraiser.save()
 }

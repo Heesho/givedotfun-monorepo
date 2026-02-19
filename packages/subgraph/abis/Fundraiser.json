@@ -54,7 +54,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct FundRig.Config",
+        "internalType": "struct Fundraiser.Config",
         "name": "_config",
         "type": "tuple"
       },
@@ -69,47 +69,47 @@
   },
   {
     "inputs": [],
-    "name": "FundRig__AlreadyClaimed",
+    "name": "Fundraiser__AlreadyClaimed",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__BelowMinDonation",
+    "name": "Fundraiser__BelowMinDonation",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__EmissionOutOfRange",
+    "name": "Fundraiser__EmissionOutOfRange",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__EpochDurationOutOfRange",
+    "name": "Fundraiser__EpochDurationOutOfRange",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__EpochNotEnded",
+    "name": "Fundraiser__EpochNotEnded",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__HalvingPeriodOutOfRange",
+    "name": "Fundraiser__HalvingPeriodOutOfRange",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__NoDonation",
+    "name": "Fundraiser__NoDonation",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__RecipientNotActive",
+    "name": "Fundraiser__RecipientNotActive",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FundRig__ZeroAddress",
+    "name": "Fundraiser__ZeroAddress",
     "type": "error"
   },
   {
@@ -134,7 +134,7 @@
         "type": "uint256"
       }
     ],
-    "name": "FundRig__Claimed",
+    "name": "Fundraiser__Claimed",
     "type": "event"
   },
   {
@@ -177,7 +177,7 @@
         "type": "string"
       }
     ],
-    "name": "FundRig__Funded",
+    "name": "Fundraiser__Funded",
     "type": "event"
   },
   {
@@ -202,7 +202,7 @@
         "type": "uint256"
       }
     ],
-    "name": "FundRig__ProtocolFee",
+    "name": "Fundraiser__ProtocolFee",
     "type": "event"
   },
   {
@@ -213,15 +213,9 @@
         "internalType": "address",
         "name": "recipient",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
       }
     ],
-    "name": "FundRig__RecipientSet",
+    "name": "Fundraiser__RecipientSet",
     "type": "event"
   },
   {
@@ -246,7 +240,7 @@
         "type": "uint256"
       }
     ],
-    "name": "FundRig__TeamFee",
+    "name": "Fundraiser__TeamFee",
     "type": "event"
   },
   {
@@ -259,7 +253,7 @@
         "type": "address"
       }
     ],
-    "name": "FundRig__TeamSet",
+    "name": "Fundraiser__TeamSet",
     "type": "event"
   },
   {
@@ -284,7 +278,7 @@
         "type": "uint256"
       }
     ],
-    "name": "FundRig__TreasuryFee",
+    "name": "Fundraiser__TreasuryFee",
     "type": "event"
   },
   {
@@ -297,7 +291,7 @@
         "type": "address"
       }
     ],
-    "name": "FundRig__TreasurySet",
+    "name": "Fundraiser__TreasurySet",
     "type": "event"
   },
   {
@@ -310,7 +304,7 @@
         "type": "string"
       }
     ],
-    "name": "FundRig__UriSet",
+    "name": "Fundraiser__UriSet",
     "type": "event"
   },
   {

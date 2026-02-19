@@ -1,12 +1,12 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts'
-import { FundCore__Launched as FundCoreLaunchedEvent } from '../../generated/FundCore/FundCore'
-import { FundRig as FundRigContract } from '../../generated/FundCore/FundRig'
+import { FundraiserCore__Launched as FundraiserCoreLaunchedEvent } from '../../generated/FundraiserCore/FundraiserCore'
+import { Fundraiser as FundraiserContract } from '../../generated/FundraiserCore/Fundraiser'
 import {
   UniswapV2Pair as PairTemplate,
-  FundRig as FundRigTemplate,
+  Fundraiser as FundraiserTemplate,
   Unit as UnitTemplate,
 } from '../../generated/templates'
-import { Protocol, Unit, Rig, FundRig, Account } from '../../generated/schema'
+import { Protocol, Unit, Rig, Fundraiser, Account } from '../../generated/schema'
 import {
   ZERO_BI,
   ONE_BI,
@@ -25,7 +25,7 @@ import {
 
 const DEFAULT_MIN_DONATION = BigInt.fromI32(10_000)
 
-export function handleFundCoreLaunched(event: FundCoreLaunchedEvent): void {
+export function handleFundraiserCoreLaunched(event: FundraiserCoreLaunchedEvent): void {
   // Load or create Protocol entity (singleton)
   let protocol = getOrCreateProtocol()
   protocol.totalUnits = protocol.totalUnits.plus(ONE_BI)
@@ -36,7 +36,7 @@ export function handleFundCoreLaunched(event: FundCoreLaunchedEvent): void {
   // Load or create launcher Account
   let launcher = getOrCreateAccount(event.params.launcher)
 
-  // Event params for FundCore:
+  // Event params for FundraiserCore:
   // launcher (indexed), rig (indexed), unit (indexed), recipient, auction, lpToken, quoteToken,
   // tokenName, tokenSymbol, uri, usdcAmount, unitAmount, initialEmission, minEmission,
   // minDonation, halvingPeriod, auctionInitPrice, auctionEpochPeriod, auctionPriceMultiplier, auctionMinInitPrice
@@ -80,31 +80,31 @@ export function handleFundCoreLaunched(event: FundCoreLaunchedEvent): void {
   rig.createdAtBlock = event.block.number
   rig.save()
 
-  // Create FundRig specialized entity
-  let fundRig = new FundRig(rigAddress.toHexString())
-  fundRig.rig = rig.id
-  fundRig.initialEmission = event.params.initialEmission
-  fundRig.minEmission = event.params.minEmission
-  let fundRigContract = FundRigContract.bind(rigAddress)
-  let minDonationResult = fundRigContract.try_MIN_DONATION()
-  fundRig.minDonation = minDonationResult.reverted ? DEFAULT_MIN_DONATION : minDonationResult.value
-  fundRig.halvingPeriod = event.params.halvingPeriod
-  fundRig.epochDuration = event.params.epochDuration
-  let treasuryResult = fundRigContract.try_treasury()
-  fundRig.treasury = treasuryResult.reverted ? Address.zero() : treasuryResult.value
-  let teamResult = fundRigContract.try_team()
-  fundRig.team = teamResult.reverted ? Address.zero() : teamResult.value
-  fundRig.currentDay = ZERO_BI
-  fundRig.totalDonated = ZERO_BD
-  fundRig.totalMinted = ZERO_BD
-  fundRig.uniqueDonors = ZERO_BI
-  fundRig.save()
+  // Create Fundraiser specialized entity
+  let fundraiser = new Fundraiser(rigAddress.toHexString())
+  fundraiser.rig = rig.id
+  fundraiser.initialEmission = event.params.initialEmission
+  fundraiser.minEmission = event.params.minEmission
+  let fundraiserContract = FundraiserContract.bind(rigAddress)
+  let minDonationResult = fundraiserContract.try_MIN_DONATION()
+  fundraiser.minDonation = minDonationResult.reverted ? DEFAULT_MIN_DONATION : minDonationResult.value
+  fundraiser.halvingPeriod = event.params.halvingPeriod
+  fundraiser.epochDuration = event.params.epochDuration
+  let treasuryResult = fundraiserContract.try_treasury()
+  fundraiser.treasury = treasuryResult.reverted ? Address.zero() : treasuryResult.value
+  let teamResult = fundraiserContract.try_team()
+  fundraiser.team = teamResult.reverted ? Address.zero() : teamResult.value
+  fundraiser.currentDay = ZERO_BI
+  fundraiser.totalDonated = ZERO_BD
+  fundraiser.totalMinted = ZERO_BD
+  fundraiser.uniqueDonors = ZERO_BI
+  fundraiser.save()
 
-  // Note: initial FundRecipient entity is created by the RecipientSet event handler
-  // (emitted from the FundRig constructor)
+  // Note: initial Recipient entity is created by the RecipientSet event handler
+  // (emitted from the Fundraiser constructor)
 
-  // Link rig to fundRig
-  rig.fundRig = fundRig.id
+  // Link rig to fundraiser
+  rig.fundraiser = fundraiser.id
   rig.save()
 
   // Link unit to rig
@@ -116,6 +116,6 @@ export function handleFundCoreLaunched(event: FundCoreLaunchedEvent): void {
 
   // Start indexing events from the new contracts
   PairTemplate.create(lpPairAddress)
-  FundRigTemplate.create(rigAddress)
+  FundraiserTemplate.create(rigAddress)
   UnitTemplate.create(unitAddress)
 }

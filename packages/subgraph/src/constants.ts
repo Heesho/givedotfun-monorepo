@@ -14,7 +14,7 @@ export const ONE_BD = BigDecimal.fromString('1')
 // ============================================================================
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
-export const PROTOCOL_ID = 'farplace'
+export const PROTOCOL_ID = 'givedotfun'
 
 // USDC token address on Base
 export const USDC_ADDRESS = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
@@ -38,6 +38,4 @@ export const SECONDS_PER_DAY = 86400
 // RIG TYPES
 // ============================================================================
 
-export const RIG_TYPE_MINE = 'mine'
-export const RIG_TYPE_SPIN = 'spin'
 export const RIG_TYPE_FUND = 'fund'

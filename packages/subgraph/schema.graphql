@@ -1,5 +1,5 @@
 # =============================================================================
-# FARPLACE UNIFIED SUBGRAPH SCHEMA
+# GIVEDOTFUN UNIFIED SUBGRAPH SCHEMA
 # =============================================================================
 # Central concept: Unit token is the universal entity across all rig types
 # Each Unit has an LP pair (Unit/USDC) for price tracking
@@ -11,7 +11,7 @@
 # =============================================================================
 
 type Protocol @entity(immutable: false) {
-  id: ID!                              # "farplace"
+  id: ID!                              # "givedotfun"
 
   # Counts
   totalUnits: BigInt!                  # Total Unit tokens launched
@@ -105,7 +105,7 @@ type Unit @entity(immutable: false) {
   # ==========================================================================
 
   lastSwapAt: BigInt!                  # Last LP swap timestamp
-  lastRigActivityAt: BigInt!           # Last rig event (mine, spin, etc)
+  lastRigActivityAt: BigInt!           # Last rig event
   lastActivityAt: BigInt!              # Max of swap and rig activity
 
   # ==========================================================================
@@ -241,7 +241,7 @@ type Swap @entity(immutable: true) {
 type Rig @entity(immutable: false) {
   id: ID!                              # Rig contract address
   unit: Unit!                          # The Unit token this rig mints
-  rigType: String!                     # "mine", "spin", "fund"
+  rigType: String!                     # "fund"
 
   # Common fields
   launcher: Account!
@@ -250,11 +250,11 @@ type Rig @entity(immutable: false) {
   uri: String!
 
   # Initial LP amounts (from launch)
-  usdcAmount: BigDecimal!              # USDC deposited into LP at launch (6 decimals → BigDecimal)
-  unitAmount: BigDecimal!              # Unit tokens deposited into LP at launch (18 decimals → BigDecimal)
+  usdcAmount: BigDecimal!              # USDC deposited into LP at launch (6 decimals -> BigDecimal)
+  unitAmount: BigDecimal!              # Unit tokens deposited into LP at launch (18 decimals -> BigDecimal)
 
   # Emission config (common across rig types)
-  initialUps: BigInt!                  # Starting units per second (or per day for FundRig)
+  initialUps: BigInt!                  # Starting units per second (or per day for Fundraiser)
   tailUps: BigInt!                     # Minimum emission rate (floor)
   halvingPeriod: BigInt!               # Time or token amount for halving
 
@@ -274,164 +274,17 @@ type Rig @entity(immutable: false) {
   createdAtBlock: BigInt!
 
   # ==========================================================================
-  # Specialized data (ONE of these will be set based on rigType)
+  # Specialized data
   # ==========================================================================
 
-  mineRig: MineRig
-  spinRig: SpinRig
-  fundRig: FundRig
+  fundraiser: Fundraiser
 }
 
 # =============================================================================
-# MINE RIG - Mining slot competition
+# FUNDRAISER - Daily donation pool
 # =============================================================================
 
-type MineRig @entity(immutable: false) {
-  id: ID!                              # Same as Rig id
-  rig: Rig!
-
-  # Addresses
-  treasury: Bytes!                     # Treasury address (receives 15% of mine fees)
-  team: Bytes!                         # Team address (receives 4%, zero = disabled)
-
-  # Emission config
-  initialUps: BigInt!                  # Starting units per second
-  tailUps: BigInt!                     # Minimum units per second (floor)
-  halvingAmount: BigInt!               # Token supply threshold for halving
-
-  # Rig config
-  capacity: BigInt!                    # Number of slots
-  epochPeriod: BigInt!                 # Dutch auction epoch duration
-  priceMultiplier: BigDecimal!         # Price multiplier after sale
-  minInitPrice: BigDecimal!            # Minimum starting price
-
-  # State
-  activeMiners: BigInt!                # Current occupied slots
-  totalMines: BigInt!                  # All-time mine count
-
-  # Relations
-  slots: [MineSlot!]! @derivedFrom(field: "mineRig")
-  mines: [MineAction!]! @derivedFrom(field: "mineRig")
-  claims: [MineClaim!]! @derivedFrom(field: "mineRig")
-}
-
-# Claim record (when miner claims accumulated fees)
-type MineClaim @entity(immutable: true) {
-  id: ID!                              # {txHash}-{logIndex}
-  mineRig: MineRig!
-  claimer: Account!
-  amount: BigDecimal!                  # Quote token amount claimed
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  txHash: Bytes!
-}
-
-type MineSlot @entity(immutable: false) {
-  id: ID!                              # {rigAddress}-{slotIndex}
-  mineRig: MineRig!
-  index: BigInt!
-
-  # Current state
-  epochId: BigInt!
-  currentMiner: Account
-  uri: String!
-  initPrice: BigDecimal!               # Current epoch starting price
-  startTime: BigInt!                   # Current epoch start
-
-  # Stats
-  minted: BigDecimal!                  # Total minted on this slot
-  lastMined: BigInt!
-
-  # VRF
-  upsMultiplier: BigInt                # Current VRF multiplier (null if none)
-}
-
-type MineAction @entity(immutable: false) {
-  id: ID!                              # {txHash}-{logIndex}
-  mineRig: MineRig!
-  slot: MineSlot!
-
-  miner: Account!
-  prevMiner: Account
-
-  slotIndex: BigInt!
-  epochId: BigInt!
-  uri: String!
-
-  price: BigDecimal!                   # What miner paid
-  minted: BigDecimal!                  # Tokens minted to prev miner
-  earned: BigDecimal!                  # Fee earned by prev miner
-
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  txHash: Bytes!
-}
-
-# =============================================================================
-# SPIN RIG - Slot machine with VRF
-# =============================================================================
-
-type SpinRig @entity(immutable: false) {
-  id: ID!
-  rig: Rig!
-
-  # Addresses
-  treasury: Bytes!                     # Treasury address (receives 95% of spin fees)
-  team: Bytes!                         # Team address (receives 4%, zero = disabled)
-
-  # Emission config
-  initialUps: BigInt!                  # Starting units per second
-  tailUps: BigInt!                     # Minimum units per second (floor)
-  halvingPeriod: BigInt!               # Time between halvings (seconds)
-
-  # Rig config (immutable)
-  epochPeriod: BigInt!                 # Duration of each price decay epoch
-  priceMultiplier: BigDecimal!         # Price multiplier after each spin
-  minInitPrice: BigDecimal!            # Minimum starting price
-
-  # Dutch Auction State
-  currentEpochId: BigInt!              # Current epoch ID
-  initPrice: BigDecimal!               # Current epoch's starting price
-  slotStartTime: BigInt!               # When current epoch started
-
-  # Prize Pool
-  prizePool: BigDecimal!               # Current prize pool (Unit tokens from emissions)
-  currentOdds: [BigInt!]!              # Current odds array (basis points for payout %)
-
-  # Stats
-  totalSpins: BigInt!
-  totalWins: BigInt!
-  totalWonAmount: BigDecimal!          # Total Unit won from prize pool
-  totalSpent: BigDecimal!              # Total quoteToken spent on spins
-
-  # Relations
-  spins: [Spin!]! @derivedFrom(field: "spinRig")
-}
-
-type Spin @entity(immutable: false) {
-  id: ID!                              # {rigAddress}-{epochId}
-  spinRig: SpinRig!
-  spinner: Account!
-
-  epochId: BigInt!
-  price: BigDecimal!                   # Spin cost
-  uri: String!                         # Message URI attached to spin
-
-  # Result (filled after VRF callback)
-  won: Boolean!
-  winAmount: BigDecimal!               # Amount won (0 if lost)
-  oddsBps: BigInt!                     # Odds that were hit
-
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  txHash: Bytes!
-}
-
-# =============================================================================
-# FUND RIG - Daily donation pool
-# =============================================================================
-
-type FundRig @entity(immutable: false) {
+type Fundraiser @entity(immutable: false) {
   id: ID!
   rig: Rig!
 
@@ -455,17 +308,17 @@ type FundRig @entity(immutable: false) {
   uniqueDonors: BigInt!                # Unique donor count
 
   # Relations
-  donations: [Donation!]! @derivedFrom(field: "fundRig")
-  recipients: [FundRecipient!]! @derivedFrom(field: "fundRig")
-  dayData: [FundDayData!]! @derivedFrom(field: "fundRig")
-  donorAccounts: [FundDonor!]! @derivedFrom(field: "fundRig")
-  dayDonorAccounts: [FundDayDonor!]! @derivedFrom(field: "fundRig")
+  donations: [Donation!]! @derivedFrom(field: "fundraiser")
+  recipients: [Recipient!]! @derivedFrom(field: "fundraiser")
+  dayData: [FundraiserDayData!]! @derivedFrom(field: "fundraiser")
+  donorAccounts: [Donor!]! @derivedFrom(field: "fundraiser")
+  dayDonorAccounts: [DayDonor!]! @derivedFrom(field: "fundraiser")
 }
 
-# Recipient for FundRig
-type FundRecipient @entity(immutable: false) {
+# Recipient for Fundraiser
+type Recipient @entity(immutable: false) {
   id: ID!                              # {rigAddress}-{recipientAddress}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
   recipient: Bytes!                    # Recipient address
   isActive: Boolean!                   # Whether currently whitelisted
   totalReceived: BigDecimal!           # Total donations received
@@ -473,9 +326,9 @@ type FundRecipient @entity(immutable: false) {
 }
 
 # Daily donation pool data
-type FundDayData @entity(immutable: false) {
+type FundraiserDayData @entity(immutable: false) {
   id: ID!                              # {rigAddress}-{day}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
   day: BigInt!                         # Day number (days since rig start)
 
   totalDonated: BigDecimal!            # Total donated this day
@@ -488,7 +341,7 @@ type FundDayData @entity(immutable: false) {
 
 type Donation @entity(immutable: true) {
   id: ID!                              # {txHash}-{logIndex}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
 
   donor: Account!
   recipient: Bytes!                    # Recipient address chosen by donor
@@ -508,9 +361,9 @@ type Donation @entity(immutable: true) {
 }
 
 # Claim record (when donor claims their Unit tokens)
-type FundClaim @entity(immutable: true) {
+type Claim @entity(immutable: true) {
   id: ID!                              # {txHash}-{logIndex}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
 
   claimer: Account!
   day: BigInt!                         # Day being claimed
@@ -522,17 +375,17 @@ type FundClaim @entity(immutable: true) {
 }
 
 # Unique donor tracker (one per rig + wallet)
-type FundDonor @entity(immutable: false) {
+type Donor @entity(immutable: false) {
   id: ID!                              # {rigAddress}-{donorAddress}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
   donor: Account!
   firstDonationAt: BigInt!
 }
 
 # Unique donor tracker per day (one per rig + day + wallet)
-type FundDayDonor @entity(immutable: false) {
+type DayDonor @entity(immutable: false) {
   id: ID!                              # {rigAddress}-{day}-{donorAddress}
-  fundRig: FundRig!
+  fundraiser: Fundraiser!
   day: BigInt!
   donor: Account!
   firstDonationAt: BigInt!
@@ -549,7 +402,7 @@ type Account @entity(immutable: false) {
   totalSwapVolume: BigDecimal!         # Volume traded in USDC
   totalRigSpend: BigDecimal!           # Spent on rig actions
   totalMined: BigDecimal!              # Unit tokens earned
-  totalWon: BigDecimal!                # Unit tokens won (spin)
+  totalWon: BigDecimal!                # Unit tokens won
 
   # Activity
   lastActivityAt: BigInt!
@@ -557,8 +410,5 @@ type Account @entity(immutable: false) {
   # Relations
   unitsLaunched: [Unit!]! @derivedFrom(field: "launcher")
   swaps: [Swap!]! @derivedFrom(field: "account")
-  mineActions: [MineAction!]! @derivedFrom(field: "miner")
-  mineSlots: [MineSlot!]! @derivedFrom(field: "currentMiner")
-  spins: [Spin!]! @derivedFrom(field: "spinner")
   donations: [Donation!]! @derivedFrom(field: "donor")
 }

@@ -33,11 +33,6 @@
       },
       {
         "internalType": "address",
-        "name": "_entropy",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "_protocolFeeAddress",
         "type": "address"
       },
@@ -52,32 +47,32 @@
   },
   {
     "inputs": [],
-    "name": "MineCore__EmptyTokenName",
+    "name": "FundraiserCore__EmptyTokenName",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "MineCore__EmptyTokenSymbol",
+    "name": "FundraiserCore__EmptyTokenSymbol",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "MineCore__EmptyUri",
+    "name": "FundraiserCore__EmptyUri",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "MineCore__InsufficientUsdc",
+    "name": "FundraiserCore__InsufficientUsdc",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "MineCore__ZeroAddress",
+    "name": "FundraiserCore__ZeroAddress",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "MineCore__ZeroUnitAmount",
+    "name": "FundraiserCore__ZeroUnitAmount",
     "type": "error"
   },
   {
@@ -99,6 +94,12 @@
         "indexed": true,
         "internalType": "address",
         "name": "unit",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "recipient",
         "type": "address"
       },
       {
@@ -152,49 +153,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "initialUps",
+        "name": "initialEmission",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tailUps",
+        "name": "minEmission",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "halvingAmount",
+        "name": "halvingPeriod",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "rigEpochPeriod",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rigPriceMultiplier",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rigMinInitPrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256[]",
-        "name": "upsMultipliers",
-        "type": "uint256[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "upsMultiplierDuration",
+        "name": "epochDuration",
         "type": "uint256"
       },
       {
@@ -222,7 +199,7 @@
         "type": "uint256"
       }
     ],
-    "name": "MineCore__Launched",
+    "name": "FundraiserCore__Launched",
     "type": "event"
   },
   {
@@ -235,7 +212,7 @@
         "type": "uint256"
       }
     ],
-    "name": "MineCore__MinUsdcForLaunchSet",
+    "name": "FundraiserCore__MinUsdcForLaunchSet",
     "type": "event"
   },
   {
@@ -248,7 +225,7 @@
         "type": "address"
       }
     ],
-    "name": "MineCore__ProtocolFeeAddressSet",
+    "name": "FundraiserCore__ProtocolFeeAddressSet",
     "type": "event"
   },
   {
@@ -310,19 +287,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "entropy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "components": [
@@ -334,6 +298,11 @@
           {
             "internalType": "address",
             "name": "quoteToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recipient",
             "type": "address"
           },
           {
@@ -363,42 +332,22 @@
           },
           {
             "internalType": "uint256",
-            "name": "initialUps",
+            "name": "initialEmission",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "tailUps",
+            "name": "minEmission",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "halvingAmount",
+            "name": "halvingPeriod",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "rigEpochPeriod",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "rigPriceMultiplier",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "rigMinInitPrice",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "upsMultipliers",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "upsMultiplierDuration",
+            "name": "epochDuration",
             "type": "uint256"
           },
           {
@@ -422,7 +371,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct MineCore.LaunchParams",
+        "internalType": "struct FundraiserCore.LaunchParams",
         "name": "params",
         "type": "tuple"
       }
