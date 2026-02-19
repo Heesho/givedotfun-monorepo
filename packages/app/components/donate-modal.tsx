@@ -41,6 +41,8 @@ type DonateModalProps = {
   tokenName?: string;
   tokenLogoUrl?: string | null;
   recipientName?: string;
+  epochDuration?: number;
+  recipientAddress?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -68,6 +70,8 @@ export function DonateModal({
   tokenName = "Token",
   tokenLogoUrl,
   recipientName,
+  epochDuration: epochDurationProp = 86400,
+  recipientAddress: recipientAddressProp = null,
 }: DonateModalProps) {
   // ---------- Local UI state ----------
   const [fundAmount, setFundAmount] = useState("1");
@@ -86,14 +90,14 @@ export function DonateModal({
   const { address: account } = useFarcaster();
 
   const {
-    fundState,
+    fundraiserState,
     claimableEpochs,
     totalPending,
     refetch: refetchFund,
     isLoading: isFundLoading,
   } = useFundraiserState(rigAddress, account);
 
-  const { metadata } = useTokenMetadata(fundState?.rigUri);
+  const { metadata } = useTokenMetadata(fundraiserState?.rigUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
 
   const {
@@ -137,28 +141,28 @@ export function DonateModal({
   // ---------- Derived display values ----------
 
   // Current epoch's pool
-  const todayTotalDonated = fundState
-    ? Number(formatUnits(fundState.currentEpochTotalDonated, QUOTE_TOKEN_DECIMALS))
+  const todayTotalDonated = fundraiserState
+    ? Number(formatUnits(fundraiserState.currentEpochTotalDonated, QUOTE_TOKEN_DECIMALS))
     : 0;
-  const todayEmission = fundState
-    ? Number(formatEther(fundState.currentEpochEmission))
+  const todayEmission = fundraiserState
+    ? Number(formatEther(fundraiserState.currentEpochEmission))
     : 0;
   const currentPricePerToken =
     todayTotalDonated > 0 ? todayTotalDonated / todayEmission : 0;
 
   // User balance (USDC)
-  const userBalance = fundState
-    ? Number(formatUnits(fundState.accountQuoteBalance, QUOTE_TOKEN_DECIMALS))
+  const userBalance = fundraiserState
+    ? Number(formatUnits(fundraiserState.accountQuoteBalance, QUOTE_TOKEN_DECIMALS))
     : 0;
 
   // User's current epoch donation
-  const userTodayDonation = fundState
-    ? Number(formatUnits(fundState.accountCurrentEpochDonation, QUOTE_TOKEN_DECIMALS))
+  const userTodayDonation = fundraiserState
+    ? Number(formatUnits(fundraiserState.accountCurrentEpochDonation, QUOTE_TOKEN_DECIMALS))
     : 0;
 
   // User's unit balance
-  const userUnitBalance = fundState
-    ? Number(formatEther(fundState.accountUnitBalance))
+  const userUnitBalance = fundraiserState
+    ? Number(formatEther(fundraiserState.accountUnitBalance))
     : 0;
 
   // Pending claims
@@ -166,14 +170,14 @@ export function DonateModal({
   const unclaimedDayCount = claimableEpochs.length;
 
   // Epoch countdown from chain data
-  const startTime = fundState ? Number(fundState.startTime) : 0;
-  const currentEpoch = fundState ? Number(fundState.currentEpoch) : 0;
-  const epochDuration = subgraphRig?.fundraiser?.epochDuration ? Number(subgraphRig.fundraiser.epochDuration) : 86400;
+  const startTime = fundraiserState ? Number(fundraiserState.startTime) : 0;
+  const currentEpoch = fundraiserState ? Number(fundraiserState.currentEpoch) : 0;
+  const epochDuration = epochDurationProp;
   const dayEndTime = startTime > 0 ? startTime + (currentEpoch + 1) * epochDuration : 0;
   const dayEndsIn = Math.max(0, dayEndTime - now);
 
-  // Recipient address (gets 50% of donations) — from subgraph data
-  const recipientAddress = subgraphRig?.fundraiser?.recipients?.[0]?.recipient ?? null;
+  // Recipient address (gets 50% of donations) — passed from parent
+  const recipientAddress = recipientAddressProp;
 
   // Parsed amount from input
   const parsedAmount = parseFloat(fundAmount) || 0;
@@ -189,12 +193,12 @@ export function DonateModal({
 
   // Countdown timer from chain data
   useEffect(() => {
-    if (!isOpen || !fundState) return;
+    if (!isOpen || !fundraiserState) return;
     const interval = setInterval(() => {
       setNow(Math.floor(Date.now() / 1000));
     }, 1000);
     return () => clearInterval(interval);
-  }, [isOpen, fundState]);
+  }, [isOpen, fundraiserState]);
 
   // Reset tx on modal close
   useEffect(() => {
@@ -256,7 +260,7 @@ export function DonateModal({
   };
 
   const handleFund = useCallback(async () => {
-    if (!account || !fundState || !recipientAddress || txStatus === "pending") return;
+    if (!account || !fundraiserState || !recipientAddress || txStatus === "pending") return;
     const amount = parseUnits(fundAmount || "0", QUOTE_TOKEN_DECIMALS);
     if (amount <= 0n) return;
 
@@ -285,7 +289,7 @@ export function DonateModal({
     );
 
     await execute(calls);
-  }, [account, fundState, fundAmount, rigAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
+  }, [account, fundraiserState, fundAmount, rigAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
 
   const handleClaim = useCallback(async () => {
     if (!account || claimableEpochs.length === 0 || txStatus === "pending") return;

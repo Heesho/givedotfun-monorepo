@@ -1,13 +1,14 @@
 {
-  "name": "miner-launchpad",
+  "name": "givedotfun-subgraph",
+  "version": "1.0.0",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ miner-launchpad",
-    "create-local": "graph create --node http://localhost:8020/ miner-launchpad",
-    "remove-local": "graph remove --node http://localhost:8020/ miner-launchpad",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 miner-launchpad",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ givedotfun",
+    "create-local": "graph create --node http://localhost:8020/ givedotfun",
+    "remove-local": "graph remove --node http://localhost:8020/ givedotfun",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 givedotfun",
     "test": "graph test"
   },
   "dependencies": {

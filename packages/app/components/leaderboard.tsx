@@ -64,10 +64,10 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
         </div>
       </div>
 
-      {/* Mined amount */}
+      {/* Donated amount */}
       <div className="text-right flex-shrink-0">
-        <div className="text-sm font-medium">{entry.minedFormatted}</div>
-        <div className="text-[10px] text-zinc-500">{tokenSymbol}</div>
+        <div className="text-sm font-medium">{entry.donatedFormatted}</div>
+        <div className="text-[10px] text-zinc-500">USDC</div>
       </div>
     </div>
   );
@@ -84,7 +84,7 @@ export function Leaderboard({
   const handleShareChallenge = async () => {
     if (!userRank) return;
 
-    const text = `I'm ranked #${userRank} on the ${tokenName} ($${tokenSymbol}) mining leaderboard! Think you can beat me? ⛏️`;
+    const text = `I'm ranked #${userRank} on the ${tokenName} ($${tokenSymbol}) donor leaderboard! Join me in supporting this fundraiser!`;
 
     await composeCast({
       text,
@@ -110,7 +110,7 @@ export function Leaderboard({
       <div className="mt-6">
         <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
-          No miners yet
+          No donors yet
         </div>
       </div>
     );

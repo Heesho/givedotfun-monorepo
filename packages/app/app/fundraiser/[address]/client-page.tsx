@@ -736,6 +736,8 @@ export default function RigDetailPage() {
         tokenName={tokenName}
         tokenLogoUrl={logoUrl}
         recipientName={metadata?.recipientName}
+        epochDuration={subgraphRig?.fundraiser?.epochDuration ? Number(subgraphRig.fundraiser.epochDuration) : 86400}
+        recipientAddress={subgraphRig?.fundraiser?.recipients?.[0]?.recipient ?? null}
       />
 
       {/* Trade Modal (Buy/Sell) */}
