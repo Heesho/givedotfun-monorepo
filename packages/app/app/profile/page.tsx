@@ -43,8 +43,11 @@ function HoldingRow({ holding }: { holding: UserHolding }) {
             <div className="text-[15px] font-medium truncate">
               {holding.tokenName}
             </div>
-            <div className="text-[12px] text-muted-foreground">
-              {formatNumber(holding.balanceNum)} {holding.tokenSymbol}
+            <div className="text-[12px] text-muted-foreground flex items-center gap-1">
+              <img src="/botanicals/leaf-prism.svg" className="w-3.5 h-3.5" alt="" />
+              <span className="shimmer-iridescent font-medium">
+                {formatNumber(holding.balanceNum)} {holding.tokenSymbol}
+              </span>
             </div>
           </div>
         </div>
@@ -93,6 +96,14 @@ function LaunchedRow({ rig }: { rig: UserLaunchedRig }) {
           </div>
         </div>
       </div>
+      <div className="w-full mt-1">
+        <img
+          src="/botanicals/growth-vine.svg"
+          className="h-2 opacity-60"
+          style={{ width: `${Math.min(100, Math.max(10, (rig.marketCapUsd / 10000) * 100))}%` }}
+          alt=""
+        />
+      </div>
     </Link>
   );
 }
@@ -103,7 +114,7 @@ function LaunchedRow({ rig }: { rig: UserLaunchedRig }) {
 
 function ProfileSkeleton() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -113,28 +124,28 @@ function ProfileSkeleton() {
       >
         <div className="px-4 pb-4">
           <div className="flex items-center gap-3 py-4">
-            <div className="w-12 h-12 rounded-full bg-secondary animate-pulse" />
+            <div className="w-12 h-12 rounded-full bg-concrete-700 animate-pulse" />
             <div>
-              <div className="w-28 h-5 bg-secondary rounded animate-pulse mb-1" />
-              <div className="w-20 h-4 bg-secondary rounded animate-pulse" />
+              <div className="w-28 h-5 bg-concrete-700 rounded animate-pulse mb-1" />
+              <div className="w-20 h-4 bg-concrete-700 rounded animate-pulse" />
             </div>
           </div>
         </div>
         <div className="flex border-b border-secondary mx-4 mb-4">
-          <div className="w-24 h-8 bg-secondary rounded animate-pulse mr-4" />
-          <div className="w-24 h-8 bg-secondary rounded animate-pulse" />
+          <div className="w-24 h-8 bg-concrete-700 rounded animate-pulse mr-4" />
+          <div className="w-24 h-8 bg-concrete-700 rounded animate-pulse" />
         </div>
         <div className="flex-1 px-4 space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3 py-3">
-              <div className="w-10 h-10 rounded-full bg-secondary animate-pulse" />
+              <div className="w-10 h-10 rounded-full bg-concrete-700 animate-pulse" />
               <div className="flex-1">
-                <div className="w-24 h-4 bg-secondary rounded animate-pulse mb-1" />
-                <div className="w-16 h-3 bg-secondary rounded animate-pulse" />
+                <div className="w-24 h-4 bg-concrete-700 rounded animate-pulse mb-1" />
+                <div className="w-16 h-3 bg-concrete-700 rounded animate-pulse" />
               </div>
               <div className="text-right">
-                <div className="w-16 h-4 bg-secondary rounded animate-pulse mb-1" />
-                <div className="w-12 h-3 bg-secondary rounded animate-pulse" />
+                <div className="w-16 h-4 bg-concrete-700 rounded animate-pulse mb-1" />
+                <div className="w-12 h-3 bg-concrete-700 rounded animate-pulse" />
               </div>
             </div>
           ))}
@@ -153,7 +164,7 @@ function NotConnected() {
   const { isInFrame, isConnecting, connect } = useFarcaster();
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -162,7 +173,7 @@ function NotConnected() {
         }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-concrete-700 flex items-center justify-center mb-4">
             <svg
               className="w-8 h-8 text-muted-foreground"
               fill="none"
@@ -197,7 +208,7 @@ function NotConnected() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting}
-                className="px-6 py-2.5 rounded-xl bg-white text-black text-[14px] font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-moss-400 text-concrete-800 text-[14px] font-bold uppercase tracking-wider hover:bg-moss-300 transition-colors disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -275,7 +286,7 @@ export default function ProfilePage() {
       : address.slice(-2).toUpperCase();
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -283,73 +294,106 @@ export default function ProfilePage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
-        {/* Header */}
-        <div className="px-4 pb-2">
-          <div className="mb-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
-          </div>
-          <div className="flex items-center gap-3 py-3">
-            {pfpUrl ? (
-              <img
-                src={pfpUrl}
-                alt={displayName}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${
-                  isAddressFallbackAvatar
-                    ? "font-mono text-[15px] tracking-wide bg-gradient-to-br from-zinc-600 to-zinc-800"
-                    : "font-semibold text-lg bg-gradient-to-br from-zinc-500 to-zinc-700"
-                }`}
-              >
-                {avatarFallback}
-              </div>
-            )}
-            <div>
-              <div className="text-[17px] font-semibold">{displayName}</div>
-              {username && (
-                <div className="text-[13px] text-muted-foreground">
-                  {username}
+        {/* Header with fern-hero backdrop */}
+        <div className="relative overflow-hidden">
+          <img
+            src="/botanicals/fern-hero.svg"
+            className="absolute top-0 left-0 w-full h-48 object-cover opacity-[0.12] pointer-events-none select-none"
+            aria-hidden="true"
+          />
+          <div className="relative z-10 px-4 pb-2">
+            <div className="mb-3">
+              <h1 className="headline-brutal text-xl">Profile</h1>
+            </div>
+            <div className="flex items-center gap-3 py-3">
+              <div className="relative inline-flex items-center justify-center w-24 h-24">
+                <img
+                  src="/botanicals/vine-ring.svg"
+                  alt=""
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div className="relative z-10">
+                  {pfpUrl ? (
+                    <img
+                      src={pfpUrl}
+                      alt={displayName}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl ${
+                        isAddressFallbackAvatar
+                          ? "font-mono tracking-wide bg-gradient-to-br from-moss-400 to-moss-600"
+                          : "font-semibold bg-gradient-to-br from-moss-400 to-moss-600"
+                      }`}
+                    >
+                      {avatarFallback}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Portfolio value */}
-          <div className="pb-3">
-            <div className="text-[12px] text-muted-foreground mb-0.5">
-              Portfolio value
-            </div>
-            <div className="text-[28px] font-bold tabular-nums">
-              {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
-            </div>
-          </div>
-
-          {/* Cash Balance */}
-          <div className="pb-3">
-            <div className="text-[12px] text-muted-foreground mb-1">
-              Cash Balance
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-[18px] font-semibold tabular-nums">
-                ${formattedUsdc}
               </div>
-              <button
-                onClick={() =>
-                  mintUsdc({
-                    address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
-                    abi: MOCK_MINT_ABI,
-                    functionName: "mint",
-                    args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
-                  })
-                }
-                disabled={isUsdcMinting}
-                className="text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-              >
-                {isUsdcMinting ? "Minting..." : "Mint 1000"}
-              </button>
+              <div>
+                <div className="text-[17px] font-semibold">{displayName}</div>
+                {username && (
+                  <div className="text-[13px] text-muted-foreground">
+                    {username}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Portfolio value */}
+            <div className="slab slab-accent p-4 mb-3">
+              <div className="headline-brutal text-[11px] text-[#8E8E8E] mb-0.5">PORTFOLIO VALUE</div>
+              <div className="text-[28px] font-bold tabular-nums">
+                {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
+              </div>
+            </div>
+
+            {/* Cash Balance */}
+            <div className="pb-3">
+              <div className="text-[12px] text-muted-foreground mb-1">
+                Cash Balance
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-[18px] font-semibold tabular-nums">
+                  ${formattedUsdc}
+                </div>
+                <button
+                  onClick={() =>
+                    mintUsdc({
+                      address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+                      abi: MOCK_MINT_ABI,
+                      functionName: "mint",
+                      args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
+                    })
+                  }
+                  disabled={isUsdcMinting}
+                  className="text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Heartbeat ticker */}
+        <div className="px-4 py-2 mb-1">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            {holdings.length > 0 ? (
+              holdings.map((h) => (
+                <Link key={h.unitAddress} href={`/fundraiser/${h.address}`}>
+                  <div
+                    className="w-3 h-3 rounded-full bg-moss-400 animate-pulse-glow flex-shrink-0"
+                    title={h.tokenName}
+                  />
+                </Link>
+              ))
+            ) : (
+              <p className="text-[#8E8E8E] text-[13px] italic">Start your garden — donate to a fundraiser</p>
+            )}
           </div>
         </div>
 
@@ -359,11 +403,11 @@ export default function ProfilePage() {
             onClick={() => setActiveTab("holdings")}
             className={`pb-2.5 px-1 mr-6 text-[14px] font-medium border-b-2 transition-colors ${
               activeTab === "holdings"
-                ? "border-white text-foreground"
+                ? "border-moss-400 text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Holdings
+            Your Garden
             {holdings.length > 0 && (
               <span className="ml-1.5 text-[12px] text-muted-foreground">
                 {holdings.length}
@@ -374,11 +418,11 @@ export default function ProfilePage() {
             onClick={() => setActiveTab("launched")}
             className={`pb-2.5 px-1 text-[14px] font-medium border-b-2 transition-colors ${
               activeTab === "launched"
-                ? "border-white text-foreground"
+                ? "border-moss-400 text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Launched
+            Your Fundraisers
             {launchedRigs.length > 0 && (
               <span className="ml-1.5 text-[12px] text-muted-foreground">
                 {launchedRigs.length}
@@ -393,32 +437,14 @@ export default function ProfilePage() {
             <>
               {holdings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
-                    <svg
-                      className="w-6 h-6 text-muted-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.75 9h16.5m-16.5 6h16.5m-15-9h13.5A2.25 2.25 0 0121 8.25v7.5A2.25 2.25 0 0118.75 18H5.25A2.25 2.25 0 013 15.75v-7.5A2.25 2.25 0 015.25 6z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-[15px] font-medium mb-1">
-                    No holdings yet
-                  </div>
-                  <div className="text-[13px] text-muted-foreground mb-4">
-                    Donate or trade to earn coins
-                  </div>
+                  <img src="/botanicals/empty-garden.svg" className="w-20 h-20 mb-3 opacity-60" alt="" />
+                  <div className="headline-brutal text-[15px] mb-1">Your garden is empty</div>
+                  <div className="text-[13px] text-[#8E8E8E] mb-4">Donate to grow it</div>
                   <Link
                     href="/explore"
-                    className="px-4 py-2 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider rounded-xl hover:bg-moss-300 transition-colors text-[13px]"
                   >
-                    Explore coins
+                    EXPLORE FUNDRAISERS
                   </Link>
                 </div>
               ) : (
@@ -438,32 +464,14 @@ export default function ProfilePage() {
             <>
               {launchedRigs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
-                    <svg
-                      className="w-6 h-6 text-muted-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-[15px] font-medium mb-1">
-                    No launches yet
-                  </div>
-                  <div className="text-[13px] text-muted-foreground mb-4">
-                    You haven&apos;t launched any coins yet
-                  </div>
+                  <img src="/botanicals/empty-garden.svg" className="w-20 h-20 mb-3 opacity-60" alt="" />
+                  <div className="headline-brutal text-[15px] mb-1">No fundraisers yet</div>
+                  <div className="text-[13px] text-[#8E8E8E] mb-4">Plant your first fundraiser</div>
                   <Link
                     href="/launch"
-                    className="px-4 py-2 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider rounded-xl hover:bg-moss-300 transition-colors text-[13px]"
                   >
-                    Launch a coin
+                    PLANT A FUNDRAISER
                   </Link>
                 </div>
               ) : (
