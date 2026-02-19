@@ -47,7 +47,7 @@ const INFO_SECTIONS = [
 
 export default function InfoPage() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -57,7 +57,7 @@ export default function InfoPage() {
       >
         {/* Header */}
         <div className="px-4 pb-4">
-          <h1 className="text-2xl font-semibold tracking-tight">About</h1>
+          <h1 className="text-2xl headline-brutal">ABOUT</h1>
         </div>
 
         {/* Content */}
@@ -80,7 +80,7 @@ export default function InfoPage() {
                       key={i}
                       className="text-sm text-muted-foreground flex items-start gap-2"
                     >
-                      <span className="text-zinc-500 mt-0.5">•</span>
+                      <span className="text-moss-400 mt-0.5">•</span>
                       {bullet}
                     </li>
                   ))}

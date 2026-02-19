@@ -21,7 +21,7 @@ type PriceChartProps = {
 export function PriceChart({
   data,
   isLoading = false,
-  color = "#a1a1aa",
+  color = "#3DDC84",
   height = 200,
   onHover,
   tokenFirstActiveTime,
@@ -66,7 +66,7 @@ export function PriceChart({
       const chart = createChart(container, {
         layout: {
           background: { type: ColorType.Solid, color: "transparent" },
-          textColor: "#71717a",
+          textColor: "#8E8E8E",
           fontFamily: "monospace",
           attributionLogo: false,
         },
@@ -99,7 +99,7 @@ export function PriceChart({
           vertLine: {
             visible: true,
             labelVisible: false,
-            color: "#a1a1aa50",
+            color: "#3DDC8450",
             width: 1,
             style: 2,
           },

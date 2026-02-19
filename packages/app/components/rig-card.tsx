@@ -60,7 +60,7 @@ function MiniSparkline({ prices }: { prices: number[] }) {
   })();
 
   return (
-    <svg width="60" height="24" className="overflow-visible text-zinc-400">
+    <svg width="60" height="24" className="overflow-visible text-moss-400">
       <polyline
         points={points}
         fill="none"
@@ -129,13 +129,13 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
     <Link href={`/fundraiser/${rig.address}`} className="block">
       <div
         className={cn(
-          "flex items-center gap-3 py-4 transition-colors hover:bg-white/[0.02] border-b border-border",
+          "flex items-center gap-3 py-4 transition-colors hover:bg-moss-400/[0.04] border-b border-border",
           isNewBump && "animate-bump-enter",
           isTopBump && !isNewBump && "animate-bump-glow"
         )}
       >
         {/* Token Logo */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-concrete-700 flex items-center justify-center overflow-hidden">
           {logoUrl ? (
             <img
               src={logoUrl}
@@ -143,7 +143,7 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
               className="w-10 h-10 object-cover"
             />
           ) : (
-            <span className="text-zinc-400 font-semibold text-sm">
+            <span className="text-[#8E8E8E] font-semibold text-sm">
               {rig.tokenSymbol.slice(0, 2)}
             </span>
           )}
@@ -169,7 +169,9 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
           <div className="text-[15px] font-medium tabular-nums">
             {formatUsd(marketCapUsd)}
           </div>
-          <div className="text-[13px] tabular-nums mt-0.5 text-zinc-400">
+          <div className={`text-[13px] tabular-nums mt-0.5 ${
+            change24h > 0 ? "text-prism-400" : change24h < 0 ? "text-red-400" : "text-[#8E8E8E]"
+          }`}>
             {change24h >= 0 ? "+" : ""}{change24h.toFixed(2)}%
           </div>
         </div>

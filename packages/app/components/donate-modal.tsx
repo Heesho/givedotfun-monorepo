@@ -310,7 +310,7 @@ export function DonateModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -402,8 +402,8 @@ export function DonateModal({
                         className={`
                           flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all
                           ${selectedPreset === amount
-                            ? "bg-white text-black"
-                            : "bg-zinc-800 text-white hover:bg-zinc-700"
+                            ? "bg-moss-400 text-concrete-800"
+                            : "bg-concrete-700 text-white hover:bg-concrete-600"
                           }
                         `}
                       >
@@ -412,7 +412,7 @@ export function DonateModal({
                     ))}
                     <button
                       onClick={handleCustomSelect}
-                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-zinc-800 text-white hover:bg-zinc-700"
+                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-concrete-700 text-white hover:bg-concrete-600"
                     >
                       Other
                     </button>
@@ -425,11 +425,11 @@ export function DonateModal({
                         setFundAmount("1");
                         setSelectedPreset(1);
                       }}
-                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-zinc-800 text-white hover:bg-zinc-700 transition-all"
+                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-concrete-700 text-white hover:bg-concrete-600 transition-all"
                     >
                       ✕
                     </button>
-                    <div className="flex-1 flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-1.5">
+                    <div className="flex-1 flex items-center gap-2 bg-concrete-700 rounded-lg px-3 py-1.5">
                       <span className="text-base text-muted-foreground">$</span>
                       <input
                         type="number"
@@ -437,7 +437,7 @@ export function DonateModal({
                         onChange={(e) => handleCustomChange(e.target.value)}
                         placeholder="0.00"
                         autoFocus
-                        className="flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-zinc-600 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#8E8E8E] tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                   </div>
@@ -454,7 +454,7 @@ export function DonateModal({
 
               {/* Your Position */}
               <div className="mb-6">
-                <div className="font-semibold text-[18px] mb-3">Your position</div>
+                <div className="headline-brutal text-[18px] mb-3">Your position</div>
 
                 {/* Pending Claims */}
                 {unclaimedDayCount > 0 && (
@@ -476,12 +476,12 @@ export function DonateModal({
                       disabled={txStatus === "pending" || txStatus === "success"}
                       className={`px-5 py-2 text-[13px] font-semibold rounded-xl transition-all flex items-center gap-1.5 ${
                         txStatus === "success"
-                          ? "bg-zinc-300 text-black"
+                          ? "bg-moss-300 text-concrete-800"
                           : txStatus === "error"
-                          ? "bg-zinc-600 text-white"
+                          ? "bg-concrete-600 text-white"
                           : txStatus === "pending"
-                          ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                          : "bg-white text-black hover:bg-zinc-200"
+                          ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
+                          : "bg-prism-400 text-concrete-800 hover:bg-prism-300 pulse-reward"
                       }`}
                     >
                       {txStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -553,7 +553,7 @@ export function DonateModal({
 
               {/* Recent Mines */}
               <div className="mt-6">
-                <h2 className="text-[18px] font-semibold mb-3">Recent Donations</h2>
+                <h2 className="headline-brutal text-[18px] mb-3">Recent Donations</h2>
                 {isHistoryLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -612,7 +612,7 @@ export function DonateModal({
               onChange={(e) => setMessage(e.target.value)}
               placeholder={defaultMessage}
               maxLength={100}
-              className="w-full bg-zinc-800 rounded-xl px-4 py-2 text-[15px] outline-none placeholder:text-zinc-500 mb-2"
+              className="w-full bg-concrete-700 rounded-xl px-4 py-2 text-[15px] outline-none placeholder:text-[#8E8E8E] mb-2"
             />
             {/* Amount, Balance, Mine Button */}
             <div className="flex items-center justify-between">
@@ -636,14 +636,14 @@ export function DonateModal({
                 className={`
                   w-32 h-10 text-[14px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2
                   ${txStatus === "success"
-                    ? "bg-zinc-300 text-black"
+                    ? "bg-moss-300 text-concrete-800"
                     : txStatus === "error"
-                    ? "bg-zinc-600 text-white"
+                    ? "bg-concrete-600 text-white"
                     : txStatus === "pending"
-                    ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                    ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
                     : parsedAmount > 0 && parsedAmount <= userBalance
-                      ? "bg-white text-black hover:bg-zinc-200"
-                      : "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                      ? "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
+                      : "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
                   }
                 `}
               >
