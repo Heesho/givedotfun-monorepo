@@ -73,7 +73,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-concrete-700/50 active:bg-concrete-600/50 rounded-xl transition-colors"
     >
       {children}
     </button>
@@ -369,7 +369,7 @@ export function TradeModal({
   const isSuccess = status === "success";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -458,9 +458,9 @@ export function TradeModal({
 
           {/* Error messages */}
           {(quoteError || txError) && (
-            <div className="px-3 py-2 rounded-lg bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
-              <span className="text-[12px] text-zinc-400">
+            <div className="px-3 py-2 rounded-lg bg-concrete-600/30 border border-concrete-600/40 flex items-start gap-2 mb-3">
+              <AlertCircle className="w-4 h-4 text-[#8E8E8E] mt-0.5 flex-shrink-0" />
+              <span className="text-[12px] text-[#8E8E8E]">
                 {(() => {
                   const msg = txError?.message || quoteError?.message || "";
                   if (msg.includes("rejected") || msg.includes("denied")) return "Transaction cancelled";
@@ -481,10 +481,10 @@ export function TradeModal({
             onClick={handleConfirm}
             className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
-                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
                 : isSuccess
-                ? "bg-zinc-300 text-black"
-                : "bg-white text-black hover:bg-zinc-200"
+                ? "bg-moss-300 text-concrete-800"
+                : "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

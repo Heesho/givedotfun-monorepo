@@ -23,7 +23,7 @@ const PriceChartInner = dynamic(
         className="w-full flex items-center justify-center bg-black"
         style={{ height: 200 }}
       >
-        <div className="text-zinc-600 text-xs">Loading chart...</div>
+        <div className="text-[#8E8E8E] text-xs">Loading chart...</div>
       </div>
     ),
   }
@@ -32,7 +32,7 @@ const PriceChartInner = dynamic(
 export const LazyPriceChart = memo(function LazyPriceChart({
   data,
   isLoading = false,
-  color = "#a1a1aa",
+  color = "#3DDC84",
   height = 200,
   onHover,
   tokenFirstActiveTime,

@@ -293,21 +293,21 @@ export function AdminModal({
   const saveBtnClass = (field: string, enabled: boolean) =>
     `px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
       successField === field
-        ? "bg-zinc-300 text-black"
+        ? "bg-moss-300 text-concrete-800"
         : isSaving && pendingField === field
-        ? "bg-zinc-700 text-zinc-400"
+        ? "bg-concrete-600 text-[#8E8E8E]"
         : enabled
-        ? "bg-white text-black hover:bg-zinc-200"
-        : "bg-zinc-800 text-zinc-600"
+        ? "bg-moss-400 text-concrete-800 hover:bg-moss-300"
+        : "bg-concrete-700 text-[#8E8E8E]"
     }`;
 
   const inputClass =
-    "flex-1 bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] font-mono outline-none placeholder:text-zinc-600 min-w-0";
+    "flex-1 bg-concrete-700 rounded-xl px-3 py-2.5 text-[14px] font-mono outline-none placeholder:text-[#8E8E8E] min-w-0";
 
   const labelClass = "text-muted-foreground text-[12px] mb-1.5 block";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -334,12 +334,12 @@ export function AdminModal({
           <div className="flex items-center gap-3 mb-5">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="relative w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0 hover:bg-zinc-700 transition-colors"
+              className="relative w-14 h-14 rounded-2xl bg-concrete-700 flex items-center justify-center overflow-hidden flex-shrink-0 hover:bg-concrete-600 transition-colors"
             >
               {currentLogoUrl ? (
                 <img src={currentLogoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Camera className="w-5 h-5 text-zinc-500" />
+                <Camera className="w-5 h-5 text-[#8E8E8E]" />
               )}
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4 text-white" />
@@ -366,7 +366,7 @@ export function AdminModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your fundraiser..."
               rows={3}
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600 resize-none"
+              className="w-full bg-concrete-700 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-[#8E8E8E] resize-none"
             />
           </div>
 
@@ -378,7 +378,7 @@ export function AdminModal({
               value={defaultMessage}
               onChange={(e) => setDefaultMessage(e.target.value)}
               placeholder="gm"
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
+              className="w-full bg-concrete-700 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-[#8E8E8E]"
             />
           </div>
 
@@ -390,7 +390,7 @@ export function AdminModal({
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
               placeholder="Who receives donations"
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
+              className="w-full bg-concrete-700 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-[#8E8E8E]"
             />
           </div>
 
@@ -402,7 +402,7 @@ export function AdminModal({
                 <button
                   type="button"
                   onClick={() => setLinks([...links, ""])}
-                  className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="text-[12px] text-[#8E8E8E] hover:text-moss-400 transition-colors"
                 >
                   + Add link
                 </button>
@@ -419,19 +419,19 @@ export function AdminModal({
                     setLinks(updated);
                   }}
                   placeholder="https://..."
-                  className="flex-1 bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
+                  className="flex-1 bg-concrete-700 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-[#8E8E8E]"
                 />
                 <button
                   type="button"
                   onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                  className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="px-2 text-[#8E8E8E] hover:text-moss-400 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ))}
             {links.length === 0 && (
-              <p className="text-[12px] text-zinc-600">No links added</p>
+              <p className="text-[12px] text-[#8E8E8E]">No links added</p>
             )}
           </div>
 
@@ -441,12 +441,12 @@ export function AdminModal({
             disabled={isSaving || !metadataChanged}
             className={`w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all mb-6 ${
               successField === "metadata"
-                ? "bg-zinc-300 text-black"
+                ? "bg-moss-300 text-concrete-800"
                 : isSaving && pendingField === "metadata"
-                ? "bg-zinc-700 text-zinc-400"
+                ? "bg-concrete-600 text-[#8E8E8E]"
                 : metadataChanged
-                ? "bg-white text-black hover:bg-zinc-200"
-                : "bg-zinc-800 text-zinc-600"
+                ? "bg-moss-400 text-concrete-800 hover:bg-moss-300"
+                : "bg-concrete-700 text-[#8E8E8E]"
             }`}
           >
             {successField === "metadata" ? (

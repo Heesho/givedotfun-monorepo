@@ -43,7 +43,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-concrete-700/50 active:bg-concrete-600/50 rounded-xl transition-colors"
     >
       {children}
     </button>
@@ -198,7 +198,7 @@ export function LiquidityModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -239,7 +239,7 @@ export function LiquidityModal({
               <span className="text-[11px] text-muted-foreground">{tokenSymbol}</span>
               <button
                 onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors"
+                className="text-[11px] text-muted-foreground hover:text-moss-400 transition-colors"
               >
                 Balance: {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -262,7 +262,7 @@ export function LiquidityModal({
                   const maxTokenFromUsdc = usdcBalance / tokenPrice;
                   setTokenAmount(Math.min(tokenBalance, maxTokenFromUsdc).toFixed(2));
                 }}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors"
+                className="text-[11px] text-muted-foreground hover:text-moss-400 transition-colors"
               >
                 Balance: {usdcBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -287,12 +287,12 @@ export function LiquidityModal({
             disabled={!canCreate || isPending || isSuccess}
             className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               isSuccess
-                ? "bg-zinc-300 text-black"
+                ? "bg-moss-300 text-concrete-800"
                 : isError
-                ? "bg-zinc-600 text-white"
+                ? "bg-concrete-600 text-white"
                 : !canCreate || isPending
-                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
-                : "bg-white text-black hover:bg-zinc-200"
+                ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
+                : "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
