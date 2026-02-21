@@ -170,7 +170,7 @@ export default function RigDetailPage() {
   });
 
   const multicallAddress = getMulticallAddress();
-  const coreAddress = CONTRACT_ADDRESSES.fundraiserCore as `0x${string}`;
+  const coreAddress = CONTRACT_ADDRESSES.core as `0x${string}`;
 
   // Fetch fundraiser state
   const { fundraiserState, isLoading: isFundLoading } = useFundraiserState(

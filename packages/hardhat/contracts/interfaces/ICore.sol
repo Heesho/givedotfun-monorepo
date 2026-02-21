@@ -2,11 +2,11 @@
 pragma solidity 0.8.19;
 
 /**
- * @title IFundraiserCore
+ * @title ICore
  * @author heesho
- * @notice Interface for the FundraiserCore launchpad contract.
+ * @notice Interface for the Core launchpad contract.
  */
-interface IFundraiserCore {
+interface ICore {
     struct LaunchParams {
         address launcher;
         address quoteToken;
@@ -27,11 +27,9 @@ interface IFundraiserCore {
     }
 
     // Constants
-    function RIG_TYPE() external view returns (string memory);
     function DEAD_ADDRESS() external view returns (address);
 
     // Immutables
-    function registry() external view returns (address);
     function usdcToken() external view returns (address);
     function uniswapV2Factory() external view returns (address);
     function uniswapV2Router() external view returns (address);

@@ -1,6 +1,6 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts'
-import { FundraiserCore__Launched as FundraiserCoreLaunchedEvent } from '../../generated/FundraiserCore/FundraiserCore'
-import { Fundraiser as FundraiserContract } from '../../generated/FundraiserCore/Fundraiser'
+import { Core__Launched as CoreLaunchedEvent } from '../../generated/Core/Core'
+import { Fundraiser as FundraiserContract } from '../../generated/Core/Fundraiser'
 import {
   UniswapV2Pair as PairTemplate,
   Fundraiser as FundraiserTemplate,
@@ -25,7 +25,7 @@ import {
 
 const DEFAULT_MIN_DONATION = BigInt.fromI32(10_000)
 
-export function handleFundraiserCoreLaunched(event: FundraiserCoreLaunchedEvent): void {
+export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   // Load or create Protocol entity (singleton)
   let protocol = getOrCreateProtocol()
   protocol.totalUnits = protocol.totalUnits.plus(ONE_BI)
@@ -36,7 +36,7 @@ export function handleFundraiserCoreLaunched(event: FundraiserCoreLaunchedEvent)
   // Load or create launcher Account
   let launcher = getOrCreateAccount(event.params.launcher)
 
-  // Event params for FundraiserCore:
+  // Event params for Core:
   // launcher (indexed), rig (indexed), unit (indexed), recipient, auction, lpToken, quoteToken,
   // tokenName, tokenSymbol, uri, usdcAmount, unitAmount, initialEmission, minEmission,
   // minDonation, halvingPeriod, auctionInitPrice, auctionEpochPeriod, auctionPriceMultiplier, auctionMinInitPrice

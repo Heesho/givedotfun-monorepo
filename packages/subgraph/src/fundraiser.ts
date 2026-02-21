@@ -11,7 +11,7 @@ import {
   Fundraiser__TeamSet as TeamSetEvent,
   Fundraiser as FundraiserContract,
 } from '../generated/templates/Fundraiser/Fundraiser'
-import { FundraiserCore as FundraiserCoreContract } from '../generated/templates/Fundraiser/FundraiserCore'
+import { Core as CoreContract } from '../generated/templates/Fundraiser/Core'
 import {
   Rig,
   Fundraiser,
@@ -108,7 +108,7 @@ export function handleFunded(event: FundedEvent): void {
   let hasProtocol = false
   let coreResult = fundraiserContract.try_core()
   if (!coreResult.reverted) {
-    let coreContract = FundraiserCoreContract.bind(coreResult.value)
+    let coreContract = CoreContract.bind(coreResult.value)
     let protocolResult = coreContract.try_protocolFeeAddress()
     hasProtocol = !protocolResult.reverted && !isZeroAddress(protocolResult.value)
   }

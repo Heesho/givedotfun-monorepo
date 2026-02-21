@@ -75,7 +75,7 @@ Where:
 - `epochTotal` is the total donations from all users in that epoch.
 
 Key rules:
-- **Per-epoch claims**: Each epoch must be claimed individually. There is no batch claim function on the rig itself (use FundraiserMulticall for batch claims).
+- **Per-epoch claims**: Each epoch must be claimed individually. There is no batch claim function on the rig itself (use Multicall for batch claims).
 - **One claim per account per epoch**: Once claimed, `epochAccountToHasClaimed[epoch][account]` is set to `true` and the account cannot claim again for that epoch.
 - **Anyone can trigger a claim**: The caller does not need to be the account. Anyone can call `claim(account, epoch)` on behalf of any account. The Unit tokens are always minted to `account`.
 - **Epoch must be over**: You cannot claim for the current epoch. The epoch must have fully elapsed.
@@ -147,7 +147,7 @@ treasuryFee     = amount - recipientAmount - teamFee - protocolFee;  // remainde
 ### Special Cases
 
 - **Team is zero address**: If the owner sets the `team` address to `address(0)`, the 4% team fee is not sent. It is absorbed into the treasury remainder.
-- **Protocol is zero address**: If the FundraiserCore's `protocolFeeAddress` is set to `address(0)`, the 1% protocol fee is not sent. It is absorbed into the treasury remainder.
+- **Protocol is zero address**: If the Core's `protocolFeeAddress` is set to `address(0)`, the 1% protocol fee is not sent. It is absorbed into the treasury remainder.
 - **Both zero**: If both team and protocol are the zero address, the treasury receives the full 50% (the non-recipient half).
 - **Rounding dust**: Because the treasury fee is calculated as a remainder (`amount - recipientAmount - teamFee - protocolFee`), any fractional wei lost to integer division in the other three calculations is captured by the treasury.
 
@@ -157,7 +157,7 @@ Fees are distributed immediately on each `fund()` call via direct ERC-20 transfe
 
 ### Default Treasury Setup
 
-When launched through FundraiserCore, the treasury is initially set to the **Auction contract** associated with the rig. This means the 45% treasury share flows into the Auction, which can sell Unit tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
+When launched through Core, the treasury is initially set to the **Auction contract** associated with the rig. This means the 45% treasury share flows into the Auction, which can sell Unit tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
 
 ---
 
@@ -187,7 +187,7 @@ The `recipient` address is central to Fundraiser's purpose. It represents the en
 
 ## Launch Parameters
 
-The following parameters are set at launch time (via `FundraiserCore.launch()`) and are **immutable** once the contract is deployed.
+The following parameters are set at launch time (via `Core.launch()`) and are **immutable** once the contract is deployed.
 
 ### Fundraiser Configuration
 
@@ -218,7 +218,7 @@ Each Fundraiser is deployed alongside an Auction contract for treasury token sal
 
 ### What Happens at Launch
 
-When `FundraiserCore.launch()` is called:
+When `Core.launch()` is called:
 
 1. A new **Unit** ERC-20 token is deployed.
 2. `unitAmount` of the Unit token is minted and paired with `usdcAmount` of USDC to create a **Uniswap V2 liquidity pool**.
@@ -227,7 +227,6 @@ When `FundraiserCore.launch()` is called:
 5. The **Fundraiser** contract is deployed with the emission configuration.
 6. Unit minting rights are transferred to the Fundraiser (only the rig can mint new Unit tokens going forward).
 7. Ownership of the Fundraiser is transferred to the launcher.
-8. The rig is registered in the central Registry.
 
 ---
 
@@ -251,7 +250,7 @@ The following are fixed at deployment and can never be modified:
 
 - `unit` -- The Unit token address
 - `quote` -- The payment token address
-- `core` -- The FundraiserCore contract address
+- `core` -- The Core contract address
 - `startTime` -- The deployment timestamp (determines epoch boundaries)
 - `initialEmission` -- The starting emission per epoch
 - `minEmission` -- The emission floor
@@ -308,7 +307,7 @@ These public mappings are accessible as view functions:
 |---------------------|-------------|-------------------------------------------------------|
 | `unit()`            | `address`   | The Unit (ERC-20) token address.                      |
 | `quote()`           | `address`   | The quote (payment) token address.                    |
-| `core()`            | `address`   | The FundraiserCore contract address.                        |
+| `core()`            | `address`   | The Core contract address.                                  |
 | `startTime()`       | `uint256`   | The contract deployment timestamp.                    |
 | `initialEmission()` | `uint256`   | The starting emission amount per epoch.               |
 | `minEmission()`     | `uint256`   | The minimum emission floor per epoch.                 |

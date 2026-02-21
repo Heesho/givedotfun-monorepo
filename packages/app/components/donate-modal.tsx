@@ -18,7 +18,7 @@ import {
 import {
   CONTRACT_ADDRESSES,
   ERC20_ABI,
-  FUNDRAISER_MULTICALL_ABI,
+  MULTICALL_ABI,
   QUOTE_TOKEN_DECIMALS,
 } from "@/lib/contracts";
 import { Leaderboard } from "@/components/leaderboard";
@@ -109,7 +109,7 @@ export function DonateModal({
   } = useBatchedTransaction();
 
   // Allowance check — skip approve when sufficient
-  const multicallAddress = CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
+  const multicallAddress = CONTRACT_ADDRESSES.multicall as `0x${string}`;
   const fundAmountWei = (() => {
     try {
       const v = parseFloat(fundAmount);
@@ -282,7 +282,7 @@ export function DonateModal({
     calls.push(
       encodeContractCall(
         multicallAddress,
-        FUNDRAISER_MULTICALL_ABI,
+        MULTICALL_ABI,
         "fund",
         [rigAddress, account, recipientAddress, amount, message || defaultMessage]
       )
@@ -296,8 +296,8 @@ export function DonateModal({
     const dayIds = claimableEpochs.map((d) => d.epoch);
     const calls: Call[] = [
       encodeContractCall(
-        CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`,
-        FUNDRAISER_MULTICALL_ABI,
+        CONTRACT_ADDRESSES.multicall as `0x${string}`,
+        MULTICALL_ABI,
         "claimMultiple",
         [rigAddress, account, dayIds]
       ),

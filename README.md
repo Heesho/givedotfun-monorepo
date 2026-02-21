@@ -9,7 +9,7 @@ give.fun enables permissionless fundraiser creation. When someone launches a fun
 1. A new **Unit** token is created with minting controlled by a Fundraiser contract
 2. Initial liquidity is created by pairing the Unit with USDC on Uniswap V2
 3. **The LP tokens are permanently burned** - liquidity can never be pulled
-4. Donors contribute USDC to daily pools and earn proportional token emissions
+4. Donors contribute USDC to epoch-based pools and earn proportional token emissions
 
 This creates a fair launch environment where tokens are distributed based on participation and community support.
 
@@ -23,20 +23,20 @@ Creator provides USDC -> Unit token created -> LP created & burned -> Fundraiser
 
 1. **Launch**: A creator provides USDC to launch. The system mints initial Unit tokens, creates a Unit/USDC liquidity pool, and burns the LP tokens forever.
 
-2. **Donating**: Users donate USDC to daily pools via the Fundraiser contract. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
+2. **Donating**: Users donate USDC to epoch pools via the Fundraiser contract. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
 
-3. **Emissions**: Unit tokens are emitted daily according to a halving schedule. Each day's emission is split proportionally among that day's donors.
+3. **Emissions**: Unit tokens are emitted each epoch according to a halving schedule. Each epoch's emission is split proportionally among that epoch's donors.
 
-4. **Claiming**: After a day ends, donors claim their proportional share of that day's Unit token emission.
+4. **Claiming**: After an epoch ends, donors claim their proportional share of that epoch's Unit token emission.
 
 ## Fundraiser
 
-**Mechanic**: Donation-based daily pools with proportional distribution
+**Mechanic**: Donation-based epoch pools with proportional distribution
 
-Users donate payment tokens to daily pools. At the end of each day, donors claim their proportional share of that day's Unit emission:
+Users donate payment tokens to epoch pools. At the end of each epoch, donors claim their proportional share of that epoch's Unit emission:
 
 ```
-Your reward = (your donation / total daily donations) x daily emission
+Your reward = (your donation / total epoch donations) x epoch emission
 ```
 
 **Fee Split on Donations**:
@@ -45,24 +45,24 @@ Your reward = (your donation / total daily donations) x daily emission
 - **4%** to Team
 - **1%** to Protocol
 
-**Emission Schedule**: Halves every `halvingPeriod` days down to a configurable floor.
+**Emission Schedule**: Halves every `halvingPeriod` epochs down to a configurable floor.
 
 ## Core Concepts
 
 ### Token Emissions
 
-Unit tokens are minted by Fundraiser contracts daily. The emission rate determines how many tokens are available:
+Unit tokens are minted by Fundraiser contracts each epoch. The emission rate determines how many tokens are available:
 
 ```
-userReward = (userDonation * dayEmission) / dayTotalDonated
+userReward = (userDonation * epochEmission) / epochTotalDonated
 ```
 
 ### Halving Schedule
 
-Similar to Bitcoin, emission rates decrease over time (day-based halvings):
+Similar to Bitcoin, emission rates decrease over time (epoch-based halvings):
 
 ```
-halvings = day / halvingPeriod
+halvings = epoch / halvingPeriod
 currentEmission = initialEmission >> halvings  // divide by 2^halvings
 if (currentEmission < minEmission) currentEmission = minEmission
 ```
@@ -80,12 +80,8 @@ This provides permanent trading liquidity and prevents rug pulls.
 
 ```
                                     +-------------------+
-                                    |     Registry      |
-                                    | (all fundraisers) |
-                                    +--------+----------+
-                                             |
-                                    +--------v----------+
-                                    | FundraiserCore    |
+                                    |       Core        |
+                                    |   (launchpad)     |
                                     +--------+----------+
                                              |
                                     +--------v----------+
@@ -102,12 +98,11 @@ This provides permanent trading liquidity and prevents rug pulls.
 
 | Contract | Description |
 |----------|-------------|
-| `Registry` | Central registry for all fundraisers, enables discovery |
+| `Core` | Launchpad for deploying fundraisers, creates LP, manages state |
 | `Unit` | ERC20 token with mint rights controlled by its Fundraiser |
 | `Auction` | Dutch auction for treasury fee collection, burns LP tokens |
-| `Fundraiser` | Daily donation pools with proportional distribution |
-| `FundraiserCore` | Factory/launchpad for fundraisers |
-| `FundraiserMulticall` | Batch operations and view helpers |
+| `Fundraiser` | Epoch-based donation pools with proportional distribution |
+| `Multicall` | Batch operations and view helpers |
 
 ## Fee Distribution
 
@@ -145,7 +140,8 @@ Treasury fees accumulate in an Auction contract. Users can buy all accumulated f
 |-----------|-----|-----|
 | Initial Emission | 1e18 | 1e30 |
 | Min Emission | 1 | initialEmission |
-| Halving Period | 7 days | 365 days |
+| Halving Period | 7 epochs | 365 epochs |
+| Epoch Duration | 1 hour | 7 days |
 
 ## Development
 
@@ -168,9 +164,7 @@ packages/
 │   ├── hooks/        # Custom React hooks
 │   └── lib/          # Utilities, constants, ABIs
 ├── hardhat/          # Solidity smart contracts
-│   ├── contracts/    # Core contracts
-│   │   ├── rigs/
-│   │   │   └── fundraiser/  # Fundraiser implementations
+│   ├── contracts/    # Core, Fundraiser, Multicall, Unit, Auction
 │   │   ├── interfaces/
 │   │   └── mocks/
 │   ├── scripts/      # Deployment scripts
@@ -212,8 +206,8 @@ The test suite includes:
 
 ```bash
 cd packages/hardhat
-npx hardhat test                           # Run all tests
-npx hardhat test tests/fund/*             # Run fundraiser tests
+npx hardhat test                                    # Run all tests
+npx hardhat test tests/fundraiser/testCore.js       # Run Core launch tests
 ```
 
 ---

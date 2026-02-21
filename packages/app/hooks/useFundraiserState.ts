@@ -3,7 +3,7 @@ import { base } from "wagmi/chains";
 import { zeroAddress } from "viem";
 import {
   CONTRACT_ADDRESSES,
-  FUNDRAISER_MULTICALL_ABI,
+  MULTICALL_ABI,
   type FundraiserState,
   type ClaimableEpoch,
 } from "@/lib/contracts";
@@ -13,11 +13,11 @@ export function useFundraiserState(
   account: `0x${string}` | undefined,
   enabled: boolean = true,
 ) {
-  const multicallAddr = CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
+  const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
 
   const { data: rawState, refetch, isLoading } = useReadContract({
     address: multicallAddr,
-    abi: FUNDRAISER_MULTICALL_ABI,
+    abi: MULTICALL_ABI,
     functionName: "getRig",
     args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
@@ -33,7 +33,7 @@ export function useFundraiserState(
   // Fetch claimable epochs (from epoch 0 to currentEpoch)
   const { data: rawClaimable } = useReadContract({
     address: multicallAddr,
-    abi: FUNDRAISER_MULTICALL_ABI,
+    abi: MULTICALL_ABI,
     functionName: "getClaimableEpochs",
     args: rigAddress && account
       ? [rigAddress, account, 0n, currentEpoch]
@@ -48,7 +48,7 @@ export function useFundraiserState(
   // Fetch total pending rewards
   const { data: rawPending } = useReadContract({
     address: multicallAddr,
-    abi: FUNDRAISER_MULTICALL_ABI,
+    abi: MULTICALL_ABI,
     functionName: "getTotalPendingRewards",
     args: rigAddress && account
       ? [rigAddress, account, 0n, currentEpoch]

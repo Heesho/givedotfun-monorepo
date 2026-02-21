@@ -3,7 +3,7 @@ import { base } from "wagmi/chains";
 import { zeroAddress } from "viem";
 import {
   CONTRACT_ADDRESSES,
-  FUNDRAISER_MULTICALL_ABI,
+  MULTICALL_ABI,
   type AuctionState,
 } from "@/lib/contracts";
 
@@ -14,7 +14,7 @@ export function useAuctionState(
 ) {
   const { data: rawAuctionState, refetch, isLoading, error } = useReadContract({
     address: multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`,
-    abi: FUNDRAISER_MULTICALL_ABI,
+    abi: MULTICALL_ABI,
     functionName: "getAuction",
     args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
@@ -50,7 +50,7 @@ export function useAllAuctionStates(
   const resolvedMulticall = multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`;
   const contracts = rigAddresses.map((address) => ({
     address: resolvedMulticall,
-    abi: FUNDRAISER_MULTICALL_ABI,
+    abi: MULTICALL_ABI,
     functionName: "getAuction" as const,
     args: [address, account ?? zeroAddress] as const,
     chainId: base.id,

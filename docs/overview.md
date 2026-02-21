@@ -35,7 +35,7 @@ From that point forward, the fundraiser distributes tokens according to its prog
 
 - **Permissionless launches.** Anyone can launch a fundraiser by providing the minimum required USDC. There is no approval process, whitelist, or governance vote required.
 
-- **Non-upgradeable contracts.** All contracts (Registry, Core, Factory, Fundraiser, Unit, Auction) are deployed without proxy patterns.
+- **Non-upgradeable contracts.** All contracts (Core, Fundraiser, Unit, Auction, Factories) are deployed without proxy patterns.
 
 - **Fair distribution through donations.** Tokens are not pre-sold or airdropped. They are earned through participation -- donating to fund a cause and receiving tokens proportional to your contribution.
 

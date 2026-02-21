@@ -16,7 +16,7 @@ import {
 } from "@/hooks/useBatchedTransaction";
 import {
   CONTRACT_ADDRESSES,
-  FUNDRAISER_MULTICALL_ABI,
+  MULTICALL_ABI,
   QUOTE_TOKEN_DECIMALS,
   ERC20_ABI,
 } from "@/lib/contracts";
@@ -279,11 +279,11 @@ function Slider({
   );
 }
 
-// Minimal ABI for parsing FundraiserCore__Launched event from tx receipt
+// Minimal ABI for parsing Core__Launched event from tx receipt
 const LAUNCHED_EVENT_ABI = [
   {
     type: "event",
-    name: "FundraiserCore__Launched",
+    name: "Core__Launched",
     inputs: [
       { name: "launcher", type: "address", indexed: true },
       { name: "rig", type: "address", indexed: true },
@@ -327,7 +327,7 @@ export default function LaunchPage() {
         logs: logs as Parameters<typeof parseEventLogs>["0"]["logs"],
       });
       const launchedEvent = parsed.find(
-        (e) => e.eventName === "FundraiserCore__Launched"
+        (e) => e.eventName === "Core__Launched"
       );
       if (launchedEvent?.args && "rig" in launchedEvent.args) {
         return launchedEvent.args.rig as string;
@@ -530,7 +530,7 @@ export default function LaunchPage() {
       const epochDurationSecs = DEFAULTS.epochDuration;
       const halvingPeriodEpochs = Math.max(1, Math.round(halvingPeriod / epochDurationSecs));
 
-      const multicallAddress = CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
+      const multicallAddress = CONTRACT_ADDRESSES.multicall as `0x${string}`;
       const launchParams = {
         launcher,
         quoteToken,
@@ -552,7 +552,7 @@ export default function LaunchPage() {
 
       const calls: Call[] = [
         encodeApproveCall(quoteToken, multicallAddress, usdcAmountWei),
-        encodeContractCall(multicallAddress, FUNDRAISER_MULTICALL_ABI, "launch", [launchParams]),
+        encodeContractCall(multicallAddress, MULTICALL_ABI, "launch", [launchParams]),
       ];
 
       await execute(calls);

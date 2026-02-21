@@ -68,7 +68,7 @@ Using a non-standard ERC20 as the quote token may result in incorrect fee calcul
 
 ### Uniswap V2 Router
 
-The Uniswap V2 router is trusted for initial LP creation during fundraiser launches. The router is called by FundraiserCore to add liquidity and create the Unit/USDC trading pair.
+The Uniswap V2 router is trusted for initial LP creation during fundraiser launches. The router is called by Core to add liquidity and create the Unit/USDC trading pair.
 
 ---
 

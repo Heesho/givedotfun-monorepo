@@ -7,12 +7,12 @@ const AddressZero = "0x0000000000000000000000000000000000000000";
 const AddressDead = "0x000000000000000000000000000000000000dEaD";
 
 let owner, protocol, user0, user1, user2;
-let usdc, registry, core;
+let usdc, core;
 let fundraiser, auction, unit, lpToken;
 let unitFactory, auctionFactory;
 let uniswapFactory, uniswapRouter;
 
-describe("FundraiserCore Launch Tests", function () {
+describe("Core Launch Tests", function () {
   before("Initial set up", async function () {
     await network.provider.send("hardhat_reset");
     console.log("Begin Initialization");
@@ -33,11 +33,6 @@ describe("FundraiserCore Launch Tests", function () {
     uniswapRouter = await mockUniswapRouterArtifact.deploy(uniswapFactory.address);
     console.log("- Uniswap V2 Router Initialized");
 
-    // Deploy Registry
-    const registryArtifact = await ethers.getContractFactory("Registry");
-    registry = await registryArtifact.deploy();
-    console.log("- Registry Initialized");
-
     // Deploy factories
     const unitFactoryArtifact = await ethers.getContractFactory("UnitFactory");
     unitFactory = await unitFactoryArtifact.deploy();
@@ -47,10 +42,9 @@ describe("FundraiserCore Launch Tests", function () {
     auctionFactory = await auctionFactoryArtifact.deploy();
     console.log("- AuctionFactory Initialized");
 
-    // Deploy FundraiserCore
-    const coreArtifact = await ethers.getContractFactory("FundraiserCore");
+    // Deploy Core
+    const coreArtifact = await ethers.getContractFactory("Core");
     core = await coreArtifact.deploy(
-      registry.address,
       usdc.address,
       uniswapFactory.address,
       uniswapRouter.address,
@@ -59,11 +53,7 @@ describe("FundraiserCore Launch Tests", function () {
       protocol.address,
       convert("100", 6) // minUsdcForLaunch
     );
-    console.log("- FundraiserCore Initialized");
-
-    // Approve FundraiserCore as factory in Registry
-    await registry.setFactoryApproval(core.address, true);
-    console.log("- FundraiserCore approved in Registry");
+    console.log("- Core Initialized");
 
     // Mint USDC to user0 for launching
     await usdc.mint(user0.address, convert("1000", 6));
@@ -77,11 +67,10 @@ describe("FundraiserCore Launch Tests", function () {
     expect(await core.protocolFeeAddress()).to.equal(protocol.address);
     expect(await core.usdcToken()).to.equal(usdc.address);
     expect(await core.minUsdcForLaunch()).to.equal(convert("100", 6));
-    expect(await core.RIG_TYPE()).to.equal("fund");
     console.log("Core state verified");
   });
 
-  it("Launch a new fund rig", async function () {
+  it("Launch a new fundraiser", async function () {
     console.log("******************************************************");
 
     const launchParams = {
@@ -111,7 +100,7 @@ describe("FundraiserCore Launch Tests", function () {
     const receipt = await tx.wait();
 
     // Get deployed addresses from event
-    const launchEvent = receipt.events.find((e) => e.event === "FundraiserCore__Launched");
+    const launchEvent = receipt.events.find((e) => e.event === "Core__Launched");
     fundraiser = launchEvent.args.rig;
     unit = launchEvent.args.unit;
     auction = launchEvent.args.auction;
@@ -193,7 +182,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__InsufficientUsdc()"
+      "Core__InsufficientUsdc()"
     );
     console.log("Launch correctly reverted with insufficient USDC");
   });
@@ -223,7 +212,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__ZeroAddress()"
+      "Core__ZeroAddress()"
     );
     console.log("Launch correctly reverted with zero launcher address");
   });
@@ -253,7 +242,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__ZeroAddress()"
+      "Core__ZeroAddress()"
     );
     console.log("Launch correctly reverted with zero quote token");
   });
@@ -283,7 +272,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__EmptyTokenName()"
+      "Core__EmptyTokenName()"
     );
     console.log("Launch correctly reverted with empty token name");
   });
@@ -313,7 +302,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__EmptyTokenSymbol()"
+      "Core__EmptyTokenSymbol()"
     );
     console.log("Launch correctly reverted with empty token symbol");
   });
@@ -343,7 +332,7 @@ describe("FundraiserCore Launch Tests", function () {
     await usdc.connect(user0).approve(core.address, launchParams.usdcAmount);
 
     await expect(core.connect(user0).launch(launchParams)).to.be.revertedWith(
-      "FundraiserCore__ZeroUnitAmount()"
+      "Core__ZeroUnitAmount()"
     );
     console.log("Launch correctly reverted with zero unit amount");
   });
@@ -411,7 +400,7 @@ describe("FundraiserCore Launch Tests", function () {
     await core.connect(owner).setMinUsdcForLaunch(convert("100", 6));
   });
 
-  it("Can launch multiple fund rigs", async function () {
+  it("Can launch multiple fundraisers", async function () {
     console.log("******************************************************");
 
     const launchParams = {

@@ -1,10 +1,7 @@
 export const CONTRACT_ADDRESSES = {
-  // Fundraiser Core contract
-  fundraiserCore: "0x0000000000000000000000000000000000000000",
-  // Fundraiser Multicall contract
-  fundraiserMulticall: "0x0000000000000000000000000000000000000000",
-  // Legacy aliases (point to fundraiser variants)
+  // Core launchpad contract
   core: "0x0000000000000000000000000000000000000000",
+  // Multicall helper contract
   multicall: "0x0000000000000000000000000000000000000000",
   // Token addresses (Mock tokens for staging)
   usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e", // Mock USDC
@@ -16,7 +13,7 @@ export const CONTRACT_ADDRESSES = {
 // Native ETH placeholder address used by 0x API
 export const NATIVE_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-// FundraiserCore contract ABI - for reading deployed fundraiser state
+// Core contract ABI - for reading deployed fundraiser state
 export const CORE_ABI = [
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
@@ -97,8 +94,8 @@ export const CORE_ABI = [
   },
 ] as const;
 
-// FundraiserMulticall ABI - for fundraiser batched operations and state queries
-export const FUNDRAISER_MULTICALL_ABI = [
+// Multicall ABI - for batched operations and state queries
+export const MULTICALL_ABI = [
   // getRig function - get aggregated fundraiser state
   {
     inputs: [
@@ -122,7 +119,7 @@ export const FUNDRAISER_MULTICALL_ABI = [
           { internalType: "uint256", name: "accountUnitBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCurrentEpochDonation", type: "uint256" },
         ],
-        internalType: "struct FundraiserMulticall.RigState",
+        internalType: "struct Multicall.RigState",
         name: "state",
         type: "tuple",
       },
@@ -185,7 +182,7 @@ export const FUNDRAISER_MULTICALL_ABI = [
           { internalType: "uint256", name: "pendingReward", type: "uint256" },
           { internalType: "bool", name: "hasClaimed", type: "bool" },
         ],
-        internalType: "struct FundraiserMulticall.ClaimableEpoch[]",
+        internalType: "struct Multicall.ClaimableEpoch[]",
         name: "epochs",
         type: "tuple[]",
       },
@@ -229,7 +226,7 @@ export const FUNDRAISER_MULTICALL_ABI = [
           { internalType: "uint256", name: "accountQuoteBalance", type: "uint256" },
           { internalType: "uint256", name: "accountLpTokenBalance", type: "uint256" },
         ],
-        internalType: "struct FundraiserMulticall.AuctionState",
+        internalType: "struct Multicall.AuctionState",
         name: "state",
         type: "tuple",
       },
@@ -272,7 +269,7 @@ export const FUNDRAISER_MULTICALL_ABI = [
           { internalType: "uint256", name: "auctionPriceMultiplier", type: "uint256" },
           { internalType: "uint256", name: "auctionMinInitPrice", type: "uint256" },
         ],
-        internalType: "struct IFundraiserCore.LaunchParams",
+        internalType: "struct ICore.LaunchParams",
         name: "params",
         type: "tuple",
       },
@@ -616,7 +613,7 @@ export const UNIV2_PAIR_ABI = [
 // Quote token decimals (USDC = 6)
 export const QUOTE_TOKEN_DECIMALS = 6;
 
-// Helper to get the multicall address (fundraiser-only)
+// Helper to get the multicall address
 export function getMulticallAddress(): `0x${string}` {
-  return CONTRACT_ADDRESSES.fundraiserMulticall as `0x${string}`;
+  return CONTRACT_ADDRESSES.multicall as `0x${string}`;
 }

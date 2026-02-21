@@ -5,14 +5,14 @@ schema:
   file: ./schema.graphql
 dataSources:
   # ==========================================================================
-  # FUNDRAISER CORE - Launches Fundraisers
+  # CORE - Launches Fundraisers
   # ==========================================================================
   - kind: ethereum
-    name: FundraiserCore
+    name: Core
     network: base
     source:
       address: "0x0000000000000000000000000000000000000000"
-      abi: FundraiserCore
+      abi: Core
       startBlock: 41874455
     mapping:
       kind: ethereum/events
@@ -25,16 +25,16 @@ dataSources:
         - Fundraiser
         - Account
       abis:
-        - name: FundraiserCore
-          file: ./abis/FundraiserCore.json
+        - name: Core
+          file: ./abis/Core.json
         - name: Fundraiser
           file: ./abis/Fundraiser.json
         - name: ERC20
           file: ./abis/ERC20.json
       eventHandlers:
-        - event: FundraiserCore__Launched(indexed address,indexed address,indexed address,address,address,address,address,string,string,string,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
-          handler: handleFundraiserCoreLaunched
-      file: ./src/cores/fundraiserCore.ts
+        - event: Core__Launched(indexed address,indexed address,indexed address,address,address,address,address,string,string,string,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCoreLaunched
+      file: ./src/cores/core.ts
 
 templates:
   # ==========================================================================
@@ -89,8 +89,8 @@ templates:
       abis:
         - name: Fundraiser
           file: ./abis/Fundraiser.json
-        - name: FundraiserCore
-          file: ./abis/FundraiserCore.json
+        - name: Core
+          file: ./abis/Core.json
       eventHandlers:
         - event: Fundraiser__Funded(address,indexed address,indexed address,uint256,uint256,string)
           handler: handleFunded

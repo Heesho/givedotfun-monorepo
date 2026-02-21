@@ -12,7 +12,6 @@ A perpetual funding platform on Base. Fundraisers are paired with USDC, initial 
   - [Launch Sequence](#launch-sequence)
   - [Unit Token](#unit-token)
   - [Treasury Auctions](#treasury-auctions)
-  - [Registry](#registry)
 - [Contract Architecture](#contract-architecture)
 - [Contract Reference](#contract-reference)
 - [Parameter Bounds](#parameter-bounds)
@@ -87,10 +86,10 @@ Day 1: Emission = 1000 tokens (same until halving)
 
 ### Launch Sequence
 
-The launch flow is orchestrated by FundraiserCore:
+The launch flow is orchestrated by Core:
 
 ```
-User calls FundraiserCore.launch(params)
+User calls Core.launch(params)
     |
     +-- 1. Validate params (launcher, quoteToken, usdc, name, symbol, unitAmount)
     +-- 2. Transfer USDC from launcher
@@ -102,7 +101,6 @@ User calls FundraiserCore.launch(params)
     +-- 8. Deploy Fundraiser contract (validates fundraiser-specific params)
     +-- 9. Lock minting rights: Unit.setRig(fundraiser) (one-time, irreversible)
     +-- 10. Transfer Fundraiser ownership to launcher
-    +-- 11. Register with central Registry
 ```
 
 ### Unit Token
@@ -121,22 +119,13 @@ Each fundraiser has an associated Auction contract. Treasury fees (45%) accumula
 
 This creates deflationary pressure on the LP supply: as more treasury fees accumulate and get auctioned off, LP tokens are permanently removed from circulation.
 
-### Registry
-
-A central Registry contract tracks all deployed fundraisers. Only approved Core contracts (factories) can register new fundraisers. The Registry provides enumeration and lookup of fundraiser metadata.
-
 ---
 
 ## Contract Architecture
 
 ```
-                        +------------------+
-                        |    Registry      |
-                        | (central index)  |
-                        +--------+---------+
-                                 |
-                        +--------v-----------+
-                        |  FundraiserCore    |
+                        +--------------------+
+                        |       Core         |
                         | (launch orchestrator)|
                         +--+----+---+--------+
                            |    |
@@ -150,10 +139,10 @@ A central Registry contract tracks all deployed fundraisers. Only approved Core 
                         |ERC20| |     |
                         +-----+ +-----+
 
-FundraiserCore deploys Fundraiser contracts inline (no separate factory).
+Core deploys Fundraiser contracts inline (no separate factory).
 
                         +---------------------+
-                        | FundraiserMulticall  |
+                        |     Multicall       |
                         | (batch ops +        |
                         |  view helpers)      |
                         +---------------------+
@@ -165,13 +154,12 @@ FundraiserCore deploys Fundraiser contracts inline (no separate factory).
 contracts/
 +-- Auction.sol              # Dutch auction for treasury LP buybacks
 +-- AuctionFactory.sol       # Deploys Auction instances
++-- Core.sol                 # Launch orchestrator for Fundraisers
 +-- Fundraiser.sol           # Donation pool with epoch-based claims
-+-- FundraiserCore.sol       # Launch orchestrator for Fundraisers
-+-- FundraiserMulticall.sol  # Batch fund/claim + view helpers
-+-- Registry.sol             # Central fundraiser registry
++-- Multicall.sol            # Batch fund/claim + view helpers
 +-- Unit.sol                 # ERC20 token with voting/permit
 +-- UnitFactory.sol          # Deploys Unit instances
-+-- interfaces/              # All interfaces (IFundraiser, IFundraiserCore, etc.)
++-- interfaces/              # All interfaces (IFundraiser, ICore, etc.)
 +-- mocks/                   # Test mocks (MockUSDC, MockUniswapV2, etc.)
 ```
 
@@ -179,7 +167,7 @@ contracts/
 
 ## Contract Reference
 
-### FundraiserCore
+### Core
 
 ```solidity
 // Launch a new fundraiser (deploys Unit + LP + Auction + Fundraiser)
@@ -237,7 +225,7 @@ function getPrice() external view returns (uint256)
 function epochId() external view returns (uint256)
 ```
 
-### FundraiserMulticall
+### Multicall
 
 ```solidity
 function fund(address rig, address account, uint256 amount, string calldata _uri) external

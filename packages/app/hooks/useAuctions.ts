@@ -3,7 +3,7 @@ import { useReadContracts } from "wagmi";
 import { base } from "wagmi/chains";
 import { zeroAddress, formatUnits } from "viem";
 import {
-  FUNDRAISER_MULTICALL_ABI,
+  MULTICALL_ABI,
   getMulticallAddress,
   QUOTE_TOKEN_DECIMALS,
   type AuctionState,
@@ -52,7 +52,7 @@ export function useAuctions() {
 
       contractCalls.push({
         address: multicall,
-        abi: FUNDRAISER_MULTICALL_ABI,
+        abi: MULTICALL_ABI,
         functionName: "getAuction" as const,
         args: [rigAddr, account ?? zeroAddress] as const,
         chainId: base.id,

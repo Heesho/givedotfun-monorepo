@@ -37,19 +37,18 @@ packages/
 │   └── lib/          # Utilities, constants, contract ABIs
 ├── hardhat/          # Solidity smart contracts
 │   ├── contracts/
-│   │   ├── Registry.sol          # Central registry for all fundraisers
+│   │   ├── Core.sol              # Launch orchestrator for Fundraisers
+│   │   ├── Fundraiser.sol        # Donation pool with epoch-based claims
+│   │   ├── Multicall.sol         # Batch ops + view helpers
 │   │   ├── Unit.sol              # ERC20 token created per launch
 │   │   ├── UnitFactory.sol       # Deploys Unit tokens
 │   │   ├── Auction.sol           # Dutch auction for treasury sales
 │   │   ├── AuctionFactory.sol    # Deploys Auctions
-│   │   ├── Fundraiser.sol        # Donation pool with epoch-based claims
-│   │   ├── FundraiserCore.sol    # Launch orchestrator for Fundraisers
-│   │   ├── FundraiserMulticall.sol # Batch ops + view helpers
 │   ├── scripts/      # Deployment and verification scripts
 │   └── tests/        # Contract test suites
 └── subgraph/         # The Graph indexer
     ├── src/
-    │   ├── cores/    # FundraiserCore launch handlers
+    │   ├── cores/    # Core launch handlers
     │   ├── fundraiser.ts # Fundraiser event handlers
     │   ├── pair.ts   # Uniswap V2 pair price/volume tracking
     │   └── unit.ts   # ERC20 transfer tracking
@@ -59,13 +58,12 @@ packages/
 
 ## Key Contracts
 
-- **Registry.sol**: Central registry for all fundraisers. Only approved factories (Core contracts) can register fundraisers.
-- **FundraiserCore.sol**: Entry point for launching fundraisers. Handles token creation, LP setup, and fundraiser deployment. Approved as a factory in the Registry.
+- **Core.sol**: Entry point for launching fundraisers. Handles token creation, LP setup, and fundraiser deployment. Deploys Fundraiser contracts inline.
 - **Fundraiser.sol**: The donation-based distribution mechanism. Handles epoch pools, emissions, and fee splits.
+- **Multicall.sol**: Read helper for batched frontend queries.
 - **Unit.sol**: ERC20 token created for each launch. Mintable only by its parent fundraiser.
 - **Auction.sol**: Dutch auction for treasury token sales (separate from the fundraiser mechanism).
-- **FundraiserMulticall.sol**: Read helper for batched frontend queries.
-- **Factories**: UnitFactory and AuctionFactory deploy child contracts. FundraiserCore deploys Fundraiser inline.
+- **Factories**: UnitFactory and AuctionFactory deploy child contracts.
 
 ## Development Commands
 

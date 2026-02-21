@@ -6,7 +6,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IUnit} from "./interfaces/IUnit.sol";
-import {IFundraiserCore} from "./interfaces/IFundraiserCore.sol";
+import {ICore} from "./interfaces/ICore.sol";
 
 /**
  * @title Fundraiser
@@ -37,7 +37,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     uint256 public constant MIN_HALVING_PERIOD = 7; // minimum 7 epochs
     uint256 public constant MAX_HALVING_PERIOD = 365; // maximum 365 epochs
 
-    // Emission bounds (defense in depth - matches FundraiserCore)
+    // Emission bounds (defense in depth - matches Core)
     uint256 public constant MIN_INITIAL_EMISSION = 1e18; // minimum 1 Unit per day
     uint256 public constant MAX_INITIAL_EMISSION = 1e30; // maximum emission per day
 
@@ -182,7 +182,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
         IERC20(quote).safeTransferFrom(msg.sender, address(this), amount);
 
         // Calculate splits
-        address protocol = IFundraiserCore(core).protocolFeeAddress();
+        address protocol = ICore(core).protocolFeeAddress();
         uint256 recipientAmount = amount * RECIPIENT_BPS / DIVISOR;
         uint256 teamFee = team != address(0) ? amount * TEAM_BPS / DIVISOR : 0;
         uint256 protocolFee = protocol != address(0) ? amount * PROTOCOL_BPS / DIVISOR : 0;

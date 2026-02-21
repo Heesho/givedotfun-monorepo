@@ -2,38 +2,29 @@
 
 ## Overview
 
-give.fun is composed of layered smart contracts that separate concerns between discovery (Registry), orchestration (FundraiserCore), deployment (Factories), token distribution (Fundraiser), token representation (Units), and treasury management (Auctions). All contracts are non-upgradeable and deployed on Base.
+give.fun is composed of layered smart contracts that separate concerns between orchestration (Core), deployment (Factories), token distribution (Fundraiser), token representation (Units), and treasury management (Auctions). All contracts are non-upgradeable and deployed on Base.
 
 ## Contract Relationship Diagram
 
 ```
-                     +-------------------+
-                     |     Registry      |
-                     |  (all fundraisers)|
-                     +-------------------+
-                              ^
-                  register()  |
                      +--------+--------+
-                     | FundraiserCore  |
+                     |      Core       |
+                     | (launch         |
+                     |  orchestrator)  |
                      +--------+--------+
                               |
                               |   uses
                               |
-                     +--------v--------+
-                     |  Fundraiser     |
-                     |  Factory        |
-                     +--------+--------+
-
-Shared Factories (one instance each, used by FundraiserCore):
-
-+------------------+         +------------------+
-|   UnitFactory    |         | AuctionFactory   |
-| (deploys Unit    |         | (deploys Auction |
-|  ERC20 tokens)   |         |  contracts)      |
-+------------------+         +------------------+
+               +--------------+--------------+
+               |                             |
+      +--------v--------+          +--------v--------+
+      |   UnitFactory   |          | AuctionFactory  |
+      | (deploys Unit   |          | (deploys Auction|
+      |  ERC20 tokens)  |          |  contracts)     |
+      +-----------------+          +-----------------+
 ```
 
-FundraiserCore holds references to UnitFactory and AuctionFactory. When a launch
+Core holds references to UnitFactory and AuctionFactory. When a launch
 is triggered, the Core calls both shared factories and deploys the Fundraiser
 inline to create the full set of per-launch contracts.
 
@@ -61,28 +52,9 @@ Per-Launch Contract Set:
 
 ## Contract Hierarchy
 
-### Registry
+### Core
 
-The Registry is the single source of truth for discovering all fundraisers deployed across the platform. It is intentionally minimal.
-
-- Maintains a mapping of approved factories (Core contracts) that are authorized to register new fundraisers.
-- Stores a mapping of registered fundraiser addresses.
-- Emits `Registry__RigRegistered` events with the fundraiser address, unit token, launcher, and factory. The subgraph indexes these events to build the global fundraiser directory.
-- Only the Registry owner can approve or revoke factories. The Registry does not validate what constitutes a "fundraiser" -- that responsibility belongs to the factory.
-- Adding a new fundraiser type to give.fun requires only deploying a new Core contract and approving it as a factory in the Registry.
-
-**Key functions:**
-
-| Function | Access | Description |
-|---|---|---|
-| `register(rig, unit, launcher)` | Approved factories only | Register a new fundraiser |
-| `setFactoryApproval(factory, approved)` | Owner only | Approve or revoke a factory |
-| `rigToIsRegistered(rig)` | Public (view) | Check if an address is a registered fundraiser |
-| `factoryToIsApproved(factory)` | Public (view) | Check if an address is an approved factory |
-
-### FundraiserCore
-
-The FundraiserCore contract is the entry point for launching new fundraisers. It orchestrates the full launch sequence and is approved as a factory in the Registry, granting it permission to register the fundraisers it deploys.
+The Core contract is the entry point for launching new fundraisers. It orchestrates the full launch sequence and maintains its own registry of deployed fundraisers.
 
 Responsibilities:
 
@@ -96,18 +68,17 @@ Responsibilities:
 - Transfer Unit minting rights to the Fundraiser (permanent, one-time lock).
 - Set initial metadata URI on the fundraiser.
 - Transfer fundraiser ownership to the launcher.
-- Register the fundraiser in both the local Core registry and the central Registry.
 
-FundraiserCore also maintains its own local registry of deployed fundraisers with mappings to their associated Auction contracts and LP token addresses. The Core owner can update the protocol fee address and the minimum USDC required to launch.
+Core maintains its own registry of deployed fundraisers with mappings to their associated Auction contracts and LP token addresses. The Core owner can update the protocol fee address and the minimum USDC required to launch.
 
 ### Factories (UnitFactory, AuctionFactory)
 
-Factories are thin deployment contracts. Their sole purpose is to deploy new instances of their respective contracts. FundraiserCore deploys Fundraiser contracts inline (no separate factory).
+Factories are thin deployment contracts. Their sole purpose is to deploy new instances of their respective contracts. Core deploys Fundraiser contracts inline (no separate factory).
 
 | Factory | Deploys | Called By |
 |---|---|---|
-| UnitFactory | Unit (ERC20 token) | FundraiserCore |
-| AuctionFactory | Auction (Dutch auction) | FundraiserCore |
+| UnitFactory | Unit (ERC20 token) | Core |
+| AuctionFactory | Auction (Dutch auction) | Core |
 
 ### Fundraiser
 
@@ -126,7 +97,7 @@ The Unit contract is an ERC20 token with ERC20Permit (gasless approvals) and ERC
 
 Key design decisions:
 
-- **One-time minting authority transfer.** The Unit is initially deployed with FundraiserCore as the minter. The Core mints the initial supply for LP seeding, then calls `setRig()` to permanently transfer minting authority to the Fundraiser. The `rigLocked` flag ensures this can only happen once.
+- **One-time minting authority transfer.** The Unit is initially deployed with Core as the minter. The Core mints the initial supply for LP seeding, then calls `setRig()` to permanently transfer minting authority to the Fundraiser. The `rigLocked` flag ensures this can only happen once.
 - **No admin mint.** Once `setRig()` is called, only the Fundraiser contract can mint tokens.
 - **Burn capability.** Any token holder can burn their own tokens. There is no admin burn.
 
@@ -143,7 +114,7 @@ How it works:
 
 ## Launch Flow
 
-When a user calls `FundraiserCore.launch()`, the following steps execute atomically in a single transaction:
+When a user calls `Core.launch()`, the following steps execute atomically in a single transaction:
 
 ### Step 1: Validate Parameters
 
@@ -201,7 +172,7 @@ auction = IAuctionFactory(auctionFactory).deploy(
 
 ### Step 8: Deploy Fundraiser
 
-The Fundraiser is deployed inline by FundraiserCore (no separate factory). The constructor receives the core parameters, with treasury set to the Auction contract, team set to the launcher's address.
+The Fundraiser is deployed inline by Core (no separate factory). The constructor receives the core parameters, with treasury set to the Auction contract, team set to the launcher's address.
 
 ### Step 9: Transfer Unit Minting Rights
 
@@ -209,13 +180,7 @@ The Fundraiser is deployed inline by FundraiserCore (no separate factory). The c
 IUnit(unit).setRig(rig);
 ```
 
-### Step 10: Register Fundraiser in Registry
-
-```solidity
-IRegistry(registry).register(rig, unit, params.launcher);
-```
-
-### Step 11: Transfer Ownership to Launcher
+### Step 10: Transfer Ownership to Launcher
 
 ```solidity
 IFundraiser(rig).transferOwnership(params.launcher);

@@ -4,24 +4,24 @@ pragma solidity 0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IFundraiser} from "./interfaces/IFundraiser.sol";
-import {IFundraiserCore} from "./interfaces/IFundraiserCore.sol";
+import {ICore} from "./interfaces/ICore.sol";
 import {IAuction} from "./interfaces/IAuction.sol";
 
 /**
- * @title FundraiserMulticall
+ * @title Multicall
  * @author heesho
  * @notice Helper contract for batched operations and aggregated view functions for Fundraiser.
  * @dev Provides donation batching, claim batching, and comprehensive state queries.
  *      Payment token is read from each rig - users must approve this contract for the rig's payment token.
  */
-contract FundraiserMulticall {
+contract Multicall {
     using SafeERC20 for IERC20;
 
     /*----------  ERRORS  -----------------------------------------------*/
 
-    error FundraiserMulticall__ZeroAddress();
-    error FundraiserMulticall__InvalidRig();
-    error FundraiserMulticall__EmptyArray();
+    error Multicall__ZeroAddress();
+    error Multicall__InvalidRig();
+    error Multicall__EmptyArray();
 
     /*----------  IMMUTABLES  -------------------------------------------*/
 
@@ -81,11 +81,11 @@ contract FundraiserMulticall {
 
     /**
      * @notice Deploy the Multicall helper contract.
-     * @param _core FundraiserCore contract address
+     * @param _core Core contract address
      * @param _usdc USDC token address
      */
     constructor(address _core, address _usdc) {
-        if (_core == address(0) || _usdc == address(0)) revert FundraiserMulticall__ZeroAddress();
+        if (_core == address(0) || _usdc == address(0)) revert Multicall__ZeroAddress();
         core = _core;
         usdc = _usdc;
     }
@@ -105,7 +105,7 @@ contract FundraiserMulticall {
         uint256 amount,
         string calldata _uri
     ) external {
-        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
+        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
 
         address quoteToken = IFundraiser(rig).quote();
         IERC20(quoteToken).safeTransferFrom(msg.sender, address(this), amount);
@@ -121,7 +121,7 @@ contract FundraiserMulticall {
      * @param epoch The epoch to claim
      */
     function claim(address rig, address account, uint256 epoch) external {
-        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
+        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
         IFundraiser(rig).claim(account, epoch);
     }
 
@@ -133,9 +133,9 @@ contract FundraiserMulticall {
      * @param epochIds Array of epochs to claim
      */
     function claimMultiple(address rig, address account, uint256[] calldata epochIds) external {
-        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
+        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
         uint256 length = epochIds.length;
-        if (length == 0) revert FundraiserMulticall__EmptyArray();
+        if (length == 0) revert Multicall__EmptyArray();
 
         uint256 currentEpoch = IFundraiser(rig).currentEpoch();
         for (uint256 i = 0; i < length;) {
@@ -160,8 +160,8 @@ contract FundraiserMulticall {
      * @param maxPaymentTokenAmount Maximum LP tokens willing to pay
      */
     function buy(address rig, uint256 epochId, uint256 deadline, uint256 maxPaymentTokenAmount) external {
-        if (!IFundraiserCore(core).rigToIsRig(rig)) revert FundraiserMulticall__InvalidRig();
-        address auction = IFundraiserCore(core).rigToAuction(rig);
+        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
+        address auction = ICore(core).rigToAuction(rig);
         address lpToken = IAuction(auction).paymentToken();
         uint256 price = IAuction(auction).getPrice();
         address[] memory assets = new address[](1);
@@ -182,7 +182,7 @@ contract FundraiserMulticall {
      * @return auction Address of deployed Auction contract
      * @return lpToken Address of Unit/USDC LP token
      */
-    function launch(IFundraiserCore.LaunchParams calldata params)
+    function launch(ICore.LaunchParams calldata params)
         external
         returns (address unit, address rig, address auction, address lpToken)
     {
@@ -192,7 +192,7 @@ contract FundraiserMulticall {
         IERC20(usdc).safeApprove(core, params.usdcAmount);
 
         // Build params with msg.sender as launcher
-        IFundraiserCore.LaunchParams memory launchParams = IFundraiserCore.LaunchParams({
+        ICore.LaunchParams memory launchParams = ICore.LaunchParams({
             launcher: msg.sender,
             quoteToken: params.quoteToken,
             recipient: params.recipient,
@@ -211,7 +211,7 @@ contract FundraiserMulticall {
             auctionMinInitPrice: params.auctionMinInitPrice
         });
 
-        return IFundraiserCore(core).launch(launchParams);
+        return ICore(core).launch(launchParams);
     }
 
     /*----------  VIEW FUNCTIONS  ---------------------------------------*/
@@ -237,7 +237,7 @@ contract FundraiserMulticall {
 
         // Calculate Unit price in USDC from LP reserves
         // USDC has 6 decimals, Unit has 18. Multiply by 1e30 (= 1e12 normalization * 1e18 precision)
-        address lpToken = IFundraiserCore(core).rigToLP(rig);
+        address lpToken = ICore(core).rigToLP(rig);
         if (lpToken != address(0)) {
             uint256 usdcInLP = IERC20(usdc).balanceOf(lpToken);
             uint256 unitInLP = IERC20(unitToken).balanceOf(lpToken);
@@ -374,7 +374,7 @@ contract FundraiserMulticall {
      * @return state Aggregated auction state
      */
     function getAuction(address rig, address account) external view returns (AuctionState memory state) {
-        address auction = IFundraiserCore(core).rigToAuction(rig);
+        address auction = ICore(core).rigToAuction(rig);
 
         state.epochId = IAuction(auction).epochId();
         state.initPrice = IAuction(auction).initPrice();

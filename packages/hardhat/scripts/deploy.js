@@ -34,19 +34,17 @@ const MULTISIG_ADDRESS = "0xeE0CB49D2805DA6bC0A979ddAd87bb793fbB765E";
 const MIN_USDC_FOR_LAUNCH = convert("1", 6); // 1 USDC minimum
 
 // Deployed Contract Addresses (reset for fresh deploy)
-const REGISTRY = "";
 const UNIT_FACTORY = "";
 const AUCTION_FACTORY = "";
-const FUNDRAISER_CORE = "";
-const FUNDRAISER_MULTICALL = "";
+const CORE = "";
+const MULTICALL = "";
 
 // Contract Variables
 let usdc,
-  registry,
   unitFactory,
   auctionFactory,
-  fundraiserCore,
-  fundraiserMulticall;
+  core,
+  multicall;
 
 // =============================================================================
 // GET CONTRACTS
@@ -57,13 +55,6 @@ async function getContracts() {
     "contracts/mocks/MockUSDC.sol:MockUSDC",
     USDC_ADDRESS
   );
-
-  if (REGISTRY) {
-    registry = await ethers.getContractAt(
-      "contracts/Registry.sol:Registry",
-      REGISTRY
-    );
-  }
 
   if (UNIT_FACTORY) {
     unitFactory = await ethers.getContractAt(
@@ -79,17 +70,17 @@ async function getContracts() {
     );
   }
 
-  if (FUNDRAISER_CORE) {
-    fundraiserCore = await ethers.getContractAt(
-      "contracts/FundraiserCore.sol:FundraiserCore",
-      FUNDRAISER_CORE
+  if (CORE) {
+    core = await ethers.getContractAt(
+      "contracts/Core.sol:Core",
+      CORE
     );
   }
 
-  if (FUNDRAISER_MULTICALL) {
-    fundraiserMulticall = await ethers.getContractAt(
-      "contracts/FundraiserMulticall.sol:FundraiserMulticall",
-      FUNDRAISER_MULTICALL
+  if (MULTICALL) {
+    multicall = await ethers.getContractAt(
+      "contracts/Multicall.sol:Multicall",
+      MULTICALL
     );
   }
 
@@ -99,15 +90,6 @@ async function getContracts() {
 // =============================================================================
 // DEPLOY FUNCTIONS
 // =============================================================================
-
-async function deployRegistry() {
-  console.log("Starting Registry Deployment");
-  const artifact = await ethers.getContractFactory("Registry");
-  const contract = await artifact.deploy({ gasPrice: ethers.gasPrice, nonce: await getNextNonce() });
-  registry = await contract.deployed();
-  await sleep(5000);
-  console.log("Registry Deployed at:", registry.address);
-}
 
 async function deployUnitFactory() {
   console.log("Starting UnitFactory Deployment");
@@ -127,8 +109,8 @@ async function deployAuctionFactory() {
   console.log("AuctionFactory Deployed at:", auctionFactory.address);
 }
 
-async function deployFundraiserCore() {
-  console.log("Starting FundraiserCore Deployment");
+async function deployCore() {
+  console.log("Starting Core Deployment");
 
   if (!PROTOCOL_FEE_ADDRESS) {
     throw new Error("PROTOCOL_FEE_ADDRESS must be set before deployment");
@@ -136,15 +118,9 @@ async function deployFundraiserCore() {
   if (!USDC_ADDRESS) {
     throw new Error("USDC_ADDRESS must be set before deployment");
   }
-  if (!registry?.address && !REGISTRY) {
-    throw new Error("Registry must be deployed before FundraiserCore");
-  }
 
-  const registryAddress = registry?.address || REGISTRY;
-
-  const artifact = await ethers.getContractFactory("FundraiserCore");
+  const artifact = await ethers.getContractFactory("Core");
   const contract = await artifact.deploy(
-    registryAddress,
     USDC_ADDRESS,
     UNISWAP_V2_FACTORY,
     UNISWAP_V2_ROUTER,
@@ -154,43 +130,25 @@ async function deployFundraiserCore() {
     MIN_USDC_FOR_LAUNCH,
     { gasPrice: ethers.gasPrice, nonce: await getNextNonce() }
   );
-  fundraiserCore = await contract.deployed();
+  core = await contract.deployed();
   await sleep(5000);
-  console.log("FundraiserCore Deployed at:", fundraiserCore.address);
+  console.log("Core Deployed at:", core.address);
 }
 
-async function approveFundraiserCore() {
-  console.log("Approving FundraiserCore as factory in Registry...");
-  const coreAddress = fundraiserCore?.address || FUNDRAISER_CORE;
-  const tx = await registry.setFactoryApproval(coreAddress, true, { nonce: await getNextNonce() });
-  await tx.wait();
-  console.log("FundraiserCore approved in Registry");
-}
-
-async function deployFundraiserMulticall() {
-  console.log("Starting FundraiserMulticall Deployment");
-  const artifact = await ethers.getContractFactory("FundraiserMulticall");
-  const contract = await artifact.deploy(fundraiserCore.address, USDC_ADDRESS, {
+async function deployMulticall() {
+  console.log("Starting Multicall Deployment");
+  const artifact = await ethers.getContractFactory("Multicall");
+  const contract = await artifact.deploy(core.address, USDC_ADDRESS, {
     gasPrice: ethers.gasPrice,
   });
-  fundraiserMulticall = await contract.deployed();
+  multicall = await contract.deployed();
   await sleep(5000);
-  console.log("FundraiserMulticall Deployed at:", fundraiserMulticall.address);
+  console.log("Multicall Deployed at:", multicall.address);
 }
 
 // =============================================================================
 // VERIFY FUNCTIONS
 // =============================================================================
-
-async function verifyRegistry() {
-  console.log("Starting Registry Verification");
-  await hre.run("verify:verify", {
-    address: registry?.address || REGISTRY,
-    contract: "contracts/Registry.sol:Registry",
-    constructorArguments: [],
-  });
-  console.log("Registry Verified");
-}
 
 async function verifyUnitFactory() {
   console.log("Starting UnitFactory Verification");
@@ -212,13 +170,12 @@ async function verifyAuctionFactory() {
   console.log("AuctionFactory Verified");
 }
 
-async function verifyFundraiserCore() {
-  console.log("Starting FundraiserCore Verification");
+async function verifyCore() {
+  console.log("Starting Core Verification");
   await hre.run("verify:verify", {
-    address: fundraiserCore?.address || FUNDRAISER_CORE,
-    contract: "contracts/rigs/fundraiser/FundraiserCore.sol:FundraiserCore",
+    address: core?.address || CORE,
+    contract: "contracts/Core.sol:Core",
     constructorArguments: [
-      registry?.address || REGISTRY,
       USDC_ADDRESS,
       UNISWAP_V2_FACTORY,
       UNISWAP_V2_ROUTER,
@@ -228,27 +185,27 @@ async function verifyFundraiserCore() {
       MIN_USDC_FOR_LAUNCH,
     ],
   });
-  console.log("FundraiserCore Verified");
+  console.log("Core Verified");
 }
 
-async function verifyFundraiserMulticall() {
-  console.log("Starting FundraiserMulticall Verification");
+async function verifyMulticall() {
+  console.log("Starting Multicall Verification");
   await hre.run("verify:verify", {
-    address: fundraiserMulticall?.address || FUNDRAISER_MULTICALL,
-    contract: "contracts/rigs/fundraiser/FundraiserMulticall.sol:FundraiserMulticall",
-    constructorArguments: [fundraiserCore?.address || FUNDRAISER_CORE, USDC_ADDRESS],
+    address: multicall?.address || MULTICALL,
+    contract: "contracts/Multicall.sol:Multicall",
+    constructorArguments: [core?.address || CORE, USDC_ADDRESS],
   });
-  console.log("FundraiserMulticall Verified");
+  console.log("Multicall Verified");
 }
 
 // --- Fundraiser-specific verification ---
 
-async function verifyFundraiserUnitByRigAddress(rigAddress) {
-  const rig = await ethers.getContractAt(
+async function verifyFundraiserUnitByAddress(fundraiserAddress) {
+  const fundraiser = await ethers.getContractAt(
     "contracts/Fundraiser.sol:Fundraiser",
-    rigAddress
+    fundraiserAddress
   );
-  const unitAddress = await rig.unit();
+  const unitAddress = await fundraiser.unit();
   const unit = await ethers.getContractAt(
     "contracts/Unit.sol:Unit",
     unitAddress
@@ -256,7 +213,7 @@ async function verifyFundraiserUnitByRigAddress(rigAddress) {
 
   const name = await unit.name();
   const symbol = await unit.symbol();
-  const coreAddress = fundraiserCore?.address || FUNDRAISER_CORE;
+  const coreAddress = core?.address || CORE;
 
   console.log("Starting Unit Verification for:", unitAddress);
   console.log("  Name:", name);
@@ -271,12 +228,12 @@ async function verifyFundraiserUnitByRigAddress(rigAddress) {
   console.log("Unit Verified:", unitAddress);
 }
 
-async function getFundraiserUnitVerificationInfo(rigAddress) {
-  const rig = await ethers.getContractAt(
+async function getFundraiserUnitVerificationInfo(fundraiserAddress) {
+  const fundraiser = await ethers.getContractAt(
     "contracts/Fundraiser.sol:Fundraiser",
-    rigAddress
+    fundraiserAddress
   );
-  const unitAddress = await rig.unit();
+  const unitAddress = await fundraiser.unit();
   const unit = await ethers.getContractAt(
     "contracts/Unit.sol:Unit",
     unitAddress
@@ -284,7 +241,7 @@ async function getFundraiserUnitVerificationInfo(rigAddress) {
 
   const name = await unit.name();
   const symbol = await unit.symbol();
-  const coreAddress = fundraiserCore?.address || FUNDRAISER_CORE;
+  const coreAddress = core?.address || CORE;
 
   const abiCoder = new ethers.utils.AbiCoder();
   const encodedArgs = abiCoder.encode(
@@ -293,11 +250,11 @@ async function getFundraiserUnitVerificationInfo(rigAddress) {
   );
   const encodedArgsNoPrefix = encodedArgs.slice(2);
 
-  console.log("\n=== Fundraiser Unit Verification Info ===\n");
+  console.log("\n=== Unit Verification Info ===\n");
   console.log("Unit Address:", unitAddress);
   console.log("Name:", name);
   console.log("Symbol:", symbol);
-  console.log("Initial Rig (Core):", coreAddress);
+  console.log("Core:", coreAddress);
   console.log("\nABI-Encoded Constructor Arguments (for BaseScan):");
   console.log(encodedArgsNoPrefix);
   console.log("\n==============================\n");
@@ -311,23 +268,23 @@ async function getFundraiserUnitVerificationInfo(rigAddress) {
   };
 }
 
-async function verifyFundraiserByAddress(rigAddress) {
-  const rig = await ethers.getContractAt(
+async function verifyFundraiserByAddress(fundraiserAddress) {
+  const fundraiser = await ethers.getContractAt(
     "contracts/Fundraiser.sol:Fundraiser",
-    rigAddress
+    fundraiserAddress
   );
 
-  const unitAddress = await rig.unit();
-  const quoteToken = await rig.quote();
-  const coreAddress = await rig.core();
-  const treasury = await rig.treasury();
-  const team = await rig.team();
-  const recipient = await rig.recipient();
-  const initialEmission = await rig.initialEmission();
-  const minEmission = await rig.minEmission();
-  const halvingPeriod = await rig.halvingPeriod();
+  const unitAddress = await fundraiser.unit();
+  const quoteToken = await fundraiser.quote();
+  const coreAddress = await fundraiser.core();
+  const treasury = await fundraiser.treasury();
+  const team = await fundraiser.team();
+  const recipient = await fundraiser.recipient();
+  const initialEmission = await fundraiser.initialEmission();
+  const minEmission = await fundraiser.minEmission();
+  const halvingPeriod = await fundraiser.halvingPeriod();
 
-  console.log("Starting Fundraiser Verification for:", rigAddress);
+  console.log("Starting Fundraiser Verification for:", fundraiserAddress);
   console.log("  Unit:", unitAddress);
   console.log("  Quote:", quoteToken);
   console.log("  Core:", coreAddress);
@@ -339,8 +296,8 @@ async function verifyFundraiserByAddress(rigAddress) {
   console.log("  Halving Period:", halvingPeriod.toString());
 
   await hre.run("verify:verify", {
-    address: rigAddress,
-    contract: "contracts/rigs/fundraiser/Fundraiser.sol:Fundraiser",
+    address: fundraiserAddress,
+    contract: "contracts/Fundraiser.sol:Fundraiser",
     constructorArguments: [
       unitAddress,
       quoteToken,
@@ -355,11 +312,11 @@ async function verifyFundraiserByAddress(rigAddress) {
       },
     ],
   });
-  console.log("Fundraiser Verified:", rigAddress);
+  console.log("Fundraiser Verified:", fundraiserAddress);
 }
 
-async function verifyFundraiserAuctionByRigAddress(rigAddress) {
-  const auctionAddress = await fundraiserCore.rigToAuction(rigAddress);
+async function verifyFundraiserAuctionByAddress(fundraiserAddress) {
+  const auctionAddress = await core.rigToAuction(fundraiserAddress);
   const auction = await ethers.getContractAt(
     "contracts/Auction.sol:Auction",
     auctionAddress
@@ -384,7 +341,7 @@ async function verifyFundraiserAuctionByRigAddress(rigAddress) {
     );
   }
 
-  console.log("Starting Fundraiser Auction Verification for:", auctionAddress);
+  console.log("Starting Auction Verification for:", auctionAddress);
   console.log("  Init Price:", initPrice.toString());
   console.log("  Payment Token:", paymentToken);
   console.log("  Payment Receiver:", paymentReceiver);
@@ -404,7 +361,7 @@ async function verifyFundraiserAuctionByRigAddress(rigAddress) {
       minInitPrice,
     ],
   });
-  console.log("Fundraiser Auction Verified:", auctionAddress);
+  console.log("Auction Verified:", auctionAddress);
 }
 
 // =============================================================================
@@ -425,11 +382,11 @@ async function setMinUsdcForLaunch(coreContract, amount) {
   console.log("Min USDC updated");
 }
 
-async function transferFundraiserCoreOwnership(newOwner) {
-  console.log("Transferring FundraiserCore ownership to:", newOwner);
-  const tx = await fundraiserCore.transferOwnership(newOwner);
+async function transferCoreOwnership(newOwner) {
+  console.log("Transferring Core ownership to:", newOwner);
+  const tx = await core.transferOwnership(newOwner);
   await tx.wait();
-  console.log("FundraiserCore ownership transferred");
+  console.log("Core ownership transferred");
 }
 
 // =============================================================================
@@ -448,10 +405,6 @@ async function printDeployment() {
 
   console.log("\n--- Deployed Contracts ---");
   console.log(
-    "Registry:            ",
-    registry?.address || REGISTRY || "NOT DEPLOYED"
-  );
-  console.log(
     "UnitFactory:         ",
     unitFactory?.address || UNIT_FACTORY || "NOT DEPLOYED"
   );
@@ -460,21 +413,21 @@ async function printDeployment() {
     auctionFactory?.address || AUCTION_FACTORY || "NOT DEPLOYED"
   );
   console.log(
-    "FundraiserCore:      ",
-    fundraiserCore?.address || FUNDRAISER_CORE || "NOT DEPLOYED"
+    "Core:                ",
+    core?.address || CORE || "NOT DEPLOYED"
   );
   console.log(
-    "FundraiserMulticall: ",
-    fundraiserMulticall?.address || FUNDRAISER_MULTICALL || "NOT DEPLOYED"
+    "Multicall:           ",
+    multicall?.address || MULTICALL || "NOT DEPLOYED"
   );
 
-  if (fundraiserCore) {
-    console.log("\n--- FundraiserCore State ---");
-    console.log("Owner:               ", await fundraiserCore.owner());
-    console.log("Protocol Fee Address:", await fundraiserCore.protocolFeeAddress());
+  if (core) {
+    console.log("\n--- Core State ---");
+    console.log("Owner:               ", await core.owner());
+    console.log("Protocol Fee Address:", await core.protocolFeeAddress());
     console.log(
       "Min USDC:           ",
-      divDec(await fundraiserCore.minUsdcForLaunch())
+      divDec(await core.minUsdcForLaunch())
     );
   }
 
@@ -515,57 +468,47 @@ async function main() {
   // 1. Deploy System
   //===================================================================
 
-  // --- Shared infrastructure ---
   console.log("Starting Deployment...");
-  await deployRegistry();
   await deployUnitFactory();
   await deployAuctionFactory();
-
-  // --- FundraiserCore ---
-  await deployFundraiserCore();
-  await approveFundraiserCore();
-  await deployFundraiserMulticall();
+  await deployCore();
+  await deployMulticall();
 
   //===================================================================
   // 2. Verify Contracts
   //===================================================================
 
-  // --- Shared infrastructure ---
   // console.log("Starting Verification...");
-  // await verifyRegistry();
-  // await sleep(5000);
   // await verifyUnitFactory();
   // await sleep(5000);
   // await verifyAuctionFactory();
   // await sleep(5000);
-
-  // // --- FundraiserCore ---
-  // await verifyFundraiserCore();
+  // await verifyCore();
   // await sleep(5000);
-  // await verifyFundraiserMulticall();
+  // await verifyMulticall();
   // await sleep(5000);
 
-  // --- Fundraiser-specific verification (pass rig address) ---
-  // await getFundraiserUnitVerificationInfo("0xRIG_ADDRESS");
-  // await verifyFundraiserUnitByRigAddress("0xRIG_ADDRESS");
+  // --- Fundraiser-specific verification (pass fundraiser address) ---
+  // await getFundraiserUnitVerificationInfo("0xFUNDRAISER_ADDRESS");
+  // await verifyFundraiserUnitByAddress("0xFUNDRAISER_ADDRESS");
   // await sleep(5000);
-  // await verifyFundraiserByAddress("0xRIG_ADDRESS");
+  // await verifyFundraiserByAddress("0xFUNDRAISER_ADDRESS");
   // await sleep(5000);
-  // await verifyFundraiserAuctionByRigAddress("0xRIG_ADDRESS");
+  // await verifyFundraiserAuctionByAddress("0xFUNDRAISER_ADDRESS");
   // await sleep(5000);
 
   //===================================================================
   // 3. Configuration (optional)
   //===================================================================
 
-  // await setProtocolFeeAddress(fundraiserCore, PROTOCOL_FEE_ADDRESS);
-  // await setMinUsdcForLaunch(fundraiserCore, MIN_USDC_FOR_LAUNCH);
+  // await setProtocolFeeAddress(core, PROTOCOL_FEE_ADDRESS);
+  // await setMinUsdcForLaunch(core, MIN_USDC_FOR_LAUNCH);
 
   //===================================================================
   // 4. Transfer Ownership (optional)
   //===================================================================
 
-  // await transferFundraiserCoreOwnership(MULTISIG_ADDRESS);
+  // await transferCoreOwnership(MULTISIG_ADDRESS);
 
   //===================================================================
   // Print Deployment
