@@ -10,8 +10,8 @@ import {
   Fundraiser__TreasurySet as TreasurySetEvent,
   Fundraiser__TeamSet as TeamSetEvent,
   Fundraiser as FundraiserContract,
-} from '../../generated/templates/Fundraiser/Fundraiser'
-import { FundraiserCore as FundraiserCoreContract } from '../../generated/templates/Fundraiser/FundraiserCore'
+} from '../generated/templates/Fundraiser/Fundraiser'
+import { FundraiserCore as FundraiserCoreContract } from '../generated/templates/Fundraiser/FundraiserCore'
 import {
   Rig,
   Fundraiser,
@@ -24,7 +24,7 @@ import {
   Account,
   Unit,
   Protocol,
-} from '../../generated/schema'
+} from '../generated/schema'
 import {
   ZERO_BI,
   ONE_BI,

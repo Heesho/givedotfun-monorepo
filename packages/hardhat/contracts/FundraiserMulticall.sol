@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IFundraiser} from "./interfaces/IFundraiser.sol";
 import {IFundraiserCore} from "./interfaces/IFundraiserCore.sol";
-import {IAuction} from "../../interfaces/IAuction.sol";
+import {IAuction} from "./interfaces/IAuction.sol";
 
 /**
  * @title FundraiserMulticall

@@ -110,7 +110,7 @@ templates:
           handler: handleFundTreasurySet
         - event: Fundraiser__TeamSet(indexed address)
           handler: handleFundTeamSet
-      file: ./src/rigs/fundraiser.ts
+      file: ./src/fundraiser.ts
 
   # ==========================================================================
   # UNIT TOKEN - Transfer events for holder tracking (optional)

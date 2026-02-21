@@ -81,14 +81,14 @@ async function getContracts() {
 
   if (FUNDRAISER_CORE) {
     fundraiserCore = await ethers.getContractAt(
-      "contracts/rigs/fundraiser/FundraiserCore.sol:FundraiserCore",
+      "contracts/FundraiserCore.sol:FundraiserCore",
       FUNDRAISER_CORE
     );
   }
 
   if (FUNDRAISER_MULTICALL) {
     fundraiserMulticall = await ethers.getContractAt(
-      "contracts/rigs/fundraiser/FundraiserMulticall.sol:FundraiserMulticall",
+      "contracts/FundraiserMulticall.sol:FundraiserMulticall",
       FUNDRAISER_MULTICALL
     );
   }
@@ -245,7 +245,7 @@ async function verifyFundraiserMulticall() {
 
 async function verifyFundraiserUnitByRigAddress(rigAddress) {
   const rig = await ethers.getContractAt(
-    "contracts/rigs/fundraiser/Fundraiser.sol:Fundraiser",
+    "contracts/Fundraiser.sol:Fundraiser",
     rigAddress
   );
   const unitAddress = await rig.unit();
@@ -273,7 +273,7 @@ async function verifyFundraiserUnitByRigAddress(rigAddress) {
 
 async function getFundraiserUnitVerificationInfo(rigAddress) {
   const rig = await ethers.getContractAt(
-    "contracts/rigs/fundraiser/Fundraiser.sol:Fundraiser",
+    "contracts/Fundraiser.sol:Fundraiser",
     rigAddress
   );
   const unitAddress = await rig.unit();
@@ -313,7 +313,7 @@ async function getFundraiserUnitVerificationInfo(rigAddress) {
 
 async function verifyFundraiserByAddress(rigAddress) {
   const rig = await ethers.getContractAt(
-    "contracts/rigs/fundraiser/Fundraiser.sol:Fundraiser",
+    "contracts/Fundraiser.sol:Fundraiser",
     rigAddress
   );
 

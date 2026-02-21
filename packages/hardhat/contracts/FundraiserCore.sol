@@ -6,11 +6,11 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Fundraiser} from "./Fundraiser.sol";
-import {IUnit} from "../../interfaces/IUnit.sol";
-import {IUnitFactory} from "../../interfaces/IUnitFactory.sol";
-import {IAuctionFactory} from "../../interfaces/IAuctionFactory.sol";
-import {IUniswapV2Factory, IUniswapV2Router} from "../../interfaces/IUniswapV2.sol";
-import {IRegistry} from "../../interfaces/IRegistry.sol";
+import {IUnit} from "./interfaces/IUnit.sol";
+import {IUnitFactory} from "./interfaces/IUnitFactory.sol";
+import {IAuctionFactory} from "./interfaces/IAuctionFactory.sol";
+import {IUniswapV2Factory, IUniswapV2Router} from "./interfaces/IUniswapV2.sol";
+import {IRegistry} from "./interfaces/IRegistry.sol";
 
 /**
  * @title FundraiserCore
