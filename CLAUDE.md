@@ -8,7 +8,7 @@ Each fundraiser launch creates a **Fundraiser** (the distribution mechanism), a 
 
 ## How It Works
 
-Users donate a payment token (USDC) into daily pools via a Fundraiser contract. Donations are split immediately: 50% to the designated recipient, 45% to treasury, 4% to team, 1% to protocol. After each day ends, donors claim their proportional share of that day's Unit token emission based on their contribution relative to total donations. Emissions halve on a configurable schedule.
+Users donate a payment token (USDC) into epoch pools via a Fundraiser contract. Donations are split immediately: 50% to the designated recipient, 45% to treasury, 4% to team, 1% to protocol. After each epoch ends, donors claim their proportional share of that epoch's Unit token emission based on their contribution relative to total donations. Emissions halve on a configurable schedule.
 
 ## Tech Stack
 
@@ -42,14 +42,15 @@ packages/
 │   │   ├── UnitFactory.sol       # Deploys Unit tokens
 │   │   ├── Auction.sol           # Dutch auction for treasury sales
 │   │   ├── AuctionFactory.sol    # Deploys Auctions
-│   │   └── rigs/
-│   │       └── fundraiser/       # FundraiserCore, Fundraiser, FundraiserFactory, FundraiserMulticall
+│   │   ├── Fundraiser.sol        # Donation pool with epoch-based claims
+│   │   ├── FundraiserCore.sol    # Launch orchestrator for Fundraisers
+│   │   ├── FundraiserMulticall.sol # Batch ops + view helpers
 │   ├── scripts/      # Deployment and verification scripts
 │   └── tests/        # Contract test suites
 └── subgraph/         # The Graph indexer
     ├── src/
     │   ├── cores/    # FundraiserCore launch handlers
-    │   ├── rigs/     # Fundraiser event handlers
+    │   ├── fundraiser.ts # Fundraiser event handlers
     │   ├── pair.ts   # Uniswap V2 pair price/volume tracking
     │   └── unit.ts   # ERC20 transfer tracking
     ├── abis/         # Contract ABIs
@@ -60,11 +61,11 @@ packages/
 
 - **Registry.sol**: Central registry for all fundraisers. Only approved factories (Core contracts) can register fundraisers.
 - **FundraiserCore.sol**: Entry point for launching fundraisers. Handles token creation, LP setup, and fundraiser deployment. Approved as a factory in the Registry.
-- **Fundraiser.sol**: The donation-based distribution mechanism. Handles daily pools, emissions, and fee splits.
+- **Fundraiser.sol**: The donation-based distribution mechanism. Handles epoch pools, emissions, and fee splits.
 - **Unit.sol**: ERC20 token created for each launch. Mintable only by its parent fundraiser.
 - **Auction.sol**: Dutch auction for treasury token sales (separate from the fundraiser mechanism).
 - **FundraiserMulticall.sol**: Read helper for batched frontend queries.
-- **Factories**: UnitFactory, AuctionFactory, FundraiserFactory deploy child contracts.
+- **Factories**: UnitFactory and AuctionFactory deploy child contracts. FundraiserCore deploys Fundraiser inline.
 
 ## Development Commands
 

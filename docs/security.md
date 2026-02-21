@@ -76,7 +76,7 @@ The Uniswap V2 router is trusted for initial LP creation during fundraiser launc
 
 ### Fundraiser
 
-- **Daily granularity.** Emissions are calculated per calendar day (based on `block.timestamp`). Donations made near the end of a day compete with all donations from that entire day. There is no intra-day emission weighting.
+- **Epoch granularity.** Emissions are calculated per epoch (based on `block.timestamp` and configurable `epochDuration`). Donations made near the end of an epoch compete with all donations from that entire epoch. There is no intra-epoch emission weighting.
 
 ### Auction
 
@@ -105,7 +105,7 @@ All contracts follow the Checks-Effects-Interactions (CEI) pattern:
 2. **Effects** -- Update contract state.
 3. **Interactions** -- Perform external calls (token transfers).
 
-Fundraiser's `claim()` function explicitly marks the claim as completed (`dayAccountToHasClaimed[day][account] = true`) before minting tokens.
+Fundraiser's `claim()` function explicitly marks the claim as completed (`epochAccountToHasClaimed[epoch][account] = true`) before minting tokens.
 
 ### Front-Run Protection
 

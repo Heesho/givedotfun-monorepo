@@ -12,7 +12,7 @@ give.fun is a perpetual funding platform on Base -- crypto GoFundMe. Instead of 
 
 ### Reference
 
-- [Fundraiser](./fund-rig.md) -- Donation-based distribution with daily emission pools
+- [Fundraiser](./fundraiser.md) -- Donation-based distribution with epoch emission pools
 - [Auction](./auction.md) -- Treasury Dutch auction for selling accumulated tokens
 - [Security](./security.md) -- Trust assumptions, known trade-offs, and security measures
 
@@ -21,7 +21,7 @@ give.fun is a perpetual funding platform on Base -- crypto GoFundMe. Instead of 
 | Topic | Description |
 |---|---|
 | [Fee Splits](./architecture.md#fee-architecture) | How fees are distributed |
-| [Halving Schedules](./fund-rig.md#emission-schedule) | Day-based emission halvings |
+| [Halving Schedules](./fundraiser.md#emission-schedule) | Epoch-based emission halvings |
 | [Owner Controls](./security.md#owner-capabilities) | What fundraiser owners can and cannot change post-deployment |
 | [Parameter Recommendations](./launch-guide.md#parameter-recommendations) | Guidance on choosing good launch parameters |
 

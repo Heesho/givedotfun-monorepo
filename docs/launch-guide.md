@@ -42,16 +42,17 @@ Every fundraiser launch includes an Auction contract. These parameters configure
 
 ## Fundraiser Parameters
 
-Fundraiser distributes tokens through donations. Users donate USDC into a daily pool, and after the day ends, each donor can claim their proportional share of that day's Unit token emission. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
+Fundraiser distributes tokens through donations. Users donate USDC into an epoch pool, and after the epoch ends, each donor can claim their proportional share of that epoch's Unit token emission. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
 
 ### Configuration
 
 | Parameter | Type | Description | Valid Range |
 |-----------|------|-------------|-------------|
 | `recipient` | `address` | Address that receives 50% of all donations. Required; cannot be zero. Can be updated by the owner post-launch. | Non-zero address |
-| `initialEmission` | `uint256` | Unit tokens emitted per day at launch. This is the total daily emission -- donors split it proportionally based on their contribution. | `1e18` to `1e30` |
-| `minEmission` | `uint256` | Minimum daily emission floor. After enough halvings, emission will never drop below this value. | 1 to `initialEmission` |
-| `halvingPeriod` | `uint256` | Number of days between halvings. Emission halves every `halvingPeriod` days since deployment. | 7 to 365 (in days) |
+| `initialEmission` | `uint256` | Unit tokens emitted per epoch at launch. This is the total epoch emission -- donors split it proportionally based on their contribution. | `1e18` to `1e30` |
+| `minEmission` | `uint256` | Minimum emission floor per epoch. After enough halvings, emission will never drop below this value. | 1 to `initialEmission` |
+| `halvingPeriod` | `uint256` | Number of epochs between halvings. Emission halves every `halvingPeriod` epochs since deployment. | 7 to 365 |
+| `epochDuration` | `uint256` | Duration of each epoch in seconds. Determines how frequently new emission pools open. | 1 hour to 7 days |
 
 ### Fee Split
 
@@ -85,10 +86,12 @@ The ratio of `usdcAmount` to `unitAmount` determines the initial price of the Un
 
 ### Fundraiser: Initial Emission and Halving
 
-- **Higher `initialEmission`**: More tokens distributed per day. Donors receive larger rewards early on.
-- **Lower `halvingPeriod`** (7-14 days): Emission drops quickly, creating urgency to donate early.
-- **Higher `halvingPeriod`** (90-365 days): Stable emission rate for months, encouraging sustained participation.
+- **Higher `initialEmission`**: More tokens distributed per epoch. Donors receive larger rewards early on.
+- **Lower `halvingPeriod`** (7-14 epochs): Emission drops quickly, creating urgency to donate early.
+- **Higher `halvingPeriod`** (90-365 epochs): Stable emission rate for a long time, encouraging sustained participation.
 - **`minEmission`** should be set to a non-trivial amount to ensure the fundraiser remains attractive even after many halvings.
+- **Shorter `epochDuration`** (1-6 hours): More frequent claim cycles, higher engagement cadence.
+- **Longer `epochDuration`** (1-7 days): Larger pools accumulate per epoch, less frequent claiming.
 
 ### Auction Parameters
 

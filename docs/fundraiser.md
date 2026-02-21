@@ -4,7 +4,7 @@
 
 Fundraiser is a donation-based token distribution mechanism within the give.fun platform. It allows communities to fund a recipient -- such as a creator, charity, or project -- while earning proportional Unit token emissions in return.
 
-Users donate a payment token (typically USDC) into daily pools. Donations are split immediately upon deposit: 50% goes directly to the designated recipient, with the remaining 50% distributed among the treasury, team, and protocol. After each 24-hour day concludes, donors can claim their proportional share of that day's Unit token emission based on how much they contributed relative to the total pool.
+Users donate a payment token (typically USDC) into epoch pools. Donations are split immediately upon deposit: 50% goes directly to the designated recipient, with the remaining 50% distributed among the treasury, team, and protocol. After each epoch concludes, donors can claim their proportional share of that epoch's Unit token emission based on how much they contributed relative to the total pool.
 
 The Fundraiser is the core mechanism of give.fun. There is no Dutch auction pricing, no VRF randomness, and no competitive displacement. The incentive model is straightforward: donate to fund a recipient, receive tokens proportional to your contribution.
 
@@ -30,72 +30,73 @@ Upon calling `fund()`:
 
 1. The full `amount` is transferred from `msg.sender` to the contract.
 2. The amount is immediately split and distributed to the recipient, treasury, team, and protocol.
-3. The donation is recorded in the current day's pool, crediting `account`.
+3. The donation is recorded in the current epoch's pool, crediting `account`.
 
 No tokens are held by the contract after a `fund()` call -- all donated funds are distributed immediately.
 
-### Daily Pools
+### Epoch Pools
 
-Time is divided into 24-hour days starting from the contract's deployment timestamp (`startTime`). The current day number is calculated as:
+Time is divided into configurable-length epochs starting from the contract's deployment timestamp (`startTime`). The epoch duration is set at launch via `epochDuration` (valid range: 1 hour to 7 days). The current epoch number is calculated as:
 
 ```
-currentDay = (block.timestamp - startTime) / 86400
+currentEpoch = (block.timestamp - startTime) / epochDuration
 ```
 
-Day 0 starts at deployment. Day 1 begins exactly 24 hours later, and so on.
+Epoch 0 starts at deployment. Epoch 1 begins exactly `epochDuration` seconds later, and so on.
 
-Each day is an independent pool. Multiple donations within the same day accumulate for the same donor. For example, if Alice donates 100 USDC and then another 50 USDC on day 5, her total recorded donation for day 5 is 150 USDC.
+Each epoch is an independent pool. Multiple donations within the same epoch accumulate for the same donor. For example, if Alice donates 100 USDC and then another 50 USDC in epoch 5, her total recorded donation for epoch 5 is 150 USDC.
 
-The daily pool tracks two values:
-- **`dayToTotalDonated[day]`** -- The total amount donated by all users on that day.
-- **`dayAccountToDonation[day][account]`** -- The amount donated by a specific account on that day.
+The epoch pool tracks two values:
+- **`epochToTotalDonated[epoch]`** -- The total amount donated by all users in that epoch.
+- **`epochAccountToDonation[epoch][account]`** -- The amount donated by a specific account in that epoch.
 
 These values are used purely for proportional emission calculation. The actual donated funds have already been distributed at the time of the `fund()` call.
 
 ### Claiming
 
-After a day ends, donors can claim their proportional share of that day's Unit token emission by calling `claim(account, day)`.
+After an epoch ends, donors can claim their proportional share of that epoch's Unit token emission by calling `claim(account, epoch)`.
 
 ```solidity
-function claim(address account, uint256 day) external;
+function claim(address account, uint256 epoch) external;
 ```
 
-- **`account`** -- The account to claim for. Must have a non-zero donation recorded for the specified day.
-- **`day`** -- The day number to claim for. Must be a completed day (i.e., `day < currentDay()`).
+- **`account`** -- The account to claim for. Must have a non-zero donation recorded for the specified epoch.
+- **`epoch`** -- The epoch number to claim for. Must be a completed epoch (i.e., `epoch < currentEpoch()`).
 
 The reward is calculated as:
 
 ```
-userReward = (userDonation * dayEmission) / dayTotal
+userReward = (userDonation * epochEmission) / epochTotal
 ```
 
 Where:
-- `userDonation` is the account's total donation for that day.
-- `dayEmission` is the Unit token emission allocated to that day (see [Emission Schedule](#emission-schedule)).
-- `dayTotal` is the total donations from all users on that day.
+- `userDonation` is the account's total donation for that epoch.
+- `epochEmission` is the Unit token emission allocated to that epoch (see [Emission Schedule](#emission-schedule)).
+- `epochTotal` is the total donations from all users in that epoch.
 
 Key rules:
-- **Per-day claims**: Each day must be claimed individually. There is no batch claim function on the rig itself.
-- **One claim per account per day**: Once claimed, `dayAccountToHasClaimed[day][account]` is set to `true` and the account cannot claim again for that day.
-- **Anyone can trigger a claim**: The caller does not need to be the account. Anyone can call `claim(account, day)` on behalf of any account. The Unit tokens are always minted to `account`.
-- **Day must be over**: You cannot claim for the current day. The day must have fully elapsed.
-- **Zero-donation days**: If nobody donates on a given day, those emissions are effectively unclaimable. The `dayTotal` for that day is zero, and no claims can be made.
+- **Per-epoch claims**: Each epoch must be claimed individually. There is no batch claim function on the rig itself (use FundraiserMulticall for batch claims).
+- **One claim per account per epoch**: Once claimed, `epochAccountToHasClaimed[epoch][account]` is set to `true` and the account cannot claim again for that epoch.
+- **Anyone can trigger a claim**: The caller does not need to be the account. Anyone can call `claim(account, epoch)` on behalf of any account. The Unit tokens are always minted to `account`.
+- **Epoch must be over**: You cannot claim for the current epoch. The epoch must have fully elapsed.
+- **Zero-donation epochs**: If nobody donates in a given epoch, those emissions are effectively unclaimable. The `epochTotal` for that epoch is zero, and no claims can be made.
 
 ---
 
 ## Emission Schedule
 
-Fundraiser distributes a fixed number of Unit tokens per day, following a halving schedule:
+Fundraiser distributes a fixed number of Unit tokens per epoch, following a halving schedule:
 
 - **Initial emission**: Set by `initialEmission` at launch. Valid range: `1e18` to `1e30`.
-- **Halving**: Every `halvingPeriod` days (measured in wall-clock time from deployment), the daily emission halves.
+- **Halving**: Every `halvingPeriod` epochs, the per-epoch emission halves.
 - **Floor**: The emission never drops below `minEmission`.
+- **Epoch duration**: Configurable at launch via `epochDuration` (1 hour to 7 days).
 
-The emission for any given day is computed as:
+The emission for any given epoch is computed as:
 
 ```solidity
-function getDayEmission(uint256 day) public view returns (uint256) {
-    uint256 halvings = day / halvingPeriod;
+function getEpochEmission(uint256 epoch) public view returns (uint256) {
+    uint256 halvings = epoch / halvingPeriod;
     uint256 emission = initialEmission >> halvings; // divide by 2^halvings
     if (emission < minEmission) {
         return minEmission;
@@ -108,22 +109,18 @@ function getDayEmission(uint256 day) public view returns (uint256) {
 
 With `initialEmission = 1000e18`, `halvingPeriod = 30`, and `minEmission = 10e18`:
 
-| Day Range | Halvings | Daily Emission |
-|-----------|----------|----------------|
-| 0 -- 29   | 0        | 1000 tokens    |
-| 30 -- 59  | 1        | 500 tokens     |
-| 60 -- 89  | 2        | 250 tokens     |
-| 90 -- 119 | 3        | 125 tokens     |
-| 120 -- 149| 4        | 62.5 tokens    |
-| 150 -- 179| 5        | 31.25 tokens   |
-| 180 -- 209| 6        | 15.625 tokens  |
-| 210+      | 7+       | 10 tokens (floor) |
+| Epoch Range | Halvings | Emission Per Epoch |
+|-------------|----------|--------------------|
+| 0 -- 29     | 0        | 1000 tokens        |
+| 30 -- 59    | 1        | 500 tokens         |
+| 60 -- 89    | 2        | 250 tokens         |
+| 90 -- 119   | 3        | 125 tokens         |
+| 120 -- 149  | 4        | 62.5 tokens        |
+| 150 -- 179  | 5        | 31.25 tokens       |
+| 180 -- 209  | 6        | 15.625 tokens      |
+| 210+        | 7+       | 10 tokens (floor)  |
 
 Once the halved emission drops below `minEmission`, the floor value is used indefinitely. The emission schedule is entirely immutable -- it cannot be changed after deployment.
-
-### Comparison with Other Rig Types
-
-Fundraiser uses day-based halvings. The emission is a discrete daily amount, not a continuous rate.
 
 ---
 
@@ -203,9 +200,10 @@ The following parameters are set at launch time (via `FundraiserCore.launch()`) 
 | `uri`              | `string`  | Non-empty                  | Initial metadata URI for the rig (e.g., branding, logo).                     |
 | `usdcAmount`       | `uint256` | >= `minUsdcForLaunch`      | USDC provided by the launcher to seed the initial liquidity pool.            |
 | `unitAmount`       | `uint256` | > 0                        | Number of Unit tokens minted for the initial liquidity pool.                 |
-| `initialEmission`  | `uint256` | `1e18` -- `1e30`           | Starting Unit token emission per day.                                        |
-| `minEmission`      | `uint256` | `1` -- `initialEmission`   | Minimum daily emission floor (emission never drops below this).              |
-| `halvingPeriod`    | `uint256` | 7 -- 365 (days)            | Number of days between emission halvings.                                    |
+| `initialEmission`  | `uint256` | `1e18` -- `1e30`           | Starting Unit token emission per epoch.                                      |
+| `minEmission`      | `uint256` | `1` -- `initialEmission`   | Minimum emission floor per epoch (emission never drops below this).          |
+| `halvingPeriod`    | `uint256` | 7 -- 365 (epochs)          | Number of epochs between emission halvings.                                  |
+| `epochDuration`    | `uint256` | 1 hour -- 7 days           | Duration of each epoch in seconds.                                           |
 
 ### Auction Configuration
 
@@ -254,44 +252,45 @@ The following are fixed at deployment and can never be modified:
 - `unit` -- The Unit token address
 - `quote` -- The payment token address
 - `core` -- The FundraiserCore contract address
-- `startTime` -- The deployment timestamp (determines day boundaries)
-- `initialEmission` -- The starting daily emission
+- `startTime` -- The deployment timestamp (determines epoch boundaries)
+- `initialEmission` -- The starting emission per epoch
 - `minEmission` -- The emission floor
 - `halvingPeriod` -- The halving schedule
+- `epochDuration` -- The length of each epoch
 - Fee percentages (`RECIPIENT_BPS`, `TEAM_BPS`, `PROTOCOL_BPS`, `DIVISOR`)
 
 ---
 
 ## View Functions
 
-### `currentDay()`
+### `currentEpoch()`
 
 ```solidity
-function currentDay() public view returns (uint256)
+function currentEpoch() public view returns (uint256)
 ```
 
-Returns the current day number since contract deployment, 0-indexed. Calculated as `(block.timestamp - startTime) / 86400`. Day 0 is the deployment day.
+Returns the current epoch number since contract deployment, 0-indexed. Calculated as `(block.timestamp - startTime) / epochDuration`. Epoch 0 is the deployment epoch.
 
-### `getDayEmission(day)`
+### `getEpochEmission(epoch)`
 
 ```solidity
-function getDayEmission(uint256 day) public view returns (uint256)
+function getEpochEmission(uint256 epoch) public view returns (uint256)
 ```
 
-Returns the Unit token emission allocated to a specific day. Applies the halving schedule: `initialEmission >> (day / halvingPeriod)`, floored at `minEmission`. Can be called for any day number, including future days.
+Returns the Unit token emission allocated to a specific epoch. Applies the halving schedule: `initialEmission >> (epoch / halvingPeriod)`, floored at `minEmission`. Can be called for any epoch number, including future epochs.
 
-### `getPendingReward(day, account)`
+### `getPendingReward(epoch, account)`
 
 ```solidity
-function getPendingReward(uint256 day, address account) external view returns (uint256)
+function getPendingReward(uint256 epoch, address account) external view returns (uint256)
 ```
 
-Returns the pending (unclaimed) Unit reward for `account` on a given `day`. Returns `0` if:
-- The day has not yet ended (`day >= currentDay()`).
-- The account has already claimed for that day.
-- The account did not donate on that day.
+Returns the pending (unclaimed) Unit reward for `account` on a given `epoch`. Returns `0` if:
+- The epoch has not yet ended (`epoch >= currentEpoch()`).
+- The account has already claimed for that epoch.
+- The account did not donate in that epoch.
 
-Otherwise, returns `(userDonation * dayEmission) / dayTotal`.
+Otherwise, returns `(userDonation * epochEmission) / epochTotal`.
 
 ### State Mappings
 
@@ -299,9 +298,9 @@ These public mappings are accessible as view functions:
 
 | Mapping                              | Returns     | Description                                                    |
 |--------------------------------------|-------------|----------------------------------------------------------------|
-| `dayToTotalDonated(uint256 day)`     | `uint256`   | Total amount donated by all users on a given day.              |
-| `dayAccountToDonation(uint256 day, address account)` | `uint256` | Amount donated by a specific account on a given day.   |
-| `dayAccountToHasClaimed(uint256 day, address account)` | `bool`   | Whether the account has already claimed for that day.  |
+| `epochToTotalDonated(uint256 epoch)` | `uint256`   | Total amount donated by all users in a given epoch.            |
+| `epochAccountToDonation(uint256 epoch, address account)` | `uint256` | Amount donated by a specific account in a given epoch. |
+| `epochAccountToHasClaimed(uint256 epoch, address account)` | `bool`   | Whether the account has already claimed for that epoch. |
 
 ### Immutable / State Getters
 
@@ -311,9 +310,10 @@ These public mappings are accessible as view functions:
 | `quote()`           | `address`   | The quote (payment) token address.                    |
 | `core()`            | `address`   | The FundraiserCore contract address.                        |
 | `startTime()`       | `uint256`   | The contract deployment timestamp.                    |
-| `initialEmission()` | `uint256`   | The starting daily emission amount.                   |
-| `minEmission()`     | `uint256`   | The minimum daily emission floor.                     |
-| `halvingPeriod()`   | `uint256`   | Number of days between halvings.                      |
+| `initialEmission()` | `uint256`   | The starting emission amount per epoch.               |
+| `minEmission()`     | `uint256`   | The minimum emission floor per epoch.                 |
+| `halvingPeriod()`   | `uint256`   | Number of epochs between halvings.                    |
+| `epochDuration()`   | `uint256`   | Duration of each epoch in seconds.                    |
 | `recipient()`       | `address`   | Current recipient address (receives 50% of donations).|
 | `treasury()`        | `address`   | Current treasury address.                             |
 | `team()`            | `address`   | Current team address (zero means disabled).           |
@@ -323,9 +323,10 @@ These public mappings are accessible as view functions:
 
 | Constant               | Value    | Description                                          |
 |------------------------|----------|------------------------------------------------------|
-| `DAY_DURATION`         | `86400`  | Seconds in one day (1 days).                         |
-| `MIN_HALVING_PERIOD`   | `7`      | Minimum allowed halving period (days).               |
-| `MAX_HALVING_PERIOD`   | `365`    | Maximum allowed halving period (days).               |
+| `MIN_EPOCH_DURATION`   | `3600`   | Minimum epoch duration (1 hour).                     |
+| `MAX_EPOCH_DURATION`   | `604800` | Maximum epoch duration (7 days).                     |
+| `MIN_HALVING_PERIOD`   | `7`      | Minimum allowed halving period (epochs).             |
+| `MAX_HALVING_PERIOD`   | `365`    | Maximum allowed halving period (epochs).             |
 | `MIN_INITIAL_EMISSION` | `1e18`   | Minimum allowed initial emission.                    |
 | `MAX_INITIAL_EMISSION` | `1e30`   | Maximum allowed initial emission.                    |
 | `RECIPIENT_BPS`        | `5000`   | Recipient fee in basis points (50%).                 |
@@ -343,7 +344,7 @@ These public mappings are accessible as view functions:
 Emitted when a donation is made via `fund()`.
 
 ```solidity
-event Fundraiser__Funded(address sender, address indexed funder, uint256 amount, uint256 day, string uri);
+event Fundraiser__Funded(address sender, address indexed funder, uint256 amount, uint256 epoch, string uri);
 ```
 
 | Parameter | Indexed | Description                                                        |
@@ -351,35 +352,35 @@ event Fundraiser__Funded(address sender, address indexed funder, uint256 amount,
 | `sender`  | No      | The address that called `fund()` and paid the tokens (`msg.sender`). |
 | `funder`  | Yes     | The account credited for the donation (will claim Unit tokens).    |
 | `amount`  | No      | The total donation amount in quote token units.                    |
-| `day`     | No      | The day number the donation was recorded in.                       |
+| `epoch`   | No      | The epoch number the donation was recorded in.                     |
 | `uri`     | No      | The metadata URI string attached to this donation.                 |
 
 ### `Fundraiser__Claimed`
 
-Emitted when Unit tokens are claimed for a completed day via `claim()`.
+Emitted when Unit tokens are claimed for a completed epoch via `claim()`.
 
 ```solidity
-event Fundraiser__Claimed(address indexed account, uint256 amount, uint256 day);
+event Fundraiser__Claimed(address indexed account, uint256 amount, uint256 epoch);
 ```
 
 | Parameter | Indexed | Description                                                  |
 |-----------|---------|--------------------------------------------------------------|
 | `account` | Yes     | The account that received the claimed Unit tokens.           |
 | `amount`  | No      | The number of Unit tokens minted and sent to the account.    |
-| `day`     | No      | The day number that was claimed.                             |
+| `epoch`   | No      | The epoch number that was claimed.                           |
 
 ### `Fundraiser__TreasuryFee`
 
 Emitted on every `fund()` call when the treasury fee is transferred.
 
 ```solidity
-event Fundraiser__TreasuryFee(address indexed treasury, uint256 indexed day, uint256 amount);
+event Fundraiser__TreasuryFee(address indexed treasury, uint256 indexed epoch, uint256 amount);
 ```
 
 | Parameter  | Indexed | Description                                        |
 |------------|---------|----------------------------------------------------|
 | `treasury` | Yes     | The treasury address that received the fee.        |
-| `day`      | Yes     | The day number when the fee was collected.         |
+| `epoch`    | Yes     | The epoch number when the fee was collected.       |
 | `amount`   | No      | The treasury fee amount in quote token units.      |
 
 ### `Fundraiser__TeamFee`
@@ -387,13 +388,13 @@ event Fundraiser__TreasuryFee(address indexed treasury, uint256 indexed day, uin
 Emitted on `fund()` calls when the team fee is transferred (only if `team != address(0)`).
 
 ```solidity
-event Fundraiser__TeamFee(address indexed team, uint256 indexed day, uint256 amount);
+event Fundraiser__TeamFee(address indexed team, uint256 indexed epoch, uint256 amount);
 ```
 
 | Parameter | Indexed | Description                                    |
 |-----------|---------|-------------------------------------------------|
 | `team`    | Yes     | The team address that received the fee.         |
-| `day`     | Yes     | The day number when the fee was collected.      |
+| `epoch`   | Yes     | The epoch number when the fee was collected.    |
 | `amount`  | No      | The team fee amount in quote token units.       |
 
 ### `Fundraiser__ProtocolFee`
@@ -401,13 +402,13 @@ event Fundraiser__TeamFee(address indexed team, uint256 indexed day, uint256 amo
 Emitted on `fund()` calls when the protocol fee is transferred (only if `protocol != address(0)`).
 
 ```solidity
-event Fundraiser__ProtocolFee(address indexed protocol, uint256 indexed day, uint256 amount);
+event Fundraiser__ProtocolFee(address indexed protocol, uint256 indexed epoch, uint256 amount);
 ```
 
 | Parameter  | Indexed | Description                                      |
 |------------|---------|--------------------------------------------------|
 | `protocol` | Yes     | The protocol fee address that received the fee.  |
-| `day`      | Yes     | The day number when the fee was collected.       |
+| `epoch`    | Yes     | The epoch number when the fee was collected.     |
 | `amount`   | No      | The protocol fee amount in quote token units.    |
 
 ### `Fundraiser__RecipientSet`

@@ -34,8 +34,8 @@ Shared Factories (one instance each, used by FundraiserCore):
 ```
 
 FundraiserCore holds references to UnitFactory and AuctionFactory. When a launch
-is triggered, the Core calls both shared factories plus FundraiserFactory
-to deploy the full set of per-launch contracts.
+is triggered, the Core calls both shared factories and deploys the Fundraiser
+inline to create the full set of per-launch contracts.
 
 Each launch creates an isolated set of contracts:
 
@@ -92,7 +92,7 @@ Responsibilities:
 - Create and seed the Uniswap V2 liquidity pool.
 - Burn the LP tokens to the dead address.
 - Deploy an Auction contract via AuctionFactory.
-- Deploy the Fundraiser contract via FundraiserFactory.
+- Deploy the Fundraiser contract inline.
 - Transfer Unit minting rights to the Fundraiser (permanent, one-time lock).
 - Set initial metadata URI on the fundraiser.
 - Transfer fundraiser ownership to the launcher.
@@ -100,29 +100,21 @@ Responsibilities:
 
 FundraiserCore also maintains its own local registry of deployed fundraisers with mappings to their associated Auction contracts and LP token addresses. The Core owner can update the protocol fee address and the minimum USDC required to launch.
 
-### Factories (UnitFactory, AuctionFactory, FundraiserFactory)
+### Factories (UnitFactory, AuctionFactory)
 
-Factories are thin deployment contracts. Their sole purpose is to deploy new instances of their respective contracts.
-
-**Shared factories** -- A single instance of each, used by FundraiserCore:
+Factories are thin deployment contracts. Their sole purpose is to deploy new instances of their respective contracts. FundraiserCore deploys Fundraiser contracts inline (no separate factory).
 
 | Factory | Deploys | Called By |
 |---|---|---|
 | UnitFactory | Unit (ERC20 token) | FundraiserCore |
 | AuctionFactory | Auction (Dutch auction) | FundraiserCore |
 
-**Fundraiser-specific factory:**
-
-| Factory | Deploys | Called By |
-|---|---|---|
-| FundraiserFactory | Fundraiser | FundraiserCore |
-
 ### Fundraiser
 
 The Fundraiser contract is the donation-based distribution mechanism. Key traits:
 
-- **Daily emission pools.** Donors contribute USDC to daily pools and earn proportional token emissions at the end of each day.
-- **Halving emission schedule.** Token emissions decrease over time according to a day-based halving schedule with a configurable minimum floor.
+- **Epoch emission pools.** Donors contribute USDC to epoch pools and earn proportional token emissions at the end of each epoch.
+- **Halving emission schedule.** Token emissions decrease over time according to an epoch-based halving schedule with a configurable minimum floor.
 - **Fee splits.** Each donation generates fees that are split between recipient (50%), treasury (Auction contract), team (launcher), and protocol.
 - **Sole minting authority.** The fundraiser is the only address that can mint its Unit token. This is enforced by the `setRig()` one-time lock on the Unit contract.
 
@@ -209,7 +201,7 @@ auction = IAuctionFactory(auctionFactory).deploy(
 
 ### Step 8: Deploy Fundraiser
 
-The Fundraiser is deployed via FundraiserFactory. The constructor receives the core parameters, with treasury set to the Auction contract, team set to the launcher's address.
+The Fundraiser is deployed inline by FundraiserCore (no separate factory). The constructor receives the core parameters, with treasury set to the Auction contract, team set to the launcher's address.
 
 ### Step 9: Transfer Unit Minting Rights
 
@@ -256,7 +248,7 @@ Buyer pays LP tokens --> LP burned --> Buyer gets treasury assets
 
 ### Fundraiser
 
-1. **Emission.** The Fundraiser emits a fixed number of Unit tokens per day. The daily emission halves every `halvingPeriod` days, floored at `minEmission`.
-2. **Donation tracking.** Each day accumulates donation totals per user. The donation amounts determine proportional shares but the donated funds are distributed instantly (not held by the fundraiser).
-3. **Claiming.** After a day ends, any address can call `claim(account, day)` to mint and transfer that account's proportional share of the day's emission. Claims are per-day and can only be made after the day has concluded.
-4. **Distribution.** If a day has 10,000 USDC in total donations and a user contributed 1,000 USDC (10%), that user can claim 10% of that day's Unit emission.
+1. **Emission.** The Fundraiser emits a fixed number of Unit tokens per epoch. The emission halves every `halvingPeriod` epochs, floored at `minEmission`.
+2. **Donation tracking.** Each epoch accumulates donation totals per user. The donation amounts determine proportional shares but the donated funds are distributed instantly (not held by the fundraiser).
+3. **Claiming.** After an epoch ends, any address can call `claim(account, epoch)` to mint and transfer that account's proportional share of the epoch's emission. Claims are per-epoch and can only be made after the epoch has concluded.
+4. **Distribution.** If an epoch has 10,000 USDC in total donations and a user contributed 1,000 USDC (10%), that user can claim 10% of that epoch's Unit emission.

@@ -12,7 +12,7 @@ All contracts are deployed on Base (chain ID 8453) and are non-upgradeable. Once
 
 Every fundraiser launch on give.fun creates three interconnected contracts:
 
-- **Fundraiser** -- The distribution mechanism that emits tokens daily through donation pools. Donors contribute USDC and earn proportional token emissions.
+- **Fundraiser** -- The distribution mechanism that emits tokens through epoch-based donation pools. Donors contribute USDC and earn proportional token emissions.
 - **Unit** -- The ERC20 token itself. Each launch creates a new token with permit and voting (ERC20Votes) capabilities. Only the fundraiser can mint new tokens, and this minting authority is permanently locked at launch.
 - **Auction** -- A Dutch auction contract that accumulates treasury fees from the fundraiser and sells them to buyers in exchange for LP tokens, which are then burned.
 
@@ -25,7 +25,7 @@ Every fundraiser launch on give.fun creates three interconnected contracts:
 5. An Auction contract is deployed to handle treasury fee distribution.
 6. Ownership of the fundraiser transfers to the launcher, who can adjust operational parameters (treasury address, team address, metadata) but cannot change the core mechanics.
 
-From that point forward, the fundraiser distributes tokens according to its programmed rules. Donors contribute USDC to daily pools and earn Unit tokens proportional to their contribution.
+From that point forward, the fundraiser distributes tokens according to its programmed rules. Donors contribute USDC to epoch pools and earn Unit tokens proportional to their contribution.
 
 ## Key Properties
 
@@ -41,6 +41,6 @@ From that point forward, the fundraiser distributes tokens according to its prog
 
 ## Fundraiser (Donations)
 
-Users donate a payment token into daily pools. After each day ends, donors claim their proportional share of that day's Unit emission based on how much they contributed relative to total donations. Donations are split instantly: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol. Emissions halve on a wall-clock schedule measured in days.
+Users donate a payment token into epoch pools. After each epoch ends, donors claim their proportional share of that epoch's Unit emission based on how much they contributed relative to total donations. Donations are split instantly: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol. Emissions halve on a configurable schedule measured in epochs.
 
-[Read more: Fundraiser](./fund-rig.md)
+[Read more: Fundraiser](./fundraiser.md)

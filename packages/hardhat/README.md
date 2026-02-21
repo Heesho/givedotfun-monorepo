@@ -36,7 +36,7 @@ When someone launches a fundraiser on give.fun, the system:
 
 ## Fundraiser - Donation Pool
 
-Users donate payment tokens to a daily pool. Donations are split between a designated recipient and the treasury. At the end of each day, donors claim their proportional share of that day's token emission.
+Users donate payment tokens to an epoch pool. Donations are split between a designated recipient and the treasury. At the end of each epoch, donors claim their proportional share of that epoch's token emission.
 
 **How it works:**
 
@@ -67,16 +67,16 @@ Day 1: Emission = 1000 tokens (same until halving)
 
 **Token emissions:**
 
-- Each day has a fixed emission amount: `initialEmission >> (day / halvingPeriod)`
-- Halving is day-count based (e.g., every 30 days)
+- Each epoch has a fixed emission amount: `initialEmission >> (epoch / halvingPeriod)`
+- Halving is epoch-count based (e.g., every 30 epochs)
 - Floor at `minEmission`
 - Donors claim proportionally: `(userDonation / dayTotal) * dayEmission`
 
 **Claiming:**
 
-- Claims are available once the day ends (day < currentDay)
-- Each account can claim once per day
-- No double claims (tracked per account per day)
+- Claims are available once the epoch ends (epoch < currentEpoch)
+- Each account can claim once per epoch
+- No double claims (tracked per account per epoch)
 - Multicall provides batch claiming across multiple days
 
 **Minimum donation:** 10,000 wei of the payment token (prevents dust donations that produce zero fee splits).
@@ -139,16 +139,18 @@ A central Registry contract tracks all deployed fundraisers. Only approved Core 
                         |  FundraiserCore    |
                         | (launch orchestrator)|
                         +--+----+---+--------+
-                           |    |   |
-                           v    v   v
-                        Unit  Fundraiser  Auction
-                        Factory  Factory  Factory
-                           |    |   |
-                           v    v   v
-                        +-----+ +--------+ +-----+
-                        |Unit | |Fundraiser| |Auct.|
-                        |ERC20| |         | |     |
-                        +-----+ +---------+ +-----+
+                           |    |
+                           v    v
+                        Unit    Auction
+                        Factory Factory
+                           |    |
+                           v    v
+                        +-----+ +-----+
+                        |Unit | |Auct.|
+                        |ERC20| |     |
+                        +-----+ +-----+
+
+FundraiserCore deploys Fundraiser contracts inline (no separate factory).
 
                         +---------------------+
                         | FundraiserMulticall  |
@@ -163,17 +165,14 @@ A central Registry contract tracks all deployed fundraisers. Only approved Core 
 contracts/
 +-- Auction.sol              # Dutch auction for treasury LP buybacks
 +-- AuctionFactory.sol       # Deploys Auction instances
++-- Fundraiser.sol           # Donation pool with epoch-based claims
++-- FundraiserCore.sol       # Launch orchestrator for Fundraisers
++-- FundraiserMulticall.sol  # Batch fund/claim + view helpers
 +-- Registry.sol             # Central fundraiser registry
 +-- Unit.sol                 # ERC20 token with voting/permit
 +-- UnitFactory.sol          # Deploys Unit instances
-+-- interfaces/              # Shared interfaces
-+-- rigs/
-    +-- fundraiser/
-        +-- FundraiserCore.sol         # Launch orchestrator for Fundraisers
-        +-- Fundraiser.sol             # Donation pool with daily claims
-        +-- FundraiserFactory.sol      # Deploys Fundraiser instances
-        +-- FundraiserMulticall.sol    # Batch fund/claim + view helpers
-        +-- interfaces/
++-- interfaces/              # All interfaces (IFundraiser, IFundraiserCore, etc.)
++-- mocks/                   # Test mocks (MockUSDC, MockUniswapV2, etc.)
 ```
 
 ---
@@ -192,9 +191,8 @@ function setProtocolFeeAddress(address) external      // owner only
 function setMinUsdcForLaunch(uint256) external        // owner only
 
 // View
-function deployedRigsLength() external view returns (uint256)
-function isDeployedRig(address) external view returns (bool)
-function rigToUnit(address) external view returns (address)
+function rigsLength() external view returns (uint256)
+function rigToIsRig(address) external view returns (bool)
 function rigToAuction(address) external view returns (address)
 function rigToLP(address) external view returns (address)
 ```
@@ -202,24 +200,24 @@ function rigToLP(address) external view returns (address)
 ### Fundraiser
 
 ```solidity
-// Donate to the daily pool
-function fund(address account, uint256 amount) external
+// Donate to the current epoch's pool
+function fund(address account, uint256 amount, string calldata uri) external
 
-// Claim token reward for a past day
-function claim(address account, uint256 day) external
+// Claim token reward for a past epoch
+function claim(address account, uint256 epoch) external
 
 // Owner functions
 function setRecipient(address) external
 function setTreasury(address) external
 function setTeam(address) external
-function setUri(string memory) external
+function setUri(string calldata) external
 
 // View
-function currentDay() external view returns (uint256)
-function getDayEmission(uint256 day) external view returns (uint256)
-function getDayTotal(uint256 day) external view returns (uint256)
-function getPendingReward(uint256 day, address account) external view returns (uint256)
-function getUserDonation(uint256 day, address account) external view returns (uint256)
+function currentEpoch() external view returns (uint256)
+function getEpochEmission(uint256 epoch) external view returns (uint256)
+function getPendingReward(uint256 epoch, address account) external view returns (uint256)
+function epochToTotalDonated(uint256 epoch) external view returns (uint256)
+function epochAccountToDonation(uint256 epoch, address account) external view returns (uint256)
 ```
 
 ### Auction
@@ -243,12 +241,14 @@ function epochId() external view returns (uint256)
 
 ```solidity
 function fund(address rig, address account, uint256 amount, string calldata _uri) external
-function claim(address rig, address account, uint256 day) external
-function claimMultiple(address rig, address account, uint256[] calldata dayIds) external
+function claim(address rig, address account, uint256 epoch) external
+function claimMultiple(address rig, address account, uint256[] calldata epochIds) external
 function buy(...) external
 function launch(...) external returns (...)
 function getRig(address rig, address account) external view returns (RigState memory)
-function getClaimableDays(address rig, address account, uint256 startDay, uint256 endDay) external view returns (ClaimableDay[] memory)
+function getClaimableEpochs(address rig, address account, uint256 startEpoch, uint256 endEpoch) external view returns (ClaimableEpoch[] memory)
+function getTotalPendingRewards(address rig, address account, uint256 startEpoch, uint256 endEpoch) external view returns (uint256, uint256[] memory)
+function getEmissionSchedule(address rig, uint256 numEpochs) external view returns (uint256[] memory)
 function getAuction(address rig, address account) external view returns (AuctionState memory)
 ```
 
@@ -260,9 +260,10 @@ function getAuction(address rig, address account) external view returns (Auction
 
 | Parameter | Min | Max | Description |
 |-----------|-----|-----|-------------|
-| `initialEmission` | 1e18 | 1e30 | Starting daily token emission |
-| `minEmission` | 1 | initialEmission | Minimum daily emission floor |
-| `halvingPeriod` | 7 days | 365 days | Days between halvings |
+| `initialEmission` | 1e18 | 1e30 | Starting token emission per epoch |
+| `minEmission` | 1 | initialEmission | Minimum emission floor per epoch |
+| `halvingPeriod` | 7 | 365 | Epochs between halvings |
+| `epochDuration` | 1 hour | 7 days | Duration of each epoch |
 
 ### Auction (shared)
 
@@ -336,7 +337,7 @@ npx hardhat compile
 npx hardhat test
 
 # Run specific test file
-npx hardhat test tests/fund/testBusinessLogic.js
+npx hardhat test tests/fundraiser/testCharityRig.js
 
 # With gas reporting
 REPORT_GAS=true npx hardhat test
@@ -346,7 +347,7 @@ REPORT_GAS=true npx hardhat test
 
 | Directory | Files | Coverage |
 |-----------|-------|----------|
-| `tests/fund/` | 3 files | Fundraiser core, business logic, invariants |
+| `tests/fundraiser/` | 3 files | Fundraiser core, business logic, invariants |
 | `tests/security/` | 4+ files | Edge cases, exploits, fuzz testing, invariants |
 
 ### Deployment
