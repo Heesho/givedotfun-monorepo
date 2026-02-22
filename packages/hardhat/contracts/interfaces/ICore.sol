@@ -15,7 +15,7 @@ interface ICore {
         string tokenSymbol;
         string uri;
         uint256 usdcAmount;
-        uint256 unitAmount;
+        uint256 coinAmount;
         uint256 initialEmission;
         uint256 minEmission;
         uint256 halvingPeriod;
@@ -33,23 +33,24 @@ interface ICore {
     function usdcToken() external view returns (address);
     function uniswapV2Factory() external view returns (address);
     function uniswapV2Router() external view returns (address);
-    function unitFactory() external view returns (address);
+    function coinFactory() external view returns (address);
     function auctionFactory() external view returns (address);
+    function fundraiserFactory() external view returns (address);
 
     // State
     function protocolFeeAddress() external view returns (address);
     function minUsdcForLaunch() external view returns (uint256);
-    function rigToIsRig(address rig) external view returns (bool);
-    function rigToAuction(address rig) external view returns (address);
-    function rigs(uint256 index) external view returns (address);
-    function rigsLength() external view returns (uint256);
-    function rigToIndex(address rig) external view returns (uint256);
-    function rigToLP(address rig) external view returns (address);
+    function isFundraiser(address fundraiser) external view returns (bool);
+    function fundraiserToAuction(address fundraiser) external view returns (address);
+    function fundraisers(uint256 index) external view returns (address);
+    function fundraisersLength() external view returns (uint256);
+    function fundraiserToIndex(address fundraiser) external view returns (uint256);
+    function fundraiserToLP(address fundraiser) external view returns (address);
 
     // External functions
     function launch(LaunchParams calldata params)
         external
-        returns (address unit, address rig, address auction, address lpToken);
+        returns (address coin, address fundraiser, address auction, address lpToken);
 
     // Restricted functions
     function setProtocolFeeAddress(address _protocolFeeAddress) external;

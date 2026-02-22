@@ -6,9 +6,10 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Fundraiser} from "./Fundraiser.sol";
-import {IUnit} from "./interfaces/IUnit.sol";
-import {IUnitFactory} from "./interfaces/IUnitFactory.sol";
+import {ICoin} from "./interfaces/ICoin.sol";
+import {ICoinFactory} from "./interfaces/ICoinFactory.sol";
 import {IAuctionFactory} from "./interfaces/IAuctionFactory.sol";
+import {IFundraiserFactory} from "./interfaces/IFundraiserFactory.sol";
 import {IUniswapV2Factory, IUniswapV2Router} from "./interfaces/IUniswapV2.sol";
 
 /**
@@ -17,13 +18,13 @@ import {IUniswapV2Factory, IUniswapV2Router} from "./interfaces/IUniswapV2.sol";
  * @notice The launchpad contract for deploying new Fundraiser instances.
  *         Users provide USDC tokens to launch a new donation-based token distribution.
  *         The Core contract:
- *         1. Deploys a new Unit token via UnitFactory
- *         2. Mints initial Unit tokens for liquidity
- *         3. Creates a Unit/USDC liquidity pool on Uniswap V2
+ *         1. Deploys a new Coin token via CoinFactory
+ *         2. Mints initial Coin tokens for liquidity
+ *         3. Creates a Coin/USDC liquidity pool on Uniswap V2
  *         4. Burns the initial LP tokens
  *         5. Deploys an Auction contract to collect and auction treasury fees
  *         6. Deploys a Fundraiser contract
- *         7. Transfers Unit minting rights to the Fundraiser (permanently locked)
+ *         7. Transfers Coin minting rights to the Fundraiser (permanently locked)
  *         8. Transfers ownership of the Fundraiser to the launcher
  */
 contract Core is Ownable, ReentrancyGuard {
@@ -38,19 +39,20 @@ contract Core is Ownable, ReentrancyGuard {
     address public immutable usdcToken; // token required to launch
     address public immutable uniswapV2Factory; // Uniswap V2 factory
     address public immutable uniswapV2Router; // Uniswap V2 router
-    address public immutable unitFactory; // factory for deploying Unit tokens
+    address public immutable coinFactory; // factory for deploying Coin tokens
     address public immutable auctionFactory; // factory for deploying Auctions
+    address public immutable fundraiserFactory; // factory for deploying Fundraisers
 
     /*----------  STATE  ------------------------------------------------*/
 
     address public protocolFeeAddress; // receives protocol fees
     uint256 public minUsdcForLaunch; // minimum USDC required to launch
 
-    address[] public rigs; // enumerable list of deployed fundraisers
-    mapping(address => bool) public rigToIsRig; // fundraiser => is valid
-    mapping(address => uint256) public rigToIndex; // fundraiser => index in rigs[]
-    mapping(address => address) public rigToAuction; // fundraiser => Auction contract
-    mapping(address => address) public rigToLP; // fundraiser => LP token address
+    address[] public fundraisers; // enumerable list of deployed fundraisers
+    mapping(address => bool) public isFundraiser; // fundraiser => is valid
+    mapping(address => uint256) public fundraiserToIndex; // fundraiser => index in fundraisers[]
+    mapping(address => address) public fundraiserToAuction; // fundraiser => Auction contract
+    mapping(address => address) public fundraiserToLP; // fundraiser => LP token address
 
     /*----------  STRUCTS  ----------------------------------------------*/
 
@@ -62,13 +64,13 @@ contract Core is Ownable, ReentrancyGuard {
         address launcher; // address to receive ownership
         address quoteToken; // ERC20 payment token for donations (e.g., USDC, WETH)
         address recipient; // address to receive 50% of donations (required)
-        string tokenName; // Unit token name
-        string tokenSymbol; // Unit token symbol
+        string tokenName; // Coin token name
+        string tokenSymbol; // Coin token symbol
         string uri; // metadata URI for the fundraiser
         uint256 usdcAmount; // USDC to provide for LP
-        uint256 unitAmount; // Unit tokens minted for initial LP
-        uint256 initialEmission; // starting Unit emission per epoch
-        uint256 minEmission; // minimum Unit emission per epoch (floor)
+        uint256 coinAmount; // Coin tokens minted for initial LP
+        uint256 initialEmission; // starting Coin emission per epoch
+        uint256 minEmission; // minimum Coin emission per epoch (floor)
         uint256 halvingPeriod; // number of epochs between emission halvings
         uint256 epochDuration; // epoch duration in seconds (1 hour - 7 days)
         uint256 auctionInitPrice; // auction starting price
@@ -83,15 +85,15 @@ contract Core is Ownable, ReentrancyGuard {
     error Core__EmptyTokenName();
     error Core__EmptyTokenSymbol();
     error Core__EmptyUri();
-    error Core__ZeroUnitAmount();
+    error Core__ZeroCoinAmount();
     error Core__ZeroAddress();
 
     /*----------  EVENTS  -----------------------------------------------*/
 
     event Core__Launched(
         address indexed launcher,
-        address indexed rig,
-        address indexed unit,
+        address indexed fundraiser,
+        address indexed coin,
         address recipient,
         address auction,
         address lpToken,
@@ -100,7 +102,7 @@ contract Core is Ownable, ReentrancyGuard {
         string tokenSymbol,
         string uri,
         uint256 usdcAmount,
-        uint256 unitAmount,
+        uint256 coinAmount,
         uint256 initialEmission,
         uint256 minEmission,
         uint256 halvingPeriod,
@@ -120,8 +122,9 @@ contract Core is Ownable, ReentrancyGuard {
      * @param _usdcToken USDC token address
      * @param _uniswapV2Factory Uniswap V2 factory address
      * @param _uniswapV2Router Uniswap V2 router address
-     * @param _unitFactory UnitFactory contract address
+     * @param _coinFactory CoinFactory contract address
      * @param _auctionFactory AuctionFactory contract address
+     * @param _fundraiserFactory FundraiserFactory contract address
      * @param _protocolFeeAddress Address to receive protocol fees
      * @param _minUsdcForLaunch Minimum USDC required to launch
      */
@@ -129,15 +132,16 @@ contract Core is Ownable, ReentrancyGuard {
         address _usdcToken,
         address _uniswapV2Factory,
         address _uniswapV2Router,
-        address _unitFactory,
+        address _coinFactory,
         address _auctionFactory,
+        address _fundraiserFactory,
         address _protocolFeeAddress,
         uint256 _minUsdcForLaunch
     ) {
         if (
             _usdcToken == address(0) || _uniswapV2Factory == address(0)
-                || _uniswapV2Router == address(0) || _unitFactory == address(0)
-                || _auctionFactory == address(0)
+                || _uniswapV2Router == address(0) || _coinFactory == address(0)
+                || _auctionFactory == address(0) || _fundraiserFactory == address(0)
         ) {
             revert Core__ZeroAddress();
         }
@@ -145,8 +149,9 @@ contract Core is Ownable, ReentrancyGuard {
         usdcToken = _usdcToken;
         uniswapV2Factory = _uniswapV2Factory;
         uniswapV2Router = _uniswapV2Router;
-        unitFactory = _unitFactory;
+        coinFactory = _coinFactory;
         auctionFactory = _auctionFactory;
+        fundraiserFactory = _fundraiserFactory;
         protocolFeeAddress = _protocolFeeAddress;
         minUsdcForLaunch = _minUsdcForLaunch;
     }
@@ -154,18 +159,18 @@ contract Core is Ownable, ReentrancyGuard {
     /*----------  EXTERNAL FUNCTIONS  -----------------------------------*/
 
     /**
-     * @notice Launch a new Fundraiser with associated Unit token, LP, and Auction.
+     * @notice Launch a new Fundraiser with associated Coin token, LP, and Auction.
      * @dev Caller must approve USDC tokens before calling.
      * @param params Launch parameters struct
-     * @return unit Address of deployed Unit token
-     * @return rig Address of deployed Fundraiser contract
+     * @return coin Address of deployed Coin token
+     * @return fundraiser Address of deployed Fundraiser contract
      * @return auction Address of deployed Auction contract
-     * @return lpToken Address of Unit/USDC LP token
+     * @return lpToken Address of Coin/USDC LP token
      */
     function launch(LaunchParams calldata params)
         external
         nonReentrant
-        returns (address unit, address rig, address auction, address lpToken)
+        returns (address coin, address fundraiser, address auction, address lpToken)
     {
         // Validate ALL inputs upfront (fail fast before any state changes)
         _validateLaunchParams(params);
@@ -173,31 +178,31 @@ contract Core is Ownable, ReentrancyGuard {
         // Transfer USDC from launcher
         IERC20(usdcToken).safeTransferFrom(msg.sender, address(this), params.usdcAmount);
 
-        // Deploy Unit token via factory (Core becomes initial minter)
-        unit = IUnitFactory(unitFactory).deploy(params.tokenName, params.tokenSymbol);
+        // Deploy Coin token via factory (Core becomes initial minter)
+        coin = ICoinFactory(coinFactory).deploy(params.tokenName, params.tokenSymbol);
 
-        // Mint initial Unit tokens for LP seeding
-        IUnit(unit).mint(address(this), params.unitAmount);
+        // Mint initial Coin tokens for LP seeding
+        ICoin(coin).mint(address(this), params.coinAmount);
 
-        // Create Unit/USDC LP via Uniswap V2
-        IERC20(unit).safeApprove(uniswapV2Router, 0);
-        IERC20(unit).safeApprove(uniswapV2Router, params.unitAmount);
+        // Create Coin/USDC LP via Uniswap V2
+        IERC20(coin).safeApprove(uniswapV2Router, 0);
+        IERC20(coin).safeApprove(uniswapV2Router, params.coinAmount);
         IERC20(usdcToken).safeApprove(uniswapV2Router, 0);
         IERC20(usdcToken).safeApprove(uniswapV2Router, params.usdcAmount);
 
         (,, uint256 liquidity) = IUniswapV2Router(uniswapV2Router).addLiquidity(
-            unit,
+            coin,
             usdcToken,
-            params.unitAmount,
+            params.coinAmount,
             params.usdcAmount,
-            params.unitAmount,
+            params.coinAmount,
             params.usdcAmount,
             address(this),
             block.timestamp + 20 minutes
         );
 
         // Get LP token address and burn initial liquidity
-        lpToken = IUniswapV2Factory(uniswapV2Factory).getPair(unit, usdcToken);
+        lpToken = IUniswapV2Factory(uniswapV2Factory).getPair(coin, usdcToken);
         IERC20(lpToken).safeTransfer(DEAD_ADDRESS, liquidity);
 
         // Deploy Auction with LP as payment token (receives treasury fees, burns LP)
@@ -210,46 +215,45 @@ contract Core is Ownable, ReentrancyGuard {
             params.auctionMinInitPrice
         );
 
-        // Deploy Fundraiser inline
+        // Deploy Fundraiser via factory
         // Recipient receives 50% of donations
         // Treasury is the Auction contract (receives 45% of donations)
         // Team is the launcher (receives 4% of donations)
-        Fundraiser.Config memory rigConfig = Fundraiser.Config({
+        Fundraiser.Config memory fundraiserConfig = Fundraiser.Config({
             initialEmission: params.initialEmission,
             minEmission: params.minEmission,
             halvingPeriod: params.halvingPeriod,
             epochDuration: params.epochDuration
         });
 
-        Fundraiser fundraiser = new Fundraiser(
-            unit,
+        fundraiser = IFundraiserFactory(fundraiserFactory).deploy(
+            coin,
             params.quoteToken,
             address(this), // core
             auction, // treasury (45%)
             params.launcher, // team (4%)
             params.recipient, // recipient (50%)
-            rigConfig,
+            fundraiserConfig,
             params.uri
         );
-        rig = address(fundraiser);
 
-        // Transfer Unit minting rights to Fundraiser (permanently locked)
-        IUnit(unit).setRig(rig);
+        // Transfer Coin minting rights to Fundraiser (permanently locked)
+        ICoin(coin).setMinter(fundraiser);
 
         // Transfer Fundraiser ownership to launcher
-        fundraiser.transferOwnership(params.launcher);
+        Ownable(fundraiser).transferOwnership(params.launcher);
 
         // Update registry
-        rigToIsRig[rig] = true;
-        rigToIndex[rig] = rigs.length;
-        rigs.push(rig);
-        rigToLP[rig] = lpToken;
-        rigToAuction[rig] = auction;
+        isFundraiser[fundraiser] = true;
+        fundraiserToIndex[fundraiser] = fundraisers.length;
+        fundraisers.push(fundraiser);
+        fundraiserToLP[fundraiser] = lpToken;
+        fundraiserToAuction[fundraiser] = auction;
 
         emit Core__Launched(
             params.launcher,
-            rig,
-            unit,
+            fundraiser,
+            coin,
             params.recipient,
             auction,
             lpToken,
@@ -258,7 +262,7 @@ contract Core is Ownable, ReentrancyGuard {
             params.tokenSymbol,
             params.uri,
             params.usdcAmount,
-            params.unitAmount,
+            params.coinAmount,
             params.initialEmission,
             params.minEmission,
             params.halvingPeriod,
@@ -269,7 +273,7 @@ contract Core is Ownable, ReentrancyGuard {
             params.auctionMinInitPrice
         );
 
-        return (unit, rig, auction, lpToken);
+        return (coin, fundraiser, auction, lpToken);
     }
 
     /*----------  RESTRICTED FUNCTIONS  ---------------------------------*/
@@ -308,17 +312,17 @@ contract Core is Ownable, ReentrancyGuard {
         if (bytes(params.tokenName).length == 0) revert Core__EmptyTokenName();
         if (bytes(params.tokenSymbol).length == 0) revert Core__EmptyTokenSymbol();
         if (bytes(params.uri).length == 0) revert Core__EmptyUri();
-        if (params.unitAmount == 0) revert Core__ZeroUnitAmount();
+        if (params.coinAmount == 0) revert Core__ZeroCoinAmount();
     }
 
     /*----------  VIEW FUNCTIONS  ---------------------------------------*/
 
     /**
      * @notice Returns the number of deployed fundraisers.
-     * @return The length of the rigs array
+     * @return The length of the fundraisers array
      */
-    function rigsLength() external view returns (uint256) {
-        return rigs.length;
+    function fundraisersLength() external view returns (uint256) {
+        return fundraisers.length;
     }
 
 }

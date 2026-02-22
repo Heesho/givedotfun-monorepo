@@ -1,5 +1,5 @@
 import { BigInt, BigDecimal, Address, ethereum } from '@graphprotocol/graph-ts'
-import { Protocol, Unit, Rig, Account, UnitMinuteData, UnitHourData, UnitDayData } from '../generated/schema'
+import { Protocol, Coin, Account, CoinMinuteData, CoinHourData, CoinDayData } from '../generated/schema'
 import {
   ZERO_BI,
   ONE_BI,
@@ -38,8 +38,8 @@ export function getOrCreateProtocol(): Protocol {
   let protocol = Protocol.load(PROTOCOL_ID)
   if (protocol === null) {
     protocol = new Protocol(PROTOCOL_ID)
-    protocol.totalUnits = ZERO_BI
-    protocol.totalRigs = ZERO_BI
+    protocol.totalCoins = ZERO_BI
+    protocol.totalFundraisers = ZERO_BI
     protocol.totalVolumeUsdc = ZERO_BD
     protocol.totalVolume24h = ZERO_BD
     protocol.totalLiquidityUsdc = ZERO_BD
@@ -58,7 +58,7 @@ export function getOrCreateAccount(address: Address): Account {
   if (account === null) {
     account = new Account(id)
     account.totalSwapVolume = ZERO_BD
-    account.totalRigSpend = ZERO_BD
+    account.totalFundraiserSpend = ZERO_BD
     account.totalMined = ZERO_BD
     account.totalWon = ZERO_BD
     account.lastActivityAt = ZERO_BI
@@ -67,71 +67,71 @@ export function getOrCreateAccount(address: Address): Account {
   return account
 }
 
-export function createUnit(
-  unitAddress: Address,
+export function createCoin(
+  coinAddress: Address,
   lpPairAddress: Address,
   usdcAddress: Address,
   launcher: Account,
   name: string,
   symbol: string,
   event: ethereum.Event
-): Unit {
-  let unit = new Unit(unitAddress.toHexString())
+): Coin {
+  let coin = new Coin(coinAddress.toHexString())
 
   // Basic info
-  unit.name = name
-  unit.symbol = symbol
-  unit.decimals = 18
+  coin.name = name
+  coin.symbol = symbol
+  coin.decimals = 18
 
   // Supply
-  unit.totalSupply = ZERO_BD
-  unit.totalMinted = ZERO_BD
+  coin.totalSupply = ZERO_BD
+  coin.totalMinted = ZERO_BD
 
   // Contracts
-  unit.lpPair = lpPairAddress
-  unit.usdcToken = usdcAddress
-  unit.launcher = launcher.id
+  coin.lpPair = lpPairAddress
+  coin.usdcToken = usdcAddress
+  coin.launcher = launcher.id
 
   // Price data (will be updated on first Sync)
-  unit.price = ZERO_BD
-  unit.priceUSD = ZERO_BD
-  unit.marketCap = ZERO_BD
-  unit.marketCapUSD = ZERO_BD
-  unit.liquidity = ZERO_BD
-  unit.liquidityUSD = ZERO_BD
-  unit.reserveUnit = ZERO_BD
-  unit.reserveUsdc = ZERO_BD
+  coin.price = ZERO_BD
+  coin.priceUSD = ZERO_BD
+  coin.marketCap = ZERO_BD
+  coin.marketCapUSD = ZERO_BD
+  coin.liquidity = ZERO_BD
+  coin.liquidityUSD = ZERO_BD
+  coin.reserveCoin = ZERO_BD
+  coin.reserveUsdc = ZERO_BD
 
   // Volume
-  unit.volume24h = ZERO_BD
-  unit.volume7d = ZERO_BD
-  unit.volumeTotal = ZERO_BD
-  unit.txCount = ZERO_BI
-  unit.txCount24h = ZERO_BI
+  coin.volume24h = ZERO_BD
+  coin.volume7d = ZERO_BD
+  coin.volumeTotal = ZERO_BD
+  coin.txCount = ZERO_BI
+  coin.txCount24h = ZERO_BI
 
   // Price changes
-  unit.priceChange1h = ZERO_BD
-  unit.priceChange24h = ZERO_BD
-  unit.priceChange7d = ZERO_BD
-  unit.priceHigh24h = ZERO_BD
-  unit.priceLow24h = ZERO_BD
-  unit.price1hAgo = ZERO_BD
-  unit.price24hAgo = ZERO_BD
-  unit.price7dAgo = ZERO_BD
+  coin.priceChange1h = ZERO_BD
+  coin.priceChange24h = ZERO_BD
+  coin.priceChange7d = ZERO_BD
+  coin.priceHigh24h = ZERO_BD
+  coin.priceLow24h = ZERO_BD
+  coin.price1hAgo = ZERO_BD
+  coin.price24hAgo = ZERO_BD
+  coin.price7dAgo = ZERO_BD
 
   // Activity
-  unit.lastSwapAt = ZERO_BI
-  unit.lastRigActivityAt = ZERO_BI
-  unit.lastActivityAt = ZERO_BI
+  coin.lastSwapAt = ZERO_BI
+  coin.lastFundraiserActivityAt = ZERO_BI
+  coin.lastActivityAt = ZERO_BI
 
   // Holders
-  unit.holderCount = ZERO_BI
+  coin.holderCount = ZERO_BI
 
   // Timestamps
-  unit.createdAt = event.block.timestamp
-  unit.createdAtBlock = event.block.number
+  coin.createdAt = event.block.timestamp
+  coin.createdAtBlock = event.block.number
 
-  return unit
+  return coin
 }
 
 // ============================================================================
@@ -162,90 +162,90 @@ export function getDayStartTimestamp(dayIndex: i32): BigInt {
   return BigInt.fromI32(dayIndex * SECONDS_PER_DAY)
 }
 
-export function getOrCreateUnitMinuteData(unit: Unit, event: ethereum.Event): UnitMinuteData {
+export function getOrCreateCoinMinuteData(coin: Coin, event: ethereum.Event): CoinMinuteData {
   let minuteIndex = getMinuteIndex(event.block.timestamp)
-  let id = unit.id.concat('-').concat(minuteIndex.toString())
+  let id = coin.id.concat('-').concat(minuteIndex.toString())
 
-  let minuteData = UnitMinuteData.load(id)
+  let minuteData = CoinMinuteData.load(id)
   if (minuteData === null) {
-    minuteData = new UnitMinuteData(id)
-    minuteData.unit = unit.id
+    minuteData = new CoinMinuteData(id)
+    minuteData.coin = coin.id
     minuteData.timestamp = getMinuteStartTimestamp(minuteIndex)
     minuteData.minuteIndex = minuteIndex
 
     // Initialize OHLC with current price
-    minuteData.open = unit.price
-    minuteData.high = unit.price
-    minuteData.low = unit.price
-    minuteData.close = unit.price
+    minuteData.open = coin.price
+    minuteData.high = coin.price
+    minuteData.low = coin.price
+    minuteData.close = coin.price
 
     // Volume
-    minuteData.volumeUnit = ZERO_BD
+    minuteData.volumeCoin = ZERO_BD
     minuteData.volumeUsdc = ZERO_BD
     minuteData.txCount = ZERO_BI
 
     // Liquidity
-    minuteData.liquidity = unit.liquidity
+    minuteData.liquidity = coin.liquidity
   }
 
   return minuteData
 }
 
-export function getOrCreateUnitHourData(unit: Unit, event: ethereum.Event): UnitHourData {
+export function getOrCreateCoinHourData(coin: Coin, event: ethereum.Event): CoinHourData {
   let hourIndex = getHourIndex(event.block.timestamp)
-  let id = unit.id.concat('-').concat(hourIndex.toString())
+  let id = coin.id.concat('-').concat(hourIndex.toString())
 
-  let hourData = UnitHourData.load(id)
+  let hourData = CoinHourData.load(id)
   if (hourData === null) {
-    hourData = new UnitHourData(id)
-    hourData.unit = unit.id
+    hourData = new CoinHourData(id)
+    hourData.coin = coin.id
     hourData.timestamp = getHourStartTimestamp(hourIndex)
     hourData.hourIndex = hourIndex
 
     // Initialize OHLC with current price
-    hourData.open = unit.price
-    hourData.high = unit.price
-    hourData.low = unit.price
-    hourData.close = unit.price
+    hourData.open = coin.price
+    hourData.high = coin.price
+    hourData.low = coin.price
+    hourData.close = coin.price
 
     // Volume
-    hourData.volumeUnit = ZERO_BD
+    hourData.volumeCoin = ZERO_BD
     hourData.volumeUsdc = ZERO_BD
     hourData.txCount = ZERO_BI
 
     // Liquidity
-    hourData.liquidity = unit.liquidity
+    hourData.liquidity = coin.liquidity
   }
 
   return hourData
 }
 
-export function getOrCreateUnitDayData(unit: Unit, event: ethereum.Event): UnitDayData {
+export function getOrCreateCoinDayData(coin: Coin, event: ethereum.Event): CoinDayData {
   let dayIndex = getDayIndex(event.block.timestamp)
-  let id = unit.id.concat('-').concat(dayIndex.toString())
+  let id = coin.id.concat('-').concat(dayIndex.toString())
 
-  let dayData = UnitDayData.load(id)
+  let dayData = CoinDayData.load(id)
   if (dayData === null) {
-    dayData = new UnitDayData(id)
-    dayData.unit = unit.id
+    dayData = new CoinDayData(id)
+    dayData.coin = coin.id
     dayData.timestamp = getDayStartTimestamp(dayIndex)
     dayData.dayIndex = dayIndex
 
     // Initialize OHLC with current price
-    dayData.open = unit.price
-    dayData.high = unit.price
-    dayData.low = unit.price
-    dayData.close = unit.price
+    dayData.open = coin.price
+    dayData.high = coin.price
+    dayData.low = coin.price
+    dayData.close = coin.price
 
     // Volume
-    dayData.volumeUnit = ZERO_BD
+    dayData.volumeCoin = ZERO_BD
     dayData.volumeUsdc = ZERO_BD
     dayData.txCount = ZERO_BI
 
     // Snapshots
-    dayData.liquidity = unit.liquidity
-    dayData.totalSupply = unit.totalSupply
-    dayData.totalMinted = unit.totalMinted
+    dayData.liquidity = coin.liquidity
+    dayData.totalSupply = coin.totalSupply
+    dayData.totalMinted = coin.totalMinted
   }
 
   return dayData
@@ -255,22 +255,22 @@ export function getOrCreateUnitDayData(unit: Unit, event: ethereum.Event): UnitD
 // PRICE HELPERS
 // ============================================================================
 
-export function updateUnitPrice(unit: Unit, newPrice: BigDecimal): void {
+export function updateCoinPrice(coin: Coin, newPrice: BigDecimal): void {
   // Update high/low
-  if (newPrice.gt(unit.priceHigh24h)) {
-    unit.priceHigh24h = newPrice
+  if (newPrice.gt(coin.priceHigh24h)) {
+    coin.priceHigh24h = newPrice
   }
-  if (unit.priceLow24h.equals(ZERO_BD) || newPrice.lt(unit.priceLow24h)) {
-    unit.priceLow24h = newPrice
+  if (coin.priceLow24h.equals(ZERO_BD) || newPrice.lt(coin.priceLow24h)) {
+    coin.priceLow24h = newPrice
   }
 
   // Update current price
-  unit.price = newPrice
-  unit.priceUSD = newPrice
+  coin.price = newPrice
+  coin.priceUSD = newPrice
 
   // Update market cap
-  unit.marketCap = newPrice.times(unit.totalSupply)
-  unit.marketCapUSD = unit.marketCap
+  coin.marketCap = newPrice.times(coin.totalSupply)
+  coin.marketCapUSD = coin.marketCap
 }
 
 export function calculatePriceChange(currentPrice: BigDecimal, oldPrice: BigDecimal): BigDecimal {

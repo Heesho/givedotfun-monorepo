@@ -23,10 +23,10 @@ const METADATA_STALE_TIME = 30 * 60 * 1000; // 30 minutes - metadata rarely chan
  * Fetch and cache token metadata from IPFS
  * Uses React Query for caching and deduplication
  */
-async function fetchMetadata(rigUri: string): Promise<TokenMetadata | null> {
-  if (!rigUri || rigUri === "") return null;
+async function fetchMetadata(fundraiserUri: string): Promise<TokenMetadata | null> {
+  if (!fundraiserUri || fundraiserUri === "") return null;
 
-  const metadataUrl = ipfsToHttp(rigUri);
+  const metadataUrl = ipfsToHttp(fundraiserUri);
   if (!metadataUrl || metadataUrl === "") return null;
 
   try {
@@ -42,12 +42,12 @@ async function fetchMetadata(rigUri: string): Promise<TokenMetadata | null> {
 /**
  * Hook for fetching token metadata with caching
  */
-export function useTokenMetadata(rigUri: string | undefined) {
-  const validUri = rigUri && rigUri.length > 0 && rigUri.startsWith("ipfs://");
+export function useTokenMetadata(fundraiserUri: string | undefined) {
+  const validUri = fundraiserUri && fundraiserUri.length > 0 && fundraiserUri.startsWith("ipfs://");
 
   const { data: metadata, isLoading } = useQuery({
-    queryKey: ["tokenMetadata", rigUri],
-    queryFn: () => fetchMetadata(rigUri!),
+    queryKey: ["tokenMetadata", fundraiserUri],
+    queryFn: () => fetchMetadata(fundraiserUri!),
     enabled: !!validUri,
     staleTime: METADATA_STALE_TIME,
     gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
@@ -65,20 +65,20 @@ export function useTokenMetadata(rigUri: string | undefined) {
 }
 
 /**
- * Hook to prefetch metadata for multiple rigs at once
- * Call this when you have a list of rigs to prefetch their metadata
+ * Hook to prefetch metadata for multiple fundraisers at once
+ * Call this when you have a list of fundraisers to prefetch their metadata
  */
 export function usePrefetchMetadata() {
   const queryClient = useQueryClient();
 
   // Memoize the prefetch function to prevent useEffect loops
-  const prefetch = useCallback((rigUris: string[]) => {
-    const uniqueUris = [...new Set(rigUris.filter((uri) => uri && uri.startsWith("ipfs://")))];
+  const prefetch = useCallback((fundraiserUris: string[]) => {
+    const uniqueUris = [...new Set(fundraiserUris.filter((uri) => uri && uri.startsWith("ipfs://")))];
 
-    uniqueUris.forEach((rigUri) => {
+    uniqueUris.forEach((fundraiserUri) => {
       queryClient.prefetchQuery({
-        queryKey: ["tokenMetadata", rigUri],
-        queryFn: () => fetchMetadata(rigUri),
+        queryKey: ["tokenMetadata", fundraiserUri],
+        queryFn: () => fetchMetadata(fundraiserUri),
         staleTime: METADATA_STALE_TIME,
       });
     });
@@ -88,11 +88,11 @@ export function usePrefetchMetadata() {
 }
 
 /**
- * Batch fetch metadata for multiple rigs
- * Returns a map of rigUri -> metadata
+ * Batch fetch metadata for multiple fundraisers
+ * Returns a map of fundraiserUri -> metadata
  */
-export function useBatchMetadata(rigUris: string[]) {
-  const uniqueUris = [...new Set(rigUris.filter(Boolean))];
+export function useBatchMetadata(fundraiserUris: string[]) {
+  const uniqueUris = [...new Set(fundraiserUris.filter(Boolean))];
 
   const { data: metadataMap, isLoading } = useQuery({
     queryKey: ["batchMetadata", uniqueUris.sort().join(",")],
@@ -113,8 +113,8 @@ export function useBatchMetadata(rigUris: string[]) {
   return {
     metadataMap: metadataMap ?? {},
     isLoading,
-    getLogoUrl: (rigUri: string) => {
-      const metadata = metadataMap?.[rigUri];
+    getLogoUrl: (fundraiserUri: string) => {
+      const metadata = metadataMap?.[fundraiserUri];
       return metadata?.image ? ipfsToHttp(metadata.image) : null;
     },
   };

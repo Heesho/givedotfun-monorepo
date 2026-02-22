@@ -23,7 +23,7 @@ import { DEADLINE_BUFFER_SECONDS } from "@/lib/constants";
 type AuctionModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  rigAddress: `0x${string}`;
+  fundraiserAddress: `0x${string}`;
   tokenSymbol: string;
   tokenName: string;
   multicallAddress?: `0x${string}`;
@@ -32,7 +32,7 @@ type AuctionModalProps = {
 export function AuctionModal({
   isOpen,
   onClose,
-  rigAddress,
+  fundraiserAddress,
   tokenSymbol,
   tokenName,
   multicallAddress,
@@ -42,7 +42,7 @@ export function AuctionModal({
     multicallAddress ?? (CONTRACT_ADDRESSES.multicall as `0x${string}`);
 
   const { auctionState, isLoading, refetch: refetchAuction } = useAuctionState(
-    rigAddress,
+    fundraiserAddress,
     account,
     multicallAddr
   );
@@ -121,19 +121,19 @@ export function AuctionModal({
       );
     }
 
-    // Buy call: buy(rig, epochId, deadline, maxPaymentTokenAmount)
+    // Buy call: buy(fundraiser, epochId, deadline, maxPaymentTokenAmount)
     calls.push(
       encodeContractCall(
         multicallAddr,
         MULTICALL_ABI,
         "buy",
-        [rigAddress, auctionState.epochId, deadline, auctionState.price],
+        [fundraiserAddress, auctionState.epochId, deadline, auctionState.price],
         0n
       )
     );
 
     await execute(calls);
-  }, [auctionState, account, multicallAddr, rigAddress, execute, currentAllowance]);
+  }, [auctionState, account, multicallAddr, fundraiserAddress, execute, currentAllowance]);
 
   if (!isOpen) return null;
 

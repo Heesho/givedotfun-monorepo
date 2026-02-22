@@ -2,9 +2,9 @@
 
 ## Overview
 
-Fundraiser is a donation-based token distribution mechanism within the give.fun platform. It allows communities to fund a recipient -- such as a creator, charity, or project -- while earning proportional Unit token emissions in return.
+Fundraiser is a donation-based token distribution mechanism within the give.fun platform. It allows communities to fund a recipient -- such as a creator, charity, or project -- while earning proportional Coin token emissions in return.
 
-Users donate a payment token (typically USDC) into epoch pools. Donations are split immediately upon deposit: 50% goes directly to the designated recipient, with the remaining 50% distributed among the treasury, team, and protocol. After each epoch concludes, donors can claim their proportional share of that epoch's Unit token emission based on how much they contributed relative to the total pool.
+Users donate a payment token (typically USDC) into epoch pools. Donations are split immediately upon deposit: 50% goes directly to the designated recipient, with the remaining 50% distributed among the treasury, team, and protocol. After each epoch concludes, donors can claim their proportional share of that epoch's Coin token emission based on how much they contributed relative to the total pool.
 
 The Fundraiser is the core mechanism of give.fun. There is no Dutch auction pricing, no VRF randomness, and no competitive displacement. The incentive model is straightforward: donate to fund a recipient, receive tokens proportional to your contribution.
 
@@ -20,7 +20,7 @@ To donate, call `fund(account, amount, uri)` on the Fundraiser contract.
 function fund(address account, uint256 amount, string calldata _uri) external;
 ```
 
-- **`account`** -- The address that will be credited for this donation and will be able to claim Unit tokens later. This does not have to be `msg.sender`; you can fund on behalf of another account.
+- **`account`** -- The address that will be credited for this donation and will be able to claim Coin tokens later. This does not have to be `msg.sender`; you can fund on behalf of another account.
 - **`amount`** -- The amount of the quote token (e.g., USDC) to donate. Must be at least `MIN_DONATION` (10,000 raw units, equivalent to $0.01 for USDC with 6 decimals).
 - **`_uri`** -- An arbitrary metadata string attached to the donation event (e.g., a message, link, or identifier).
 
@@ -54,7 +54,7 @@ These values are used purely for proportional emission calculation. The actual d
 
 ### Claiming
 
-After an epoch ends, donors can claim their proportional share of that epoch's Unit token emission by calling `claim(account, epoch)`.
+After an epoch ends, donors can claim their proportional share of that epoch's Coin token emission by calling `claim(account, epoch)`.
 
 ```solidity
 function claim(address account, uint256 epoch) external;
@@ -71,13 +71,13 @@ userReward = (userDonation * epochEmission) / epochTotal
 
 Where:
 - `userDonation` is the account's total donation for that epoch.
-- `epochEmission` is the Unit token emission allocated to that epoch (see [Emission Schedule](#emission-schedule)).
+- `epochEmission` is the Coin token emission allocated to that epoch (see [Emission Schedule](#emission-schedule)).
 - `epochTotal` is the total donations from all users in that epoch.
 
 Key rules:
-- **Per-epoch claims**: Each epoch must be claimed individually. There is no batch claim function on the rig itself (use Multicall for batch claims).
+- **Per-epoch claims**: Each epoch must be claimed individually. There is no batch claim function on the fundraiser itself (use Multicall for batch claims).
 - **One claim per account per epoch**: Once claimed, `epochAccountToHasClaimed[epoch][account]` is set to `true` and the account cannot claim again for that epoch.
-- **Anyone can trigger a claim**: The caller does not need to be the account. Anyone can call `claim(account, epoch)` on behalf of any account. The Unit tokens are always minted to `account`.
+- **Anyone can trigger a claim**: The caller does not need to be the account. Anyone can call `claim(account, epoch)` on behalf of any account. The Coin tokens are always minted to `account`.
 - **Epoch must be over**: You cannot claim for the current epoch. The epoch must have fully elapsed.
 - **Zero-donation epochs**: If nobody donates in a given epoch, those emissions are effectively unclaimable. The `epochTotal` for that epoch is zero, and no claims can be made.
 
@@ -85,7 +85,7 @@ Key rules:
 
 ## Emission Schedule
 
-Fundraiser distributes a fixed number of Unit tokens per epoch, following a halving schedule:
+Fundraiser distributes a fixed number of Coin tokens per epoch, following a halving schedule:
 
 - **Initial emission**: Set by `initialEmission` at launch. Valid range: `1e18` to `1e30`.
 - **Halving**: Every `halvingPeriod` epochs, the per-epoch emission halves.
@@ -157,7 +157,7 @@ Fees are distributed immediately on each `fund()` call via direct ERC-20 transfe
 
 ### Default Treasury Setup
 
-When launched through Core, the treasury is initially set to the **Auction contract** associated with the rig. This means the 45% treasury share flows into the Auction, which can sell Unit tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
+When launched through Core, the treasury is initially set to the **Auction contract** associated with the fundraiser. This means the 45% treasury share flows into the Auction, which can sell Coin tokens for LP tokens that are then burned, creating deflationary pressure on the liquidity pool. The team address is initially set to the **launcher's address**.
 
 ---
 
@@ -169,13 +169,13 @@ The `recipient` address is central to Fundraiser's purpose. It represents the en
 
 - The recipient receives **50% of every donation** immediately via direct ERC-20 transfer.
 - The recipient does not need to take any action -- funds arrive automatically whenever anyone calls `fund()`.
-- The recipient address is set at construction and can be updated by the rig owner after deployment.
+- The recipient address is set at construction and can be updated by the fundraiser owner after deployment.
 
 ### Constraints
 
 - **Must be non-zero**: The constructor enforces `_recipient != address(0)`, and `setRecipient()` enforces the same check. A Fundraiser cannot operate without a recipient.
-- **No special permissions**: The recipient address has no privileged role in the contract beyond receiving funds. It cannot pause the rig, change parameters, or claim tokens.
-- **Owner-controlled**: Only the rig owner can change the recipient address via `setRecipient()`.
+- **No special permissions**: The recipient address has no privileged role in the contract beyond receiving funds. It cannot pause the fundraiser, change parameters, or claim tokens.
+- **Owner-controlled**: Only the fundraiser owner can change the recipient address via `setRecipient()`.
 
 ### Use Cases
 
@@ -195,12 +195,12 @@ The following parameters are set at launch time (via `Core.launch()`) and are **
 |--------------------|-----------|----------------------------|-----------------------------------------------------------------------------|
 | `quoteToken`       | `address` | Any standard ERC-20        | The payment token accepted for donations (e.g., USDC). No rebasing or fee-on-transfer tokens. |
 | `recipient`        | `address` | Non-zero                   | Address receiving 50% of all donations.                                      |
-| `tokenName`        | `string`  | Non-empty                  | Name of the Unit (ERC-20) token created for this rig.                        |
-| `tokenSymbol`      | `string`  | Non-empty                  | Symbol of the Unit token.                                                    |
-| `uri`              | `string`  | Non-empty                  | Initial metadata URI for the rig (e.g., branding, logo).                     |
+| `tokenName`        | `string`  | Non-empty                  | Name of the Coin (ERC-20) token created for this fundraiser.                 |
+| `tokenSymbol`      | `string`  | Non-empty                  | Symbol of the Coin token.                                                    |
+| `uri`              | `string`  | Non-empty                  | Initial metadata URI for the fundraiser (e.g., branding, logo).                     |
 | `usdcAmount`       | `uint256` | >= `minUsdcForLaunch`      | USDC provided by the launcher to seed the initial liquidity pool.            |
-| `unitAmount`       | `uint256` | > 0                        | Number of Unit tokens minted for the initial liquidity pool.                 |
-| `initialEmission`  | `uint256` | `1e18` -- `1e30`           | Starting Unit token emission per epoch.                                      |
+| `coinAmount`       | `uint256` | > 0                        | Number of Coin tokens minted for the initial liquidity pool.                 |
+| `initialEmission`  | `uint256` | `1e18` -- `1e30`           | Starting Coin token emission per epoch.                                      |
 | `minEmission`      | `uint256` | `1` -- `initialEmission`   | Minimum emission floor per epoch (emission never drops below this).          |
 | `halvingPeriod`    | `uint256` | 7 -- 365 (epochs)          | Number of epochs between emission halvings.                                  |
 | `epochDuration`    | `uint256` | 1 hour -- 7 days           | Duration of each epoch in seconds.                                           |
@@ -220,19 +220,19 @@ Each Fundraiser is deployed alongside an Auction contract for treasury token sal
 
 When `Core.launch()` is called:
 
-1. A new **Unit** ERC-20 token is deployed.
-2. `unitAmount` of the Unit token is minted and paired with `usdcAmount` of USDC to create a **Uniswap V2 liquidity pool**.
+1. A new **Coin** ERC-20 token is deployed.
+2. `unitAmount` of the Coin token is minted and paired with `usdcAmount` of USDC to create a **Uniswap V2 liquidity pool**.
 3. The initial LP tokens are **burned** (sent to the dead address `0x...dEaD`), permanently locking the liquidity.
 4. An **Auction** contract is deployed (configured with the auction parameters) to handle treasury token sales.
 5. The **Fundraiser** contract is deployed with the emission configuration.
-6. Unit minting rights are transferred to the Fundraiser (only the rig can mint new Unit tokens going forward).
+6. Coin minting rights are transferred to the Fundraiser (only the fundraiser can mint new Coin tokens going forward).
 7. Ownership of the Fundraiser is transferred to the launcher.
 
 ---
 
 ## Owner Controls
 
-The rig owner (initially the launcher) can modify the following parameters after deployment:
+The fundraiser owner (initially the launcher) can modify the following parameters after deployment:
 
 ### Mutable Settings
 
@@ -241,14 +241,14 @@ The rig owner (initially the launcher) can modify the following parameters after
 | `setRecipient()`    | `recipient`   | Cannot be `address(0)`                      | Change the address that receives 50% of donations.                |
 | `setTreasury()`     | `treasury`    | Cannot be `address(0)`                      | Change the treasury address that receives ~45% of donations.      |
 | `setTeam()`         | `team`        | Can be `address(0)` (disables team fees)    | Change the team address. Setting to zero redirects team fees to treasury. |
-| `setUri()`          | `uri`         | Any string                                  | Update the metadata URI for the rig.                              |
-| `transferOwnership()` | `owner`    | Standard OpenZeppelin Ownable               | Transfer ownership of the rig to a new address.                   |
+| `setUri()`          | `uri`         | Any string                                  | Update the metadata URI for the fundraiser.                              |
+| `transferOwnership()` | `owner`    | Standard OpenZeppelin Ownable               | Transfer ownership of the fundraiser to a new address.                   |
 
 ### Immutable Settings (Cannot Be Changed)
 
 The following are fixed at deployment and can never be modified:
 
-- `unit` -- The Unit token address
+- `unit` -- The Coin token address
 - `quote` -- The payment token address
 - `core` -- The Core contract address
 - `startTime` -- The deployment timestamp (determines epoch boundaries)
@@ -276,7 +276,7 @@ Returns the current epoch number since contract deployment, 0-indexed. Calculate
 function getEpochEmission(uint256 epoch) public view returns (uint256)
 ```
 
-Returns the Unit token emission allocated to a specific epoch. Applies the halving schedule: `initialEmission >> (epoch / halvingPeriod)`, floored at `minEmission`. Can be called for any epoch number, including future epochs.
+Returns the Coin token emission allocated to a specific epoch. Applies the halving schedule: `initialEmission >> (epoch / halvingPeriod)`, floored at `minEmission`. Can be called for any epoch number, including future epochs.
 
 ### `getPendingReward(epoch, account)`
 
@@ -284,7 +284,7 @@ Returns the Unit token emission allocated to a specific epoch. Applies the halvi
 function getPendingReward(uint256 epoch, address account) external view returns (uint256)
 ```
 
-Returns the pending (unclaimed) Unit reward for `account` on a given `epoch`. Returns `0` if:
+Returns the pending (unclaimed) Coin reward for `account` on a given `epoch`. Returns `0` if:
 - The epoch has not yet ended (`epoch >= currentEpoch()`).
 - The account has already claimed for that epoch.
 - The account did not donate in that epoch.
@@ -305,7 +305,7 @@ These public mappings are accessible as view functions:
 
 | Function            | Returns     | Description                                           |
 |---------------------|-------------|-------------------------------------------------------|
-| `unit()`            | `address`   | The Unit (ERC-20) token address.                      |
+| `coin()`            | `address`   | The Coin (ERC-20) token address.                      |
 | `quote()`           | `address`   | The quote (payment) token address.                    |
 | `core()`            | `address`   | The Core contract address.                                  |
 | `startTime()`       | `uint256`   | The contract deployment timestamp.                    |
@@ -316,7 +316,7 @@ These public mappings are accessible as view functions:
 | `recipient()`       | `address`   | Current recipient address (receives 50% of donations).|
 | `treasury()`        | `address`   | Current treasury address.                             |
 | `team()`            | `address`   | Current team address (zero means disabled).           |
-| `uri()`             | `string`    | Current metadata URI for the rig.                     |
+| `uri()`             | `string`    | Current metadata URI for the fundraiser.                     |
 
 ### Constants
 
@@ -349,14 +349,14 @@ event Fundraiser__Funded(address sender, address indexed funder, uint256 amount,
 | Parameter | Indexed | Description                                                        |
 |-----------|---------|--------------------------------------------------------------------|
 | `sender`  | No      | The address that called `fund()` and paid the tokens (`msg.sender`). |
-| `funder`  | Yes     | The account credited for the donation (will claim Unit tokens).    |
+| `funder`  | Yes     | The account credited for the donation (will claim Coin tokens).    |
 | `amount`  | No      | The total donation amount in quote token units.                    |
 | `epoch`   | No      | The epoch number the donation was recorded in.                     |
 | `uri`     | No      | The metadata URI string attached to this donation.                 |
 
 ### `Fundraiser__Claimed`
 
-Emitted when Unit tokens are claimed for a completed epoch via `claim()`.
+Emitted when Coin tokens are claimed for a completed epoch via `claim()`.
 
 ```solidity
 event Fundraiser__Claimed(address indexed account, uint256 amount, uint256 epoch);
@@ -364,8 +364,8 @@ event Fundraiser__Claimed(address indexed account, uint256 amount, uint256 epoch
 
 | Parameter | Indexed | Description                                                  |
 |-----------|---------|--------------------------------------------------------------|
-| `account` | Yes     | The account that received the claimed Unit tokens.           |
-| `amount`  | No      | The number of Unit tokens minted and sent to the account.    |
+| `account` | Yes     | The account that received the claimed Coin tokens.           |
+| `amount`  | No      | The number of Coin tokens minted and sent to the account.    |
 | `epoch`   | No      | The epoch number that was claimed.                           |
 
 ### `Fundraiser__TreasuryFee`

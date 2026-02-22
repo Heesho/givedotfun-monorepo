@@ -57,7 +57,7 @@ const BOUNDS = {
 // Default values for fundraiser launch
 const DEFAULTS = {
   usdcAmount: 1,
-  unitAmount: 1000,
+  coinAmount: 1000,
   initialEmission: 50000, // 50,000 tokens/day
   minEmission: 5000, // 5,000 tokens/day floor
   halvingPeriod: 30 * 24 * 3600, // 30 days
@@ -169,13 +169,13 @@ function EmissionPreview({
 // Settings summary component
 function SettingsSummary({
   usdcAmount,
-  unitAmount,
+  coinAmount,
   initialEmission,
   minEmission,
   halvingPeriod,
 }: {
   usdcAmount: number;
-  unitAmount: number;
+  coinAmount: number;
   initialEmission: number;
   minEmission: number;
   halvingPeriod: number;
@@ -202,11 +202,11 @@ function SettingsSummary({
       <div className="space-y-1">
         <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
           <span className="text-concrete-500">•</span>
-          Initial LP: ${formatNum(usdcAmount)} + {formatNum(unitAmount)} coins
+          Initial LP: ${formatNum(usdcAmount)} + {formatNum(coinAmount)} coins
         </div>
         <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
           <span className="text-concrete-500">•</span>
-          Starting price: ${(usdcAmount / unitAmount).toFixed(6)}
+          Starting price: ${(usdcAmount / coinAmount).toFixed(6)}
         </div>
         <div className="text-[12px] text-[#8E8E8E] flex items-center gap-2">
           <span className="text-concrete-500">•</span>
@@ -286,8 +286,8 @@ const LAUNCHED_EVENT_ABI = [
     name: "Core__Launched",
     inputs: [
       { name: "launcher", type: "address", indexed: true },
-      { name: "rig", type: "address", indexed: true },
-      { name: "unit", type: "address", indexed: true },
+      { name: "fundraiser", type: "address", indexed: true },
+      { name: "coin", type: "address", indexed: true },
       { name: "recipient", type: "address", indexed: false },
       { name: "auction", type: "address", indexed: false },
       { name: "lpToken", type: "address", indexed: false },
@@ -296,10 +296,11 @@ const LAUNCHED_EVENT_ABI = [
       { name: "tokenSymbol", type: "string", indexed: false },
       { name: "uri", type: "string", indexed: false },
       { name: "usdcAmount", type: "uint256", indexed: false },
-      { name: "unitAmount", type: "uint256", indexed: false },
+      { name: "coinAmount", type: "uint256", indexed: false },
       { name: "initialEmission", type: "uint256", indexed: false },
       { name: "minEmission", type: "uint256", indexed: false },
       { name: "halvingPeriod", type: "uint256", indexed: false },
+      { name: "epochDuration", type: "uint256", indexed: false },
       { name: "auctionInitPrice", type: "uint256", indexed: false },
       { name: "auctionEpochPeriod", type: "uint256", indexed: false },
       { name: "auctionPriceMultiplier", type: "uint256", indexed: false },
@@ -313,14 +314,14 @@ export default function LaunchPage() {
   const { address: account, isConnected, isConnecting, connect } = useFarcaster();
   const { execute, status: txStatus, txHash, batchReceipts, error: txError, reset: resetTx } = useBatchedTransaction();
 
-  // Extract rig address from tx receipt
-  const [launchedRigAddress, setLaunchedRigAddress] = useState<string | null>(null);
+  // Extract fundraiser address from tx receipt
+  const [launchedFundraiserAddress, setLaunchedFundraiserAddress] = useState<string | null>(null);
   const { data: txReceipt } = useWaitForTransactionReceipt({
     hash: txHash as `0x${string}` | undefined,
   });
 
-  // Helper to extract rig address from parsed logs
-  const extractRigAddress = (logs: readonly { address: string; topics: readonly string[]; data: string }[]) => {
+  // Helper to extract fundraiser address from parsed logs
+  const extractFundraiserAddress = (logs: readonly { address: string; topics: readonly string[]; data: string }[]) => {
     try {
       const parsed = parseEventLogs({
         abi: LAUNCHED_EVENT_ABI,
@@ -329,8 +330,8 @@ export default function LaunchPage() {
       const launchedEvent = parsed.find(
         (e) => e.eventName === "Core__Launched"
       );
-      if (launchedEvent?.args && "rig" in launchedEvent.args) {
-        return launchedEvent.args.rig as string;
+      if (launchedEvent?.args && "fundraiser" in launchedEvent.args) {
+        return launchedEvent.args.fundraiser as string;
       }
     } catch (err) {
       console.error("Failed to parse launch event logs:", err);
@@ -340,24 +341,24 @@ export default function LaunchPage() {
 
   // Parse from sequential tx receipt
   useEffect(() => {
-    if (!txReceipt?.logs || launchedRigAddress) return;
-    const rig = extractRigAddress(txReceipt.logs);
-    if (rig) setLaunchedRigAddress(rig);
-  }, [txReceipt, launchedRigAddress]);
+    if (!txReceipt?.logs || launchedFundraiserAddress) return;
+    const addr = extractFundraiserAddress(txReceipt.logs);
+    if (addr) setLaunchedFundraiserAddress(addr);
+  }, [txReceipt, launchedFundraiserAddress]);
 
   // Parse from EIP-5792 batch receipts (batch mode may not populate txHash)
   useEffect(() => {
-    if (!batchReceipts || launchedRigAddress) return;
+    if (!batchReceipts || launchedFundraiserAddress) return;
     for (const receipt of batchReceipts) {
       if (receipt.logs) {
-        const rig = extractRigAddress(receipt.logs as never);
-        if (rig) {
-          setLaunchedRigAddress(rig);
+        const addr = extractFundraiserAddress(receipt.logs as never);
+        if (addr) {
+          setLaunchedFundraiserAddress(addr);
           break;
         }
       }
     }
-  }, [batchReceipts, launchedRigAddress]);
+  }, [batchReceipts, launchedFundraiserAddress]);
 
   // Read user's USDC balance
   const { data: usdcBalance } = useReadContract({
@@ -388,7 +389,7 @@ export default function LaunchPage() {
 
   // Liquidity
   const [usdcAmount, setUsdcAmount] = useState(DEFAULTS.usdcAmount);
-  const [unitAmount, setUnitAmount] = useState(DEFAULTS.unitAmount);
+  const [coinAmount, setCoinAmount] = useState(DEFAULTS.coinAmount);
 
   // Emission
   const [initialEmission, setInitialEmission] = useState(DEFAULTS.initialEmission);
@@ -424,7 +425,7 @@ export default function LaunchPage() {
 
   const resetAdvancedToDefaults = () => {
     setUsdcAmount(DEFAULTS.usdcAmount);
-    setUnitAmount(DEFAULTS.unitAmount);
+    setCoinAmount(DEFAULTS.coinAmount);
     setInitialEmission(DEFAULTS.initialEmission);
     setMinEmission(DEFAULTS.minEmission);
     setHalvingPeriod(DEFAULTS.halvingPeriod);
@@ -513,11 +514,11 @@ export default function LaunchPage() {
       setIsUploading(false);
 
       const usdcAmountWei = parseUnits(usdcAmount.toString(), QUOTE_TOKEN_DECIMALS);
-      const unitAmountWei = parseUnits(unitAmount.toString(), 18);
+      const coinAmountWei = parseUnits(coinAmount.toString(), 18);
 
       // Compute auction price in LP tokens to target a dollar value
-      // Formula: auctionLpPrice = targetUsd / (2e6 * sqrt(usdcAmount / unitAmount))
-      const auctionLpPrice = DEFAULTS.auctionTargetUsd / (2_000_000 * Math.sqrt(usdcAmount / unitAmount));
+      // Formula: auctionLpPrice = targetUsd / (2e6 * sqrt(usdcAmount / coinAmount))
+      const auctionLpPrice = DEFAULTS.auctionTargetUsd / (2_000_000 * Math.sqrt(usdcAmount / coinAmount));
       const auctionInitPriceWei = parseUnits(auctionLpPrice.toFixed(18), 18);
       const auctionMinInitPriceWei = auctionInitPriceWei;
       const auctionEpochPeriodWei = BigInt(DEFAULTS.auctionEpochPeriod);
@@ -539,7 +540,7 @@ export default function LaunchPage() {
         tokenSymbol,
         uri,
         usdcAmount: usdcAmountWei,
-        unitAmount: unitAmountWei,
+        coinAmount: coinAmountWei,
         initialEmission: initialEmissionWei,
         minEmission: minEmissionWei,
         halvingPeriod: BigInt(halvingPeriodEpochs),
@@ -793,7 +794,7 @@ export default function LaunchPage() {
               {!showAdvanced && (
                 <SettingsSummary
                   usdcAmount={usdcAmount}
-                  unitAmount={unitAmount}
+                  coinAmount={coinAmount}
                   initialEmission={initialEmission}
                   minEmission={minEmission}
                   halvingPeriod={halvingPeriod}
@@ -831,8 +832,8 @@ export default function LaunchPage() {
                     />
                     <Slider
                       label="Coin Side"
-                      value={unitAmount}
-                      onChange={setUnitAmount}
+                      value={coinAmount}
+                      onChange={setCoinAmount}
                       min={100}
                       max={100000000}
                       step={100}
@@ -841,9 +842,9 @@ export default function LaunchPage() {
                     />
                     {/* Initial LP Summary */}
                     {(() => {
-                      const initialPriceUsdc = usdcAmount / unitAmount;
+                      const initialPriceUsdc = usdcAmount / coinAmount;
                       const initialPriceUsd = initialPriceUsdc;
-                      const marketCapUsd = unitAmount * initialPriceUsd;
+                      const marketCapUsd = coinAmount * initialPriceUsd;
 
                       const formatUsd = (n: number) => {
                         if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
@@ -869,7 +870,7 @@ export default function LaunchPage() {
                               <span className="text-muted-foreground">Initial Liquidity</span>
                               <div className="text-right">
                                 <span className="font-semibold text-foreground tabular-nums">
-                                  ${formatNumber(usdcAmount)} + {formatNumber(unitAmount)} coins
+                                  ${formatNumber(usdcAmount)} + {formatNumber(coinAmount)} coins
                                 </span>
                               </div>
                             </div>
@@ -1020,7 +1021,7 @@ export default function LaunchPage() {
               {/* Actions */}
               <div className="space-y-3 pt-2 w-full">
                 <Link
-                  href={launchedRigAddress ? `/fundraiser/${launchedRigAddress}` : "/explore"}
+                  href={launchedFundraiserAddress ? `/fundraiser/${launchedFundraiserAddress}` : "/explore"}
                   className="block w-full py-3.5 px-4 bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider text-[15px] rounded-lg hover:bg-moss-300 hover:shadow-glow transition-all"
                 >
                   View Fundraiser

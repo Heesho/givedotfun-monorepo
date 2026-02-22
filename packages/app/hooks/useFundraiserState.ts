@@ -9,7 +9,7 @@ import {
 } from "@/lib/contracts";
 
 export function useFundraiserState(
-  rigAddress: `0x${string}` | undefined,
+  fundraiserAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined,
   enabled: boolean = true,
 ) {
@@ -18,11 +18,11 @@ export function useFundraiserState(
   const { data: rawState, refetch, isLoading } = useReadContract({
     address: multicallAddr,
     abi: MULTICALL_ABI,
-    functionName: "getRig",
-    args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
+    functionName: "getFundraiser",
+    args: fundraiserAddress ? [fundraiserAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress && enabled,
+      enabled: !!fundraiserAddress && enabled,
       refetchInterval: 15_000,
     },
   });
@@ -35,12 +35,12 @@ export function useFundraiserState(
     address: multicallAddr,
     abi: MULTICALL_ABI,
     functionName: "getClaimableEpochs",
-    args: rigAddress && account
-      ? [rigAddress, account, 0n, currentEpoch]
+    args: fundraiserAddress && account
+      ? [fundraiserAddress, account, 0n, currentEpoch]
       : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress && !!account && currentEpoch > 0n && enabled,
+      enabled: !!fundraiserAddress && !!account && currentEpoch > 0n && enabled,
       refetchInterval: 30_000,
     },
   });
@@ -50,12 +50,12 @@ export function useFundraiserState(
     address: multicallAddr,
     abi: MULTICALL_ABI,
     functionName: "getTotalPendingRewards",
-    args: rigAddress && account
-      ? [rigAddress, account, 0n, currentEpoch]
+    args: fundraiserAddress && account
+      ? [fundraiserAddress, account, 0n, currentEpoch]
       : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress && !!account && currentEpoch > 0n && enabled,
+      enabled: !!fundraiserAddress && !!account && currentEpoch > 0n && enabled,
       refetchInterval: 30_000,
     },
   });

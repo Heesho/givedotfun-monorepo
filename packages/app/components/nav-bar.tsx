@@ -8,15 +8,15 @@ import { Compass, PlusCircle, HelpCircle, UserCircle } from "lucide-react";
 export function NavBar() {
   const pathname = usePathname();
 
-  // Check if we're on a rig detail page
-  const isRigPage = pathname.startsWith("/fundraiser/");
+  // Check if we're on a fundraiser detail page
+  const isFundraiserPage = pathname.startsWith("/fundraiser/");
 
   const navItems: Array<{
     href: "/explore" | "/launch" | "/info" | "/profile";
     icon: typeof Compass;
     isActive: boolean;
   }> = [
-    { href: "/explore", icon: Compass, isActive: pathname === "/explore" || pathname === "/" || isRigPage },
+    { href: "/explore", icon: Compass, isActive: pathname === "/explore" || pathname === "/" || isFundraiserPage },
     { href: "/launch", icon: PlusCircle, isActive: pathname === "/launch" },
     { href: "/info", icon: HelpCircle, isActive: pathname === "/info" },
     { href: "/profile", icon: UserCircle, isActive: pathname === "/profile" },

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Every fundraiser launch on give.fun creates an **Auction** contract alongside the fundraiser and its Unit token. The Auction serves as the fundraiser's treasury marketplace -- it accumulates quote tokens (USDC) from the fundraiser's fee splits and allows anyone to purchase those accumulated tokens via a repeating Dutch auction.
+Every fundraiser launch on give.fun creates an **Auction** contract alongside the fundraiser and its Coin token. The Auction serves as the fundraiser's treasury marketplace -- it accumulates quote tokens (USDC) from the fundraiser's fee splits and allows anyone to purchase those accumulated tokens via a repeating Dutch auction.
 
 The Auction contract is forked and modified from [Euler Fee Flow](https://github.com/euler-xyz/fee-flow). It provides a permissionless, automated mechanism for converting treasury assets into LP token burns, creating sustained deflationary pressure on the liquidity pool.
 
@@ -30,7 +30,7 @@ The new `initPrice` is clamped between `minInitPrice` and `ABS_MAX_INIT_PRICE` (
 When a buyer calls `buy()`, the following occurs:
 
 1. **Validation** -- The contract checks the deadline, epoch ID (front-run protection), and maximum payment amount (slippage protection).
-2. **Payment** -- The buyer pays the current Dutch auction price in **LP tokens** (the Uniswap V2 pair token for the Unit/USDC pool). LP tokens are transferred to the `paymentReceiver`, which is the burn address (`0x000...dead`).
+2. **Payment** -- The buyer pays the current Dutch auction price in **LP tokens** (the Uniswap V2 pair token for the Coin/USDC pool). LP tokens are transferred to the `paymentReceiver`, which is the burn address (`0x000...dead`).
 3. **Asset Transfer** -- All accumulated balances of the specified asset tokens are transferred to the buyer's designated receiver address.
 4. **Epoch Reset** -- The epoch counter increments, the new `initPrice` is calculated, and the auction clock restarts.
 
@@ -50,7 +50,7 @@ If `timePassed > epochPeriod`, the price is 0.
 
 ### Payment in LP Tokens
 
-Unlike the fundraiser itself (which accepts USDC), the Auction requires payment in **LP tokens**. To participate, a buyer must first acquire LP tokens by providing liquidity to the Unit/USDC Uniswap V2 pool.
+Unlike the fundraiser itself (which accepts USDC), the Auction requires payment in **LP tokens**. To participate, a buyer must first acquire LP tokens by providing liquidity to the Coin/USDC Uniswap V2 pool.
 
 ### Deflationary LP Burns
 

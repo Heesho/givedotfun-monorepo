@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search, Zap, Clock, Star, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
-import { useExploreRigs, type RigListItem, type SortOption } from "@/hooks/useAllRigs";
+import { useExploreFundraisers, type FundraiserListItem, type SortOption } from "@/hooks/useAllFundraisers";
 import { useBatchMetadata } from "@/hooks/useMetadata";
 import { useSparklineData } from "@/hooks/useSparklineData";
 import { useFarcaster } from "@/hooks/useFarcaster";
@@ -75,18 +75,18 @@ export default function ExplorePage() {
   const [sortBy, setSortBy] = useState<SortOption>("bump");
   const { address: account } = useFarcaster();
 
-  const { rigs, isLoading } = useExploreRigs(sortBy, searchQuery, account);
+  const { fundraisers, isLoading } = useExploreFundraisers(sortBy, searchQuery, account);
 
   // Batch fetch metadata for logos
-  const rigUris = rigs.map((r) => r.rigUri).filter(Boolean);
-  const { getLogoUrl } = useBatchMetadata(rigUris);
+  const fundraiserUris = fundraisers.map((r) => r.fundraiserUri).filter(Boolean);
+  const { getLogoUrl } = useBatchMetadata(fundraiserUris);
 
   // Batch fetch hourly sparkline data (7 days, more granular than daily)
-  const unitAddresses = rigs.map((r) => r.unitAddress);
-  const { getSparkline } = useSparklineData(unitAddresses);
+  const coinAddresses = fundraisers.map((r) => r.coinAddress);
+  const { getSparkline } = useSparklineData(coinAddresses);
 
   const isSearching = searchQuery.length > 0;
-  const showEmpty = !isLoading && rigs.length === 0;
+  const showEmpty = !isLoading && fundraisers.length === 0;
 
   return (
     <main className="flex h-screen w-screen justify-center bg-concrete-800">
@@ -157,13 +157,13 @@ export default function ExplorePage() {
             </div>
           )}
 
-          {/* Loaded - render rig rows */}
-          {!isLoading && rigs.length > 0 && (
+          {/* Loaded - render fundraiser rows */}
+          {!isLoading && fundraisers.length > 0 && (
             <div>
               <AnimatePresence initial={false}>
-                {rigs.map((rig, index) => (
+                {fundraisers.map((fundraiser, index) => (
                   <motion.div
-                    key={rig.address}
+                    key={fundraiser.address}
                     layout
                     transition={{ type: "spring", stiffness: 500, damping: 40 }}
                     initial={{ opacity: 0 }}
@@ -171,26 +171,26 @@ export default function ExplorePage() {
                     exit={{ opacity: 0 }}
                   >
                     <Link
-                      href={`/fundraiser/${rig.address}`}
+                      href={`/fundraiser/${fundraiser.address}`}
                       className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-moss-400/[0.04]"
                     >
                       {/* Left side - Logo, Symbol, Name */}
                       <div className="flex items-center gap-3">
                         <TokenLogo
-                          name={rig.tokenName}
-                          logoUrl={getLogoUrl(rig.rigUri)}
+                          name={fundraiser.tokenName}
+                          logoUrl={getLogoUrl(fundraiser.fundraiserUri)}
                           size="md-lg"
                         />
                         <div>
                           <div className="font-semibold text-[15px]">
-                            {rig.tokenSymbol.length > 6
-                              ? `${rig.tokenSymbol.slice(0, 6)}...`
-                              : rig.tokenSymbol}
+                            {fundraiser.tokenSymbol.length > 6
+                              ? `${fundraiser.tokenSymbol.slice(0, 6)}...`
+                              : fundraiser.tokenSymbol}
                           </div>
                           <div className="text-[13px] text-muted-foreground">
-                            {rig.tokenName.length > 12
-                              ? `${rig.tokenName.slice(0, 12)}...`
-                              : rig.tokenName}
+                            {fundraiser.tokenName.length > 12
+                              ? `${fundraiser.tokenName.slice(0, 12)}...`
+                              : fundraiser.tokenName}
                           </div>
                         </div>
                       </div>
@@ -199,25 +199,25 @@ export default function ExplorePage() {
                       <div className="flex justify-center">
                         <Sparkline
                           data={(() => {
-                            const hourly = getSparkline(rig.unitAddress, rig.priceUsd);
+                            const hourly = getSparkline(fundraiser.coinAddress, fundraiser.priceUsd);
                             if (hourly.length > 1) return hourly;
-                            if (rig.sparklinePrices.length > 1) return rig.sparklinePrices;
-                            return [rig.priceUsd, rig.priceUsd];
+                            if (fundraiser.sparklinePrices.length > 1) return fundraiser.sparklinePrices;
+                            return [fundraiser.priceUsd, fundraiser.priceUsd];
                           })()}
-                          isPositive={rig.change24h >= 0}
+                          isPositive={fundraiser.change24h >= 0}
                         />
                       </div>
 
                       {/* Right side - Market cap and 24h change */}
                       <div className="text-right">
                         <div className="font-medium text-[15px] tabular-nums">
-                          {rig.marketCapUsd > 0
-                            ? formatMarketCap(rig.marketCapUsd)
+                          {fundraiser.marketCapUsd > 0
+                            ? formatMarketCap(fundraiser.marketCapUsd)
                             : "--"}
                         </div>
-                        <div className={`text-[13px] tabular-nums ${rig.change24h >= 0 ? "text-prism-400" : "text-red-400"}`}>
-                          {rig.marketCapUsd > 0
-                            ? `${rig.change24h >= 0 ? "+" : ""}${rig.change24h.toFixed(2)}%`
+                        <div className={`text-[13px] tabular-nums ${fundraiser.change24h >= 0 ? "text-prism-400" : "text-red-400"}`}>
+                          {fundraiser.marketCapUsd > 0
+                            ? `${fundraiser.change24h >= 0 ? "+" : ""}${fundraiser.change24h.toFixed(2)}%`
                             : "--"}
                         </div>
                       </div>

@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_unit",
+        "name": "_coin",
         "type": "address"
       },
       {
@@ -866,7 +866,7 @@
   },
   {
     "inputs": [],
-    "name": "unit",
+    "name": "coin",
     "outputs": [
       {
         "internalType": "address",

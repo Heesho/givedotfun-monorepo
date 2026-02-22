@@ -32,10 +32,10 @@ type TradeModalProps = {
   mode: "buy" | "sell";
   tokenSymbol: string;
   tokenName: string;
-  unitAddress: `0x${string}`;
+  coinAddress: `0x${string}`;
   marketPrice: number;
   userQuoteBalance: bigint;
-  userUnitBalance: bigint;
+  userCoinBalance: bigint;
 };
 
 // ---------------------------------------------------------------------------
@@ -90,10 +90,10 @@ export function TradeModal({
   mode,
   tokenSymbol,
   tokenName,
-  unitAddress,
+  coinAddress,
   marketPrice,
   userQuoteBalance,
-  userUnitBalance,
+  userCoinBalance,
 }: TradeModalProps) {
   // ---- Local state --------------------------------------------------------
   const [amount, setAmount] = useState("0");
@@ -115,8 +115,8 @@ export function TradeModal({
   // ---- Derived amounts ----------------------------------------------------
   const sellDecimals = isBuy ? QUOTE_TOKEN_DECIMALS : 18;
   const outDecimals = isBuy ? 18 : QUOTE_TOKEN_DECIMALS;
-  const sellToken = isBuy ? usdcAddress : unitAddress;
-  const buyToken = isBuy ? unitAddress : usdcAddress;
+  const sellToken = isBuy ? usdcAddress : coinAddress;
+  const buyToken = isBuy ? coinAddress : usdcAddress;
 
   const parsedInput = useMemo(() => {
     try {
@@ -132,9 +132,9 @@ export function TradeModal({
   // ---- Balance display ----------------------------------------------------
   const displayBalance = isBuy
     ? formatUnits(userQuoteBalance, QUOTE_TOKEN_DECIMALS)
-    : formatEther(userUnitBalance);
+    : formatEther(userCoinBalance);
 
-  const userBalanceWei = isBuy ? userQuoteBalance : userUnitBalance;
+  const userBalanceWei = isBuy ? userQuoteBalance : userCoinBalance;
   const insufficientBalance = parsedInput > 0n && parsedInput > userBalanceWei;
 
   const availableDisplay = isBuy
@@ -158,7 +158,7 @@ export function TradeModal({
     address: CONTRACT_ADDRESSES.uniV2Factory as `0x${string}`,
     abi: UNIV2_FACTORY_ABI,
     functionName: "getPair",
-    args: [usdcAddress, unitAddress],
+    args: [usdcAddress, coinAddress],
   });
 
   const hasPair =
@@ -183,19 +183,19 @@ export function TradeModal({
     query: { enabled: hasPair },
   });
 
-  // Spot price from LP reserves (USDC per Unit)
+  // Spot price from LP reserves (USDC per Coin)
   const { spotPrice, reserveIn, reserveOut } = useMemo(() => {
     if (!reserves || !token0) return { spotPrice: null, reserveIn: 0n, reserveOut: 0n };
     const [reserve0, reserve1] = reserves;
     const isToken0Usdc = token0.toLowerCase() === usdcAddress.toLowerCase();
     const reserveUsdc = isToken0Usdc ? reserve0 : reserve1;
-    const reserveUnit = isToken0Usdc ? reserve1 : reserve0;
-    if (reserveUnit === 0n) return { spotPrice: 0, reserveIn: 0n, reserveOut: 0n };
-    // USDC per Unit = (reserveUsdc / 1e6) / (reserveUnit / 1e18)
-    const price = (Number(reserveUsdc) * 1e12) / Number(reserveUnit);
+    const reserveCoin = isToken0Usdc ? reserve1 : reserve0;
+    if (reserveCoin === 0n) return { spotPrice: 0, reserveIn: 0n, reserveOut: 0n };
+    // USDC per Coin = (reserveUsdc / 1e6) / (reserveCoin / 1e18)
+    const price = (Number(reserveUsdc) * 1e12) / Number(reserveCoin);
     // reserveIn/Out relative to the trade direction
-    const rIn = isBuy ? reserveUsdc : reserveUnit;
-    const rOut = isBuy ? reserveUnit : reserveUsdc;
+    const rIn = isBuy ? reserveUsdc : reserveCoin;
+    const rOut = isBuy ? reserveCoin : reserveUsdc;
     return { spotPrice: price, reserveIn: rIn, reserveOut: rOut };
   }, [reserves, token0, usdcAddress, isBuy]);
 

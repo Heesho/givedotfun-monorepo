@@ -17,42 +17,42 @@ export const NATIVE_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 export const CORE_ABI = [
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToIsRig",
+    name: "isFundraiser",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToAuction",
+    name: "fundraiserToAuction",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "rigs",
+    name: "fundraisers",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [],
-    name: "rigsLength",
+    name: "fundraisersLength",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToIndex",
+    name: "fundraiserToIndex",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
   },
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "rigToLP",
+    name: "fundraiserToLP",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -96,13 +96,13 @@ export const CORE_ABI = [
 
 // Multicall ABI - for batched operations and state queries
 export const MULTICALL_ABI = [
-  // getRig function - get aggregated fundraiser state
+  // getFundraiser function - get aggregated fundraiser state
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
-    name: "getRig",
+    name: "getFundraiser",
     outputs: [
       {
         components: [
@@ -112,14 +112,14 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "startTime", type: "uint256" },
           { internalType: "address", name: "treasury", type: "address" },
           { internalType: "address", name: "team", type: "address" },
-          { internalType: "uint256", name: "unitPrice", type: "uint256" },
-          { internalType: "string", name: "rigUri", type: "string" },
+          { internalType: "uint256", name: "coinPrice", type: "uint256" },
+          { internalType: "string", name: "fundraiserUri", type: "string" },
           { internalType: "uint256", name: "accountQuoteBalance", type: "uint256" },
           { internalType: "uint256", name: "accountUsdcBalance", type: "uint256" },
-          { internalType: "uint256", name: "accountUnitBalance", type: "uint256" },
+          { internalType: "uint256", name: "accountCoinBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCurrentEpochDonation", type: "uint256" },
         ],
-        internalType: "struct Multicall.RigState",
+        internalType: "struct Multicall.FundraiserState",
         name: "state",
         type: "tuple",
       },
@@ -130,7 +130,7 @@ export const MULTICALL_ABI = [
   // fund function - donate to a fundraiser
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
       { internalType: "address", name: "recipient", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
@@ -144,7 +144,7 @@ export const MULTICALL_ABI = [
   // claim function - claim rewards for a specific epoch
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
       { internalType: "uint256", name: "epoch", type: "uint256" },
     ],
@@ -156,7 +156,7 @@ export const MULTICALL_ABI = [
   // claimMultiple function - claim rewards for multiple epochs
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
       { internalType: "uint256[]", name: "epochIds", type: "uint256[]" },
     ],
@@ -168,7 +168,7 @@ export const MULTICALL_ABI = [
   // getClaimableEpochs function - get claimable epoch info for a range
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
       { internalType: "uint256", name: "startEpoch", type: "uint256" },
       { internalType: "uint256", name: "endEpoch", type: "uint256" },
@@ -193,7 +193,7 @@ export const MULTICALL_ABI = [
   // getTotalPendingRewards function - get total pending rewards for a range
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
       { internalType: "uint256", name: "startEpoch", type: "uint256" },
       { internalType: "uint256", name: "endEpoch", type: "uint256" },
@@ -209,7 +209,7 @@ export const MULTICALL_ABI = [
   // getAuction function - get aggregated auction state
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
     ],
     name: "getAuction",
@@ -237,7 +237,7 @@ export const MULTICALL_ABI = [
   // buy function - buy from auction using LP tokens
   {
     inputs: [
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "uint256", name: "epochId", type: "uint256" },
       { internalType: "uint256", name: "deadline", type: "uint256" },
       { internalType: "uint256", name: "maxPaymentTokenAmount", type: "uint256" },
@@ -259,7 +259,7 @@ export const MULTICALL_ABI = [
           { internalType: "string", name: "tokenSymbol", type: "string" },
           { internalType: "string", name: "uri", type: "string" },
           { internalType: "uint256", name: "usdcAmount", type: "uint256" },
-          { internalType: "uint256", name: "unitAmount", type: "uint256" },
+          { internalType: "uint256", name: "coinAmount", type: "uint256" },
           { internalType: "uint256", name: "initialEmission", type: "uint256" },
           { internalType: "uint256", name: "minEmission", type: "uint256" },
           { internalType: "uint256", name: "halvingPeriod", type: "uint256" },
@@ -276,8 +276,8 @@ export const MULTICALL_ABI = [
     ],
     name: "launch",
     outputs: [
-      { internalType: "address", name: "unit", type: "address" },
-      { internalType: "address", name: "rig", type: "address" },
+      { internalType: "address", name: "coin", type: "address" },
+      { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "auction", type: "address" },
       { internalType: "address", name: "lpToken", type: "address" },
     ],
@@ -346,7 +346,7 @@ export const ERC20_ABI = [
 ] as const;
 
 // Fundraiser contract ABI - for direct fundraiser reads
-export const RIG_ABI = [
+export const FUNDRAISER_ABI = [
   {
     inputs: [],
     name: "uri",
@@ -356,7 +356,7 @@ export const RIG_ABI = [
   },
   {
     inputs: [],
-    name: "unit",
+    name: "coin",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -478,11 +478,11 @@ export type FundraiserState = {
   startTime: bigint;
   treasury: `0x${string}`;
   team: `0x${string}`;
-  unitPrice: bigint;
-  rigUri: string;
+  coinPrice: bigint;
+  fundraiserUri: string;
   accountQuoteBalance: bigint;
   accountUsdcBalance: bigint;
-  accountUnitBalance: bigint;
+  accountCoinBalance: bigint;
   accountCurrentEpochDonation: bigint;
 };
 

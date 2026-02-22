@@ -101,27 +101,27 @@ async function fetchDexScreenerData(
 }
 
 export function useDexScreener(
-  rigAddress: `0x${string}` | undefined,
-  unitAddress?: `0x${string}`,
+  fundraiserAddress: `0x${string}` | undefined,
+  coinAddress?: `0x${string}`,
   coreAddress?: `0x${string}`,
 ) {
   // Get LP token address from Core
   const { data: lpAddress, isLoading: isLoadingLp } = useReadContract({
     address: (coreAddress ?? CONTRACT_ADDRESSES.core) as `0x${string}`,
     abi: CORE_ABI,
-    functionName: "rigToLP",
-    args: rigAddress ? [rigAddress] : undefined,
+    functionName: "fundraiserToLP",
+    args: fundraiserAddress ? [fundraiserAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
   // Fetch DexScreener data
   const { data: pairData, isLoading: isLoadingPair } = useQuery({
-    queryKey: ["dexScreenerPair", lpAddress, unitAddress],
-    queryFn: () => fetchDexScreenerData(lpAddress as string, unitAddress),
-    enabled: !!lpAddress || !!unitAddress,
+    queryKey: ["dexScreenerPair", lpAddress, coinAddress],
+    queryFn: () => fetchDexScreenerData(lpAddress as string, coinAddress),
+    enabled: !!lpAddress || !!coinAddress,
     staleTime: 30_000,
     refetchInterval: 30_000,
     retry: false,

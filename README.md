@@ -1,13 +1,13 @@
 # give.fun
 
-A perpetual funding platform on Base -- crypto GoFundMe. Communities create fundraisers for creators, charities, and projects. Donors contribute USDC and earn proportional Unit token emissions. Initial liquidity is permanently locked.
+A perpetual funding platform on Base -- crypto GoFundMe. Communities create fundraisers for creators, charities, and projects. Donors contribute USDC and earn proportional Coin token emissions. Initial liquidity is permanently locked.
 
 ## Overview
 
 give.fun enables permissionless fundraiser creation. When someone launches a fundraiser on give.fun:
 
-1. A new **Unit** token is created with minting controlled by a Fundraiser contract
-2. Initial liquidity is created by pairing the Unit with USDC on Uniswap V2
+1. A new **Coin** token is created with minting controlled by a Fundraiser contract
+2. Initial liquidity is created by pairing the Coin with USDC on Uniswap V2
 3. **The LP tokens are permanently burned** - liquidity can never be pulled
 4. Donors contribute USDC to epoch-based pools and earn proportional token emissions
 
@@ -18,22 +18,22 @@ This creates a fair launch environment where tokens are distributed based on par
 ### The Basic Flow
 
 ```
-Creator provides USDC -> Unit token created -> LP created & burned -> Fundraiser deployed -> Users donate to earn tokens
+Creator provides USDC -> Coin token created -> LP created & burned -> Fundraiser deployed -> Users donate to earn tokens
 ```
 
-1. **Launch**: A creator provides USDC to launch. The system mints initial Unit tokens, creates a Unit/USDC liquidity pool, and burns the LP tokens forever.
+1. **Launch**: A creator provides USDC to launch. The system mints initial Coin tokens, creates a Coin/USDC liquidity pool, and burns the LP tokens forever.
 
 2. **Donating**: Users donate USDC to epoch pools via the Fundraiser contract. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
 
-3. **Emissions**: Unit tokens are emitted each epoch according to a halving schedule. Each epoch's emission is split proportionally among that epoch's donors.
+3. **Emissions**: Coin tokens are emitted each epoch according to a halving schedule. Each epoch's emission is split proportionally among that epoch's donors.
 
-4. **Claiming**: After an epoch ends, donors claim their proportional share of that epoch's Unit token emission.
+4. **Claiming**: After an epoch ends, donors claim their proportional share of that epoch's Coin token emission.
 
 ## Fundraiser
 
 **Mechanic**: Donation-based epoch pools with proportional distribution
 
-Users donate payment tokens to epoch pools. At the end of each epoch, donors claim their proportional share of that epoch's Unit emission:
+Users donate payment tokens to epoch pools. At the end of each epoch, donors claim their proportional share of that epoch's Coin emission:
 
 ```
 Your reward = (your donation / total epoch donations) x epoch emission
@@ -51,7 +51,7 @@ Your reward = (your donation / total epoch donations) x epoch emission
 
 ### Token Emissions
 
-Unit tokens are minted by Fundraiser contracts each epoch. The emission rate determines how many tokens are available:
+Coin tokens are minted by Fundraiser contracts each epoch. The emission rate determines how many tokens are available:
 
 ```
 userReward = (userDonation * epochEmission) / epochTotalDonated
@@ -70,7 +70,7 @@ if (currentEmission < minEmission) currentEmission = minEmission
 ### Permanent Liquidity
 
 When a token is launched:
-1. Creator's USDC + minted Units create initial LP on Uniswap V2
+1. Creator's USDC + minted Coins create initial LP on Uniswap V2
 2. LP tokens are sent to the dead address (`0x...dEaD`)
 3. **Liquidity can never be removed**
 
@@ -89,7 +89,7 @@ This provides permanent trading liquidity and prevents rug pulls.
                                     +--------+----------+
                                              |
                                         +----v----+
-                                        |  Unit   |
+                                        |  Coin   |
                                         | (ERC20) |
                                         +---------+
 ```
@@ -99,7 +99,7 @@ This provides permanent trading liquidity and prevents rug pulls.
 | Contract | Description |
 |----------|-------------|
 | `Core` | Launchpad for deploying fundraisers, creates LP, manages state |
-| `Unit` | ERC20 token with mint rights controlled by its Fundraiser |
+| `Coin` | ERC20 token with mint rights controlled by its Fundraiser |
 | `Auction` | Dutch auction for treasury fee collection, burns LP tokens |
 | `Fundraiser` | Epoch-based donation pools with proportional distribution |
 | `Multicall` | Batch operations and view helpers |
@@ -121,7 +121,7 @@ Treasury fees accumulate in an Auction contract. Users can buy all accumulated f
 
 ### Token Properties
 
-**Unit Token**:
+**Coin Token**:
 - ERC20 with ERC20Permit (gasless approvals)
 - ERC20Votes (governance compatible)
 - Mint rights exclusively controlled by Fundraiser contract
@@ -164,7 +164,7 @@ packages/
 │   ├── hooks/        # Custom React hooks
 │   └── lib/          # Utilities, constants, ABIs
 ├── hardhat/          # Solidity smart contracts
-│   ├── contracts/    # Core, Fundraiser, Multicall, Unit, Auction
+│   ├── contracts/    # Core, Fundraiser, Multicall, Coin, Auction
 │   │   ├── interfaces/
 │   │   └── mocks/
 │   ├── scripts/      # Deployment scripts

@@ -12,7 +12,7 @@ import {IAuction} from "./interfaces/IAuction.sol";
  * @author heesho
  * @notice Helper contract for batched operations and aggregated view functions for Fundraiser.
  * @dev Provides donation batching, claim batching, and comprehensive state queries.
- *      Payment token is read from each rig - users must approve this contract for the rig's payment token.
+ *      Payment token is read from each fundraiser - users must approve this contract for the fundraiser's payment token.
  */
 contract Multicall {
     using SafeERC20 for IERC20;
@@ -20,7 +20,7 @@ contract Multicall {
     /*----------  ERRORS  -----------------------------------------------*/
 
     error Multicall__ZeroAddress();
-    error Multicall__InvalidRig();
+    error Multicall__InvalidFundraiser();
     error Multicall__EmptyArray();
 
     /*----------  IMMUTABLES  -------------------------------------------*/
@@ -33,8 +33,8 @@ contract Multicall {
     /**
      * @notice Aggregated state for a Fundraiser.
      */
-    struct RigState {
-        // Rig state
+    struct FundraiserState {
+        // Fundraiser state
         uint256 currentEpoch;
         uint256 currentEpochEmission;
         uint256 currentEpochTotalDonated;
@@ -42,13 +42,13 @@ contract Multicall {
         address recipient;
         address treasury;
         address team;
-        // Global rig state
-        uint256 unitPrice;
-        string rigUri;
+        // Global fundraiser state
+        uint256 coinPrice;
+        string fundraiserUri;
         // User balances
         uint256 accountQuoteBalance;
         uint256 accountUsdcBalance;
-        uint256 accountUnitBalance;
+        uint256 accountCoinBalance;
         uint256 accountCurrentEpochDonation;
     }
 
@@ -93,59 +93,59 @@ contract Multicall {
     /*----------  EXTERNAL FUNCTIONS  -----------------------------------*/
 
     /**
-     * @notice Fund a rig using the rig's payment token.
+     * @notice Fund a fundraiser using the fundraiser's payment token.
      * @dev User must approve the payment token to this contract.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account The account to credit for this funding
      * @param amount The amount of payment tokens to fund
      */
     function fund(
-        address rig,
+        address fundraiser,
         address account,
         uint256 amount,
         string calldata _uri
     ) external {
-        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
+        if (!ICore(core).isFundraiser(fundraiser)) revert Multicall__InvalidFundraiser();
 
-        address quoteToken = IFundraiser(rig).quote();
+        address quoteToken = IFundraiser(fundraiser).quote();
         IERC20(quoteToken).safeTransferFrom(msg.sender, address(this), amount);
-        IERC20(quoteToken).safeApprove(rig, 0);
-        IERC20(quoteToken).safeApprove(rig, amount);
-        IFundraiser(rig).fund(account, amount, _uri);
+        IERC20(quoteToken).safeApprove(fundraiser, 0);
+        IERC20(quoteToken).safeApprove(fundraiser, amount);
+        IFundraiser(fundraiser).fund(account, amount, _uri);
     }
 
     /**
      * @notice Claim rewards for a single epoch.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account The account to claim for
      * @param epoch The epoch to claim
      */
-    function claim(address rig, address account, uint256 epoch) external {
-        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
-        IFundraiser(rig).claim(account, epoch);
+    function claim(address fundraiser, address account, uint256 epoch) external {
+        if (!ICore(core).isFundraiser(fundraiser)) revert Multicall__InvalidFundraiser();
+        IFundraiser(fundraiser).claim(account, epoch);
     }
 
     /**
      * @notice Claim rewards for multiple epochs in a single transaction.
      * @dev Skips epochs that are already claimed, have no donation, or haven't ended.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account The account to claim for
      * @param epochIds Array of epochs to claim
      */
-    function claimMultiple(address rig, address account, uint256[] calldata epochIds) external {
-        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
+    function claimMultiple(address fundraiser, address account, uint256[] calldata epochIds) external {
+        if (!ICore(core).isFundraiser(fundraiser)) revert Multicall__InvalidFundraiser();
         uint256 length = epochIds.length;
         if (length == 0) revert Multicall__EmptyArray();
 
-        uint256 currentEpoch = IFundraiser(rig).currentEpoch();
+        uint256 currentEpoch = IFundraiser(fundraiser).currentEpoch();
         for (uint256 i = 0; i < length;) {
             // Skip if already claimed, no donation, or epoch hasn't ended
             if (
-                !IFundraiser(rig).epochAccountToHasClaimed(epochIds[i], account) &&
-                IFundraiser(rig).epochAccountToDonation(epochIds[i], account) > 0 &&
+                !IFundraiser(fundraiser).epochAccountToHasClaimed(epochIds[i], account) &&
+                IFundraiser(fundraiser).epochAccountToDonation(epochIds[i], account) > 0 &&
                 epochIds[i] < currentEpoch
             ) {
-                IFundraiser(rig).claim(account, epochIds[i]);
+                IFundraiser(fundraiser).claim(account, epochIds[i]);
             }
             unchecked { ++i; }
         }
@@ -154,18 +154,18 @@ contract Multicall {
     /**
      * @notice Buy from an auction using LP tokens.
      * @dev Transfers LP tokens from caller, approves auction, and executes buy.
-     * @param rig Rig contract address (used to look up auction)
+     * @param fundraiser Fundraiser contract address (used to look up auction)
      * @param epochId Expected epoch ID
      * @param deadline Transaction deadline
      * @param maxPaymentTokenAmount Maximum LP tokens willing to pay
      */
-    function buy(address rig, uint256 epochId, uint256 deadline, uint256 maxPaymentTokenAmount) external {
-        if (!ICore(core).rigToIsRig(rig)) revert Multicall__InvalidRig();
-        address auction = ICore(core).rigToAuction(rig);
+    function buy(address fundraiser, uint256 epochId, uint256 deadline, uint256 maxPaymentTokenAmount) external {
+        if (!ICore(core).isFundraiser(fundraiser)) revert Multicall__InvalidFundraiser();
+        address auction = ICore(core).fundraiserToAuction(fundraiser);
         address lpToken = IAuction(auction).paymentToken();
         uint256 price = IAuction(auction).getPrice();
         address[] memory assets = new address[](1);
-        assets[0] = IFundraiser(rig).quote();
+        assets[0] = IFundraiser(fundraiser).quote();
 
         IERC20(lpToken).safeTransferFrom(msg.sender, address(this), price);
         IERC20(lpToken).safeApprove(auction, 0);
@@ -174,17 +174,17 @@ contract Multicall {
     }
 
     /**
-     * @notice Launch a new rig via Core.
+     * @notice Launch a new fundraiser via Core.
      * @dev Transfers USDC from caller, approves Core, and calls launch with caller as launcher.
      * @param params Launch parameters (launcher field is overwritten with msg.sender)
-     * @return unit Address of deployed Unit token
-     * @return rig Address of deployed Rig contract
+     * @return coin Address of deployed Coin token
+     * @return fundraiser Address of deployed Fundraiser contract
      * @return auction Address of deployed Auction contract
-     * @return lpToken Address of Unit/USDC LP token
+     * @return lpToken Address of Coin/USDC LP token
      */
     function launch(ICore.LaunchParams calldata params)
         external
-        returns (address unit, address rig, address auction, address lpToken)
+        returns (address coin, address fundraiser, address auction, address lpToken)
     {
         // Transfer USDC from user
         IERC20(usdc).safeTransferFrom(msg.sender, address(this), params.usdcAmount);
@@ -200,7 +200,7 @@ contract Multicall {
             tokenSymbol: params.tokenSymbol,
             uri: params.uri,
             usdcAmount: params.usdcAmount,
-            unitAmount: params.unitAmount,
+            coinAmount: params.coinAmount,
             initialEmission: params.initialEmission,
             minEmission: params.minEmission,
             halvingPeriod: params.halvingPeriod,
@@ -218,55 +218,55 @@ contract Multicall {
 
     /**
      * @notice Get aggregated state for a Fundraiser and user balances.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account User address (or address(0) to skip balance queries)
-     * @return state Aggregated rig state
+     * @return state Aggregated fundraiser state
      */
-    function getRig(address rig, address account) external view returns (RigState memory state) {
-        uint256 epoch = IFundraiser(rig).currentEpoch();
+    function getFundraiser(address fundraiser, address account) external view returns (FundraiserState memory state) {
+        uint256 epoch = IFundraiser(fundraiser).currentEpoch();
 
         state.currentEpoch = epoch;
-        state.currentEpochEmission = IFundraiser(rig).getEpochEmission(epoch);
-        state.currentEpochTotalDonated = IFundraiser(rig).epochToTotalDonated(epoch);
-        state.startTime = IFundraiser(rig).startTime();
-        state.recipient = IFundraiser(rig).recipient();
-        state.treasury = IFundraiser(rig).treasury();
-        state.team = IFundraiser(rig).team();
+        state.currentEpochEmission = IFundraiser(fundraiser).getEpochEmission(epoch);
+        state.currentEpochTotalDonated = IFundraiser(fundraiser).epochToTotalDonated(epoch);
+        state.startTime = IFundraiser(fundraiser).startTime();
+        state.recipient = IFundraiser(fundraiser).recipient();
+        state.treasury = IFundraiser(fundraiser).treasury();
+        state.team = IFundraiser(fundraiser).team();
 
-        address unitToken = IFundraiser(rig).unit();
+        address coinToken = IFundraiser(fundraiser).coin();
 
-        // Calculate Unit price in USDC from LP reserves
-        // USDC has 6 decimals, Unit has 18. Multiply by 1e30 (= 1e12 normalization * 1e18 precision)
-        address lpToken = ICore(core).rigToLP(rig);
+        // Calculate Coin price in USDC from LP reserves
+        // USDC has 6 decimals, Coin has 18. Multiply by 1e30 (= 1e12 normalization * 1e18 precision)
+        address lpToken = ICore(core).fundraiserToLP(fundraiser);
         if (lpToken != address(0)) {
             uint256 usdcInLP = IERC20(usdc).balanceOf(lpToken);
-            uint256 unitInLP = IERC20(unitToken).balanceOf(lpToken);
-            state.unitPrice = unitInLP == 0 ? 0 : usdcInLP * 1e30 / unitInLP;
+            uint256 coinInLP = IERC20(coinToken).balanceOf(lpToken);
+            state.coinPrice = coinInLP == 0 ? 0 : usdcInLP * 1e30 / coinInLP;
         }
 
-        // Rig metadata
-        state.rigUri = IFundraiser(rig).uri();
+        // Fundraiser metadata
+        state.fundraiserUri = IFundraiser(fundraiser).uri();
 
         // User balances
-        address quoteToken = IFundraiser(rig).quote();
+        address quoteToken = IFundraiser(fundraiser).quote();
         state.accountQuoteBalance = account == address(0) ? 0 : IERC20(quoteToken).balanceOf(account);
         state.accountUsdcBalance = account == address(0) ? 0 : IERC20(usdc).balanceOf(account);
-        state.accountUnitBalance = account == address(0) ? 0 : IERC20(unitToken).balanceOf(account);
-        state.accountCurrentEpochDonation = account == address(0) ? 0 : IFundraiser(rig).epochAccountToDonation(epoch, account);
+        state.accountCoinBalance = account == address(0) ? 0 : IERC20(coinToken).balanceOf(account);
+        state.accountCurrentEpochDonation = account == address(0) ? 0 : IFundraiser(fundraiser).epochAccountToDonation(epoch, account);
 
         return state;
     }
 
     /**
      * @notice Get claimable epochs for a user within a range.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account User address
      * @param startEpoch First epoch to check (inclusive)
      * @param endEpoch Last epoch to check (exclusive)
      * @return claimableEpochs Array of claimable epoch info
      */
     function getClaimableEpochs(
-        address rig,
+        address fundraiser,
         address account,
         uint256 startEpoch,
         uint256 endEpoch
@@ -282,9 +282,9 @@ contract Multicall {
             uint256 epoch = startEpoch + i;
             claimableEpochs[i] = ClaimableEpoch({
                 epoch: epoch,
-                donation: IFundraiser(rig).epochAccountToDonation(epoch, account),
-                pendingReward: IFundraiser(rig).getPendingReward(epoch, account),
-                hasClaimed: IFundraiser(rig).epochAccountToHasClaimed(epoch, account)
+                donation: IFundraiser(fundraiser).epochAccountToDonation(epoch, account),
+                pendingReward: IFundraiser(fundraiser).getPendingReward(epoch, account),
+                hasClaimed: IFundraiser(fundraiser).epochAccountToHasClaimed(epoch, account)
             });
             unchecked { ++i; }
         }
@@ -294,15 +294,15 @@ contract Multicall {
 
     /**
      * @notice Get total pending rewards across a range of epochs.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param account User address
      * @param startEpoch First epoch to check (inclusive)
      * @param endEpoch Last epoch to check (exclusive)
-     * @return totalPending Total unclaimed Unit tokens across all checked epochs
+     * @return totalPending Total unclaimed Coin tokens across all checked epochs
      * @return unclaimedEpochs Array of epoch numbers that have unclaimed rewards
      */
     function getTotalPendingRewards(
-        address rig,
+        address fundraiser,
         address account,
         uint256 startEpoch,
         uint256 endEpoch
@@ -314,7 +314,7 @@ contract Multicall {
         // First pass: count unclaimed epochs
         uint256 unclaimedCount = 0;
         for (uint256 epoch = startEpoch; epoch < endEpoch;) {
-            uint256 pending = IFundraiser(rig).getPendingReward(epoch, account);
+            uint256 pending = IFundraiser(fundraiser).getPendingReward(epoch, account);
             if (pending > 0) {
                 totalPending += pending;
                 unclaimedCount++;
@@ -326,7 +326,7 @@ contract Multicall {
         unclaimedEpochs = new uint256[](unclaimedCount);
         uint256 index = 0;
         for (uint256 epoch = startEpoch; epoch < endEpoch;) {
-            if (IFundraiser(rig).getPendingReward(epoch, account) > 0) {
+            if (IFundraiser(fundraiser).getPendingReward(epoch, account) > 0) {
                 unclaimedEpochs[index] = epoch;
                 unchecked { ++index; }
             }
@@ -338,20 +338,20 @@ contract Multicall {
 
     /**
      * @notice Get emission schedule for upcoming epochs.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @param numEpochs Number of epochs to project
      * @return emissions Array of epoch emissions starting from current epoch
      */
-    function getEmissionSchedule(address rig, uint256 numEpochs)
+    function getEmissionSchedule(address fundraiser, uint256 numEpochs)
         external
         view
         returns (uint256[] memory emissions)
     {
-        uint256 currentEpoch = IFundraiser(rig).currentEpoch();
+        uint256 currentEpoch = IFundraiser(fundraiser).currentEpoch();
         emissions = new uint256[](numEpochs);
 
         for (uint256 i = 0; i < numEpochs;) {
-            emissions[i] = IFundraiser(rig).getEpochEmission(currentEpoch + i);
+            emissions[i] = IFundraiser(fundraiser).getEpochEmission(currentEpoch + i);
             unchecked { ++i; }
         }
 
@@ -360,21 +360,21 @@ contract Multicall {
 
     /**
      * @notice Get the recipient address for a Fundraiser.
-     * @param rig Rig contract address
+     * @param fundraiser Fundraiser contract address
      * @return recipient The recipient address that receives 50% of donations
      */
-    function getRecipient(address rig) external view returns (address) {
-        return IFundraiser(rig).recipient();
+    function getRecipient(address fundraiser) external view returns (address) {
+        return IFundraiser(fundraiser).recipient();
     }
 
     /**
      * @notice Get aggregated state for an Auction and user balances.
-     * @param rig Rig contract address (used to look up auction)
+     * @param fundraiser Fundraiser contract address (used to look up auction)
      * @param account User address (or address(0) to skip balance queries)
      * @return state Aggregated auction state
      */
-    function getAuction(address rig, address account) external view returns (AuctionState memory state) {
-        address auction = ICore(core).rigToAuction(rig);
+    function getAuction(address fundraiser, address account) external view returns (AuctionState memory state) {
+        address auction = ICore(core).fundraiserToAuction(fundraiser);
 
         state.epochId = IAuction(auction).epochId();
         state.initPrice = IAuction(auction).initPrice();
@@ -388,7 +388,7 @@ contract Multicall {
         state.lpTokenPrice =
             lpTotalSupply == 0 ? 0 : IERC20(usdc).balanceOf(state.lpToken) * 2e30 / lpTotalSupply;
 
-        address quoteToken = IFundraiser(rig).quote();
+        address quoteToken = IFundraiser(fundraiser).quote();
         state.quoteAccumulated = IERC20(quoteToken).balanceOf(auction);
         state.accountQuoteBalance = account == address(0) ? 0 : IERC20(quoteToken).balanceOf(account);
         state.accountLpTokenBalance = account == address(0) ? 0 : IERC20(state.lpToken).balanceOf(account);

@@ -3,21 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { getBatchSparklineData, getBatchSparklineMinuteData } from "@/lib/subgraph-launchpad";
 
 type SparklineResult = {
-  getSparkline: (unitAddress: string, currentPrice?: number) => number[];
+  getSparkline: (coinAddress: string, currentPrice?: number) => number[];
   isLoading: boolean;
 };
 
-export function useSparklineData(unitAddresses: string[]): SparklineResult {
+export function useSparklineData(coinAddresses: string[]): SparklineResult {
   const sortedKey = useMemo(
-    () => [...unitAddresses].sort().join(","),
-    [unitAddresses]
+    () => [...coinAddresses].sort().join(","),
+    [coinAddresses]
   );
 
   // Hourly data (7 days) — primary source
   const { data: hourlyMap, isLoading: isHourlyLoading } = useQuery({
     queryKey: ["batchSparklines", sortedKey],
-    queryFn: () => getBatchSparklineData(unitAddresses),
-    enabled: unitAddresses.length > 0,
+    queryFn: () => getBatchSparklineData(coinAddresses),
+    enabled: coinAddresses.length > 0,
     staleTime: 60_000,
     refetchInterval: 60_000,
   });
@@ -25,15 +25,15 @@ export function useSparklineData(unitAddresses: string[]): SparklineResult {
   // Minute data (4 hours) — fallback for new tokens without hourly candles
   const { data: minuteMap, isLoading: isMinuteLoading } = useQuery({
     queryKey: ["batchSparklinesMinute", sortedKey],
-    queryFn: () => getBatchSparklineMinuteData(unitAddresses),
-    enabled: unitAddresses.length > 0,
+    queryFn: () => getBatchSparklineMinuteData(coinAddresses),
+    enabled: coinAddresses.length > 0,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
 
   const getSparkline = useMemo(() => {
-    return (unitAddress: string, currentPrice: number = 0): number[] => {
-      const key = unitAddress.toLowerCase();
+    return (coinAddress: string, currentPrice: number = 0): number[] => {
+      const key = coinAddress.toLowerCase();
       const hourly = hourlyMap?.get(key);
       const minute = minuteMap?.get(key);
 

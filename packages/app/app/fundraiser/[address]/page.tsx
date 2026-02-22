@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getRig } from "@/lib/subgraph-launchpad";
-import RigDetailPage from "./client-page";
+import { getFundraiser } from "@/lib/subgraph-launchpad";
+import FundraiserDetailPage from "./client-page";
 
 const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://give.fun";
 const heroImageUrl = `${appDomain}/media/hero.png`;
@@ -12,16 +12,16 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { address } = await params;
-  const rigAddress = address.toLowerCase();
+  const fundraiserAddress = address.toLowerCase();
 
-  // Fetch rig info from subgraph
-  const rig = await getRig(rigAddress);
+  // Fetch fundraiser info from subgraph
+  const fundraiser = await getFundraiser(fundraiserAddress);
 
-  const tokenName = rig?.unit?.name || "Fundraiser";
-  const tokenSymbol = rig?.unit?.symbol || "TOKEN";
-  const rigUrl = `${appDomain}/fundraiser/${rigAddress}`;
+  const tokenName = fundraiser?.coin?.name || "Fundraiser";
+  const tokenSymbol = fundraiser?.coin?.symbol || "TOKEN";
+  const fundraiserUrl = `${appDomain}/fundraiser/${fundraiserAddress}`;
 
-  // Mini app embed with rig-specific URL
+  // Mini app embed with fundraiser-specific URL
   const miniAppEmbed = {
     version: "1",
     imageUrl: heroImageUrl,
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       action: {
         type: "launch_miniapp" as const,
         name: "give.fun",
-        url: rigUrl,
+        url: fundraiserUrl,
         splashImageUrl,
         splashBackgroundColor: "#000000",
       },
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${tokenName} ($${tokenSymbol}) | give.fun`,
       description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating and earning tokens now!`,
-      url: rigUrl,
+      url: fundraiserUrl,
       images: [
         {
           url: heroImageUrl,
@@ -57,5 +57,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Page() {
-  return <RigDetailPage />;
+  return <FundraiserDetailPage />;
 }

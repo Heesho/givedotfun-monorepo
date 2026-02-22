@@ -5,16 +5,16 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IUnit} from "./interfaces/IUnit.sol";
+import {ICoin} from "./interfaces/ICoin.sol";
 import {ICore} from "./interfaces/ICore.sol";
 
 /**
  * @title Fundraiser
  * @author heesho
  * @notice Core engine for donation-based token distribution. Accepts ERC-20 donations,
- *         splits funds between recipient/treasury/team, and mints Unit tokens to donors.
+ *         splits funds between recipient/treasury/team, and mints Coin tokens to donors.
  * @dev Users donate payment tokens to a daily pool. After the day ends, users can claim
- *      their proportional share of that day's Unit emission based on their contribution.
+ *      their proportional share of that day's Coin emission based on their contribution.
  *
  *      Emission Schedule:
  *      - Initial: configurable initial emission per day
@@ -38,7 +38,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     uint256 public constant MAX_HALVING_PERIOD = 365; // maximum 365 epochs
 
     // Emission bounds (defense in depth - matches Core)
-    uint256 public constant MIN_INITIAL_EMISSION = 1e18; // minimum 1 Unit per day
+    uint256 public constant MIN_INITIAL_EMISSION = 1e18; // minimum 1 Coin per day
     uint256 public constant MAX_INITIAL_EMISSION = 1e30; // maximum emission per day
 
     uint256 public constant RECIPIENT_BPS = 5_000; // 50%
@@ -53,7 +53,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
 
     /*----------  IMMUTABLES  -------------------------------------------*/
 
-    address public immutable unit;
+    address public immutable coin;
     address public immutable quote;
     address public immutable core;
     uint256 public immutable startTime;
@@ -72,7 +72,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     mapping(uint256 => mapping(address => uint256)) public epochAccountToDonation;
     mapping(uint256 => mapping(address => bool)) public epochAccountToHasClaimed;
 
-    // Metadata URI for the rig
+    // Metadata URI for the fundraiser
     string public uri;
 
     /*----------  STRUCTS  ----------------------------------------------*/
@@ -112,7 +112,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
 
     /**
      * @notice Deploy a new Fundraiser contract.
-     * @param _unit Unit token address
+     * @param _coin Coin token address
      * @param _quote Payment token address (e.g., USDC)
      * @param _core Core contract address
      * @param _treasury Treasury address for fee collection
@@ -121,7 +121,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
      * @param _config Configuration struct with emission parameters
      */
     constructor(
-        address _unit,
+        address _coin,
         address _quote,
         address _core,
         address _treasury,
@@ -130,7 +130,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
         Config memory _config,
         string memory _uri
     ) {
-        if (_unit == address(0)) revert Fundraiser__ZeroAddress();
+        if (_coin == address(0)) revert Fundraiser__ZeroAddress();
         if (_quote == address(0)) revert Fundraiser__ZeroAddress();
         if (_core == address(0)) revert Fundraiser__ZeroAddress();
         if (_treasury == address(0)) revert Fundraiser__ZeroAddress();
@@ -146,7 +146,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
             revert Fundraiser__EpochDurationOutOfRange();
         }
 
-        unit = _unit;
+        coin = _coin;
         quote = _quote;
         core = _core;
         treasury = _treasury;
@@ -168,7 +168,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
      * @notice Fund the daily pool on behalf of an account.
      * @dev Requires msg.sender to have approved this contract for `amount`.
      *      Transfers `amount` from msg.sender, splits it, and credits `account`.
-     * @param account The account to credit for this funding (receives Unit on claim)
+     * @param account The account to credit for this funding (receives Coin on claim)
      * @param amount The amount of payment tokens to fund
      */
     function fund(address account, uint256 amount, string calldata _uri) external nonReentrant {
@@ -209,10 +209,10 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice Claim Unit tokens for a completed epoch on behalf of an account.
+     * @notice Claim Coin tokens for a completed epoch on behalf of an account.
      * @dev Can only be called after the specified epoch has ended.
-     *      Mints Unit proportional to account's share of that epoch's donations.
-     * @param account The account to claim for (must have donated, receives Unit)
+     *      Mints Coin proportional to account's share of that epoch's donations.
+     * @param account The account to claim for (must have donated, receives Coin)
      * @param epoch The epoch number to claim for
      */
     function claim(address account, uint256 epoch) external nonReentrant {
@@ -232,8 +232,8 @@ contract Fundraiser is ReentrancyGuard, Ownable {
         // Mark as claimed before minting (CEI pattern)
         epochAccountToHasClaimed[epoch][account] = true;
 
-        // Mint Unit to the account
-        IUnit(unit).mint(account, userReward);
+        // Mint Coin to the account
+        ICoin(coin).mint(account, userReward);
 
         emit Fundraiser__Claimed(account, userReward, epoch);
     }
@@ -271,7 +271,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice Update the metadata URI for the rig.
+     * @notice Update the metadata URI for the fundraiser.
      * @param _uri New metadata URI (e.g., for logo, branding)
      */
     function setUri(string calldata _uri) external onlyOwner {
@@ -290,10 +290,10 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice Get the Unit emission for a specific epoch.
+     * @notice Get the Coin emission for a specific epoch.
      * @dev Emission halves every halvingPeriod epochs with a floor of minEmission.
      * @param epoch The epoch number to query
-     * @return The Unit emission for that epoch
+     * @return The Coin emission for that epoch
      */
     function getEpochEmission(uint256 epoch) public view returns (uint256) {
         uint256 halvings = epoch / halvingPeriod; // Number of halving periods
@@ -306,11 +306,11 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     }
 
     /**
-     * @notice Get pending Unit reward for a user on a specific epoch.
+     * @notice Get pending Coin reward for a user on a specific epoch.
      * @dev Returns 0 if epoch hasn't ended, already claimed, or no donation.
      * @param epoch The epoch number to query
      * @param account The user address to query
-     * @return The pending Unit reward
+     * @return The pending Coin reward
      */
     function getPendingReward(uint256 epoch, address account) external view returns (uint256) {
         if (epoch >= currentEpoch()) return 0;

@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Crown, Medal, Users, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LeaderboardEntry } from "@/hooks/useRigLeaderboard";
+import { LeaderboardEntry } from "@/hooks/useFundraiserLeaderboard";
 import { composeCast } from "@/hooks/useFarcaster";
 
 type LeaderboardProps = {
@@ -11,7 +11,7 @@ type LeaderboardProps = {
   userRank: number | null;
   tokenSymbol: string;
   tokenName: string;
-  rigUrl: string;
+  fundraiserUrl: string;
   isLoading?: boolean;
 };
 
@@ -78,7 +78,7 @@ export function Leaderboard({
   userRank,
   tokenSymbol,
   tokenName,
-  rigUrl,
+  fundraiserUrl,
   isLoading,
 }: LeaderboardProps) {
   const handleShareChallenge = async () => {
@@ -88,7 +88,7 @@ export function Leaderboard({
 
     await composeCast({
       text,
-      embeds: [rigUrl],
+      embeds: [fundraiserUrl],
     });
   };
 

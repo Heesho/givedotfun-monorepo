@@ -4,11 +4,11 @@
 
 Launching a fundraiser on give.fun creates three contracts:
 
-1. **Unit** -- An ERC20 token with permit and voting capabilities.
+1. **Coin** -- An ERC20 token with permit and voting capabilities.
 2. **Fundraiser** -- The donation-based distribution mechanism.
 3. **Auction** -- A Dutch auction for selling treasury-accumulated assets in exchange for LP token burns.
 
-To launch, you configure the fundraiser parameters and provide USDC for initial liquidity. The USDC is paired with newly minted Unit tokens to create a Uniswap V2 liquidity pool. The resulting LP tokens are burned to the dead address, permanently locking the liquidity.
+To launch, you configure the fundraiser parameters and provide USDC for initial liquidity. The USDC is paired with newly minted Coin tokens to create a Uniswap V2 liquidity pool. The resulting LP tokens are burned to the dead address, permanently locking the liquidity.
 
 All launch parameters are **immutable** -- they cannot be changed after deployment. Choose carefully.
 
@@ -21,10 +21,10 @@ All launch parameters are **immutable** -- they cannot be changed after deployme
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `quoteToken` | `address` | ERC20 token used for donations (typically USDC). Must be a standard ERC20 with no fee-on-transfer or rebasing. |
-| `tokenName` | `string` | Name of the Unit token (e.g., "My Token"). |
-| `tokenSymbol` | `string` | Symbol of the Unit token (e.g., "MYT"). |
-| `usdcAmount` | `uint256` | Amount of USDC to provide for initial liquidity. Determines the starting price of the Unit token. |
-| `unitAmount` | `uint256` | Amount of Unit tokens to mint for initial liquidity. Together with `usdcAmount`, determines the initial Unit/USDC price ratio. |
+| `tokenName` | `string` | Name of the Coin token (e.g., "My Token"). |
+| `tokenSymbol` | `string` | Symbol of the Coin token (e.g., "MYT"). |
+| `usdcAmount` | `uint256` | Amount of USDC to provide for initial liquidity. Determines the starting price of the Coin token. |
+| `coinAmount` | `uint256` | Amount of Coin tokens to mint for initial liquidity. Together with `usdcAmount`, determines the initial Coin/USDC price ratio. |
 | `uri` | `string` | Metadata URI for the fundraiser (e.g., logo, description). Can be updated by the owner after launch. |
 
 ### Auction Parameters
@@ -42,14 +42,14 @@ Every fundraiser launch includes an Auction contract. These parameters configure
 
 ## Fundraiser Parameters
 
-Fundraiser distributes tokens through donations. Users donate USDC into an epoch pool, and after the epoch ends, each donor can claim their proportional share of that epoch's Unit token emission. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
+Fundraiser distributes tokens through donations. Users donate USDC into an epoch pool, and after the epoch ends, each donor can claim their proportional share of that epoch's Coin token emission. Donations are split immediately: 50% to the recipient, 45% to treasury, 4% to team, 1% to protocol.
 
 ### Configuration
 
 | Parameter | Type | Description | Valid Range |
 |-----------|------|-------------|-------------|
 | `recipient` | `address` | Address that receives 50% of all donations. Required; cannot be zero. Can be updated by the owner post-launch. | Non-zero address |
-| `initialEmission` | `uint256` | Unit tokens emitted per epoch at launch. This is the total epoch emission -- donors split it proportionally based on their contribution. | `1e18` to `1e30` |
+| `initialEmission` | `uint256` | Coin tokens emitted per epoch at launch. This is the total epoch emission -- donors split it proportionally based on their contribution. | `1e18` to `1e30` |
 | `minEmission` | `uint256` | Minimum emission floor per epoch. After enough halvings, emission will never drop below this value. | 1 to `initialEmission` |
 | `halvingPeriod` | `uint256` | Number of epochs between halvings. Emission halves every `halvingPeriod` epochs since deployment. | 7 to 365 |
 | `epochDuration` | `uint256` | Duration of each epoch in seconds. Determines how frequently new emission pools open. | 1 hour to 7 days |
@@ -76,13 +76,13 @@ Fundraiser distributes tokens through donations. Users donate USDC into an epoch
 
 ## Parameter Recommendations
 
-### Initial Liquidity (`usdcAmount` and `unitAmount`)
+### Initial Liquidity (`usdcAmount` and `coinAmount`)
 
-The ratio of `usdcAmount` to `unitAmount` determines the initial price of the Unit token. Consider:
+The ratio of `usdcAmount` to `coinAmount` determines the initial price of the Coin token. Consider:
 
 - **Higher `usdcAmount`**: Creates a deeper liquidity pool with less slippage on trades. Requires more upfront capital.
-- **Lower `unitAmount` relative to `usdcAmount`**: Sets a higher initial token price. Fewer tokens in circulation at launch.
-- **Higher `unitAmount` relative to `usdcAmount`**: Sets a lower initial token price. More tokens available for early trading.
+- **Lower `coinAmount` relative to `usdcAmount`**: Sets a higher initial token price. Fewer tokens in circulation at launch.
+- **Higher `coinAmount` relative to `usdcAmount`**: Sets a lower initial token price. More tokens available for early trading.
 
 ### Fundraiser: Initial Emission and Halving
 

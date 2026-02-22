@@ -14,7 +14,7 @@ import { TradeModal } from "@/components/trade-modal";
 import { AuctionModal } from "@/components/auction-modal";
 import { LiquidityModal } from "@/components/liquidity-modal";
 import { AdminModal } from "@/components/admin-modal";
-import { useRigInfo } from "@/hooks/useRigState";
+import { useFundraiserInfo } from "@/hooks/useFundraiserInfo";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useFarcaster, composeCast } from "@/hooks/useFarcaster";
@@ -24,9 +24,9 @@ import {
   CONTRACT_ADDRESSES,
   QUOTE_TOKEN_DECIMALS,
   getMulticallAddress,
-  RIG_ABI,
+  FUNDRAISER_ABI,
 } from "@/lib/contracts";
-import { getRig } from "@/lib/subgraph-launchpad";
+import { getFundraiser } from "@/lib/subgraph-launchpad";
 import { truncateAddress, formatPrice, formatNumber, formatMarketCap } from "@/lib/format";
 import { PriceChart, type HoverData } from "@/components/price-chart";
 import { TokenLogo } from "@/components/token-logo";
@@ -147,24 +147,24 @@ function LoadingSkeleton() {
   );
 }
 
-export default function RigDetailPage() {
+export default function FundraiserDetailPage() {
   const params = useParams();
   const address = (params?.address as string)?.toLowerCase() || "";
-  const rigAddress = address as `0x${string}`;
+  const fundraiserAddress = address as `0x${string}`;
 
   // Farcaster context for connected wallet
   const { address: account, isConnected, isInFrame, isConnecting, connect } = useFarcaster();
 
-  // Fetch rig data from subgraph
-  const { data: subgraphRig, isLoading: isSubgraphLoading } = useQuery({
-    queryKey: ["rig", address],
-    queryFn: () => getRig(address),
+  // Fetch fundraiser data from subgraph
+  const { data: subgraphFundraiser, isLoading: isSubgraphLoading } = useQuery({
+    queryKey: ["fundraiser", address],
+    queryFn: () => getFundraiser(address),
     enabled: !!address,
     staleTime: 30_000,
     refetchInterval: (query) => {
-      const rig = query.state.data;
-      if (!rig) return 3000;
-      if (!rig.fundraiser) return 3000;
+      const fundraiser = query.state.data;
+      if (!fundraiser) return 3000;
+      if (!fundraiser.fundraiser) return 3000;
       return false;
     },
   });
@@ -174,57 +174,57 @@ export default function RigDetailPage() {
 
   // Fetch fundraiser state
   const { fundraiserState, isLoading: isFundLoading } = useFundraiserState(
-    rigAddress,
+    fundraiserAddress,
     account,
     true
   );
 
-  // Fetch rig info (unit/auction/LP addresses, token name/symbol, launcher)
-  const { rigInfo, isLoading: isRigInfoLoading } = useRigInfo(
-    rigAddress,
+  // Fetch fundraiser info (coin/auction/LP addresses, token name/symbol, launcher)
+  const { fundraiserInfo, isLoading: isFundraiserInfoLoading } = useFundraiserInfo(
+    fundraiserAddress,
     coreAddress,
   );
 
   // Normalize fields
-  const unitPrice = fundraiserState?.unitPrice;
-  const rigUri = fundraiserState?.rigUri;
+  const coinPrice = fundraiserState?.coinPrice;
+  const fundraiserUri = fundraiserState?.fundraiserUri;
   const accountQuoteBalance = fundraiserState?.accountQuoteBalance;
   const accountUsdcBalance = fundraiserState?.accountUsdcBalance;
-  const accountUnitBalance = fundraiserState?.accountUnitBalance;
+  const accountCoinBalance = fundraiserState?.accountCoinBalance;
 
   // Fetch token metadata from IPFS
-  const { metadata, logoUrl } = useTokenMetadata(rigUri);
+  const { metadata, logoUrl } = useTokenMetadata(fundraiserUri);
 
   // Fetch DexScreener data for liquidity/volume/price change
   const { pairData } = useDexScreener(
-    rigAddress,
-    rigInfo?.unitAddress,
+    fundraiserAddress,
+    fundraiserInfo?.coinAddress,
     coreAddress,
   );
 
   // Derived values
-  const tokenName = rigInfo?.tokenName || subgraphRig?.unit?.name || "Loading...";
-  const tokenSymbol = rigInfo?.tokenSymbol || subgraphRig?.unit?.symbol || "--";
+  const tokenName = fundraiserInfo?.tokenName || subgraphFundraiser?.coin?.name || "Loading...";
+  const tokenSymbol = fundraiserInfo?.tokenSymbol || subgraphFundraiser?.coin?.symbol || "--";
 
-  const priceUsd = unitPrice
-    ? Number(formatEther(unitPrice))
+  const priceUsd = coinPrice
+    ? Number(formatEther(coinPrice))
     : 0;
 
-  const totalSupplyRaw = subgraphRig?.unit?.totalSupply
-    ? parseFloat(subgraphRig.unit.totalSupply)
+  const totalSupplyRaw = subgraphFundraiser?.coin?.totalSupply
+    ? parseFloat(subgraphFundraiser.coin.totalSupply)
     : 0;
   const totalSupply = totalSupplyRaw;
 
   const marketCapUsd =
-    unitPrice && totalSupplyRaw > 0
-      ? totalSupplyRaw * Number(formatEther(unitPrice))
+    coinPrice && totalSupplyRaw > 0
+      ? totalSupplyRaw * Number(formatEther(coinPrice))
       : 0;
 
-  const userUnitBalance = accountUnitBalance
-    ? Number(formatEther(accountUnitBalance))
+  const userCoinBalance = accountCoinBalance
+    ? Number(formatEther(accountCoinBalance))
     : 0;
-  const positionBalanceUsd = userUnitBalance * priceUsd;
-  const hasPosition = userUnitBalance > 0;
+  const positionBalanceUsd = userCoinBalance * priceUsd;
+  const hasPosition = userCoinBalance > 0;
 
   const userQuoteBalance = accountQuoteBalance
     ? Number(formatUnits(accountQuoteBalance, QUOTE_TOKEN_DECIMALS))
@@ -234,20 +234,20 @@ export default function RigDetailPage() {
     ? Number(formatUnits(accountUsdcBalance, QUOTE_TOKEN_DECIMALS))
     : 0;
 
-  const liquidityUsd = subgraphRig?.unit?.liquidity
-    ? parseFloat(subgraphRig.unit.liquidity) * 2
+  const liquidityUsd = subgraphFundraiser?.coin?.liquidity
+    ? parseFloat(subgraphFundraiser.coin.liquidity) * 2
     : (pairData?.liquidity?.usd ?? 0);
   const volume24h = pairData?.volume?.h24 ?? 0;
 
-  const treasuryRevenue = subgraphRig?.treasuryRevenue
-    ? parseFloat(subgraphRig.treasuryRevenue)
+  const treasuryRevenue = subgraphFundraiser?.treasuryRevenue
+    ? parseFloat(subgraphFundraiser.treasuryRevenue)
     : 0;
-  const teamRevenue = subgraphRig?.teamRevenue
-    ? parseFloat(subgraphRig.teamRevenue)
+  const teamRevenue = subgraphFundraiser?.teamRevenue
+    ? parseFloat(subgraphFundraiser.teamRevenue)
     : 0;
 
-  // Launcher address from useRigInfo
-  const launcherAddress = rigInfo?.launcher || null;
+  // Launcher address from useFundraiserInfo
+  const launcherAddress = fundraiserInfo?.launcher || null;
 
   // Ownership check
   const isOwner = !!(
@@ -257,8 +257,8 @@ export default function RigDetailPage() {
   );
 
   // Created date from subgraph
-  const createdAtTimestamp = subgraphRig?.createdAt
-    ? Number(subgraphRig.createdAt)
+  const createdAtTimestamp = subgraphFundraiser?.createdAt
+    ? Number(subgraphFundraiser.createdAt)
     : undefined;
   const createdAt = createdAtTimestamp
     ? new Date(createdAtTimestamp * 1000)
@@ -267,18 +267,18 @@ export default function RigDetailPage() {
 
   // Initial LP price
   const initialPrice = useMemo(() => {
-    const usdc = parseFloat(subgraphRig?.usdcAmount ?? "0");
-    const unit = parseFloat(subgraphRig?.unitAmount ?? "0");
-    if (unit > 0) return usdc / unit;
+    const usdc = parseFloat(subgraphFundraiser?.usdcAmount ?? "0");
+    const coin = parseFloat(subgraphFundraiser?.coinAmount ?? "0");
+    if (coin > 0) return usdc / coin;
     return 0;
-  }, [subgraphRig?.usdcAmount, subgraphRig?.unitAmount]);
+  }, [subgraphFundraiser?.usdcAmount, subgraphFundraiser?.coinAmount]);
 
   // Chart data
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const { data: chartData } = usePriceHistory(
-    rigAddress,
+    fundraiserAddress,
     timeframe,
-    rigInfo?.unitAddress,
+    fundraiserInfo?.coinAddress,
     priceUsd,
     createdAtTimestamp,
     initialPrice,
@@ -321,9 +321,9 @@ export default function RigDetailPage() {
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isLoading = isSubgraphLoading || (!!address && isFundLoading && isRigInfoLoading);
+  const isLoading = isSubgraphLoading || (!!address && isFundLoading && isFundraiserInfoLoading);
 
-  if (isLoading && !subgraphRig) {
+  if (isLoading && !subgraphFundraiser) {
     return <LoadingSkeleton />;
   }
 
@@ -432,7 +432,7 @@ export default function RigDetailPage() {
                   <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
                   <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
                     <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
-                    <span>{formatNumber(userUnitBalance)}</span>
+                    <span>{formatNumber(userCoinBalance)}</span>
                   </div>
                 </div>
                 <div>
@@ -520,9 +520,9 @@ export default function RigDetailPage() {
 
             {/* Address + link buttons */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {rigInfo?.unitAddress && (
+              {fundraiserInfo?.coinAddress && (
                 <a
-                  href={`https://basescan.org/token/${rigInfo.unitAddress}`}
+                  href={`https://basescan.org/token/${fundraiserInfo.coinAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
@@ -530,9 +530,9 @@ export default function RigDetailPage() {
                   {tokenSymbol}
                 </a>
               )}
-              {rigInfo?.lpAddress && (
+              {fundraiserInfo?.lpAddress && (
                 <a
-                  href={`https://basescan.org/address/${rigInfo.lpAddress}`}
+                  href={`https://basescan.org/address/${fundraiserInfo.lpAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
@@ -570,7 +570,7 @@ export default function RigDetailPage() {
             {/* Fundraiser Parameters */}
             <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-4" aria-hidden="true" />
             <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-              {!subgraphRig?.fundraiser && (
+              {!subgraphFundraiser?.fundraiser && (
                 <>
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i}>
@@ -580,19 +580,19 @@ export default function RigDetailPage() {
                   ))}
                 </>
               )}
-              {subgraphRig?.fundraiser && (
+              {subgraphFundraiser?.fundraiser && (
                 <>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Initial emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphRig.fundraiser.initialEmission)}</div>
+                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.fundraiser.initialEmission)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Min emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphRig.fundraiser.minEmission)}</div>
+                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.fundraiser.minEmission)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
-                    <div className="font-semibold text-[14px]">{formatPeriod(String(parseInt(subgraphRig.fundraiser.halvingPeriod) * parseInt(subgraphRig.fundraiser.epochDuration)))}</div>
+                    <div className="font-semibold text-[14px]">{formatPeriod(String(parseInt(subgraphFundraiser.fundraiser.halvingPeriod) * parseInt(subgraphFundraiser.fundraiser.epochDuration)))}</div>
                   </div>
                   {metadata?.recipientName && (
                     <div>
@@ -603,7 +603,7 @@ export default function RigDetailPage() {
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">{metadata?.recipientName ? "Recipient address" : "Recipient"}</div>
                     <div className="font-semibold text-[14px] font-mono">
-                      <AddressLink address={subgraphRig.fundraiser.recipients?.[0]?.recipient ?? null} />
+                      <AddressLink address={subgraphFundraiser.fundraiser.recipients?.[0]?.recipient ?? null} />
                     </div>
                   </div>
                   {fundraiserState?.treasury && (
@@ -744,13 +744,13 @@ export default function RigDetailPage() {
       <DonateModal
         isOpen={showDonateModal}
         onClose={() => setShowDonateModal(false)}
-        rigAddress={rigAddress}
+        fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
         tokenLogoUrl={logoUrl}
         recipientName={metadata?.recipientName}
-        epochDuration={subgraphRig?.fundraiser?.epochDuration ? Number(subgraphRig.fundraiser.epochDuration) : 86400}
-        recipientAddress={subgraphRig?.fundraiser?.recipients?.[0]?.recipient ?? null}
+        epochDuration={subgraphFundraiser?.fundraiser?.epochDuration ? Number(subgraphFundraiser.fundraiser.epochDuration) : 86400}
+        recipientAddress={subgraphFundraiser?.fundraiser?.recipients?.[0]?.recipient ?? null}
       />
 
       {/* Trade Modal (Buy/Sell) */}
@@ -760,17 +760,17 @@ export default function RigDetailPage() {
         mode={tradeMode}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
-        unitAddress={(rigInfo?.unitAddress ?? "0x0") as `0x${string}`}
+        coinAddress={(fundraiserInfo?.coinAddress ?? "0x0") as `0x${string}`}
         marketPrice={priceUsd}
         userQuoteBalance={accountQuoteBalance ?? 0n}
-        userUnitBalance={accountUnitBalance ?? 0n}
+        userCoinBalance={accountCoinBalance ?? 0n}
       />
 
       {/* Auction Modal */}
       <AuctionModal
         isOpen={showAuctionModal}
         onClose={() => setShowAuctionModal(false)}
-        rigAddress={rigAddress}
+        fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
         multicallAddress={multicallAddress}
@@ -780,10 +780,10 @@ export default function RigDetailPage() {
       <LiquidityModal
         isOpen={showLiquidityModal}
         onClose={() => setShowLiquidityModal(false)}
-        unitAddress={(rigInfo?.unitAddress ?? "0x0") as `0x${string}`}
+        coinAddress={(fundraiserInfo?.coinAddress ?? "0x0") as `0x${string}`}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
-        tokenBalance={userUnitBalance}
+        tokenBalance={userCoinBalance}
         usdcBalance={userUsdcBalance}
         tokenPrice={priceUsd}
       />
@@ -792,14 +792,14 @@ export default function RigDetailPage() {
       <AdminModal
         isOpen={showAdminModal}
         onClose={() => setShowAdminModal(false)}
-        rigAddress={rigAddress}
+        fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
         currentConfig={{
           treasury: fundraiserState?.treasury ?? "",
           team: fundraiserState?.team ?? null,
-          uri: rigUri ?? "",
-          recipient: subgraphRig?.fundraiser?.recipients?.[0]?.recipient ?? null,
+          uri: fundraiserUri ?? "",
+          recipient: subgraphFundraiser?.fundraiser?.recipients?.[0]?.recipient ?? null,
         }}
       />
 

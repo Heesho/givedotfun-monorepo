@@ -18,7 +18,7 @@
       },
       {
         "internalType": "address",
-        "name": "_unitFactory",
+        "name": "_coinFactory",
         "type": "address"
       },
       {
@@ -67,7 +67,7 @@
   },
   {
     "inputs": [],
-    "name": "Core__ZeroUnitAmount",
+    "name": "Core__ZeroCoinAmount",
     "type": "error"
   },
   {
@@ -82,13 +82,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "rig",
+        "name": "fundraiser",
         "type": "address"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "unit",
+        "name": "coin",
         "type": "address"
       },
       {
@@ -142,7 +142,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "unitAmount",
+        "name": "coinAmount",
         "type": "uint256"
       },
       {
@@ -309,7 +309,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "unitAmount",
+            "name": "coinAmount",
             "type": "uint256"
           },
           {
@@ -362,12 +362,12 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "unit",
+        "name": "coin",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "rig",
+        "name": "fundraiser",
         "type": "address"
       },
       {
@@ -438,7 +438,7 @@
         "type": "address"
       }
     ],
-    "name": "rigToAuction",
+    "name": "fundraiserToAuction",
     "outputs": [
       {
         "internalType": "address",
@@ -457,7 +457,7 @@
         "type": "address"
       }
     ],
-    "name": "rigToIndex",
+    "name": "fundraiserToIndex",
     "outputs": [
       {
         "internalType": "uint256",
@@ -476,7 +476,7 @@
         "type": "address"
       }
     ],
-    "name": "rigToIsRig",
+    "name": "isFundraiser",
     "outputs": [
       {
         "internalType": "bool",
@@ -495,7 +495,7 @@
         "type": "address"
       }
     ],
-    "name": "rigToLP",
+    "name": "fundraiserToLP",
     "outputs": [
       {
         "internalType": "address",
@@ -514,7 +514,7 @@
         "type": "uint256"
       }
     ],
-    "name": "rigs",
+    "name": "fundraisers",
     "outputs": [
       {
         "internalType": "address",
@@ -527,7 +527,7 @@
   },
   {
     "inputs": [],
-    "name": "rigsLength",
+    "name": "fundraisersLength",
     "outputs": [
       {
         "internalType": "uint256",
@@ -605,7 +605,7 @@
   },
   {
     "inputs": [],
-    "name": "unitFactory",
+    "name": "coinFactory",
     "outputs": [
       {
         "internalType": "address",

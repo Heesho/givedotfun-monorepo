@@ -37,12 +37,12 @@ export default function AuctionsPage() {
   const { auctions, isLoading } = useAuctions();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Collect rig URIs for batch metadata fetch
-  const rigUris = useMemo(
-    () => auctions.map((a) => a.rigUri),
+  // Collect fundraiser URIs for batch metadata fetch
+  const fundraiserUris = useMemo(
+    () => auctions.map((a) => a.fundraiserUri),
     [auctions]
   );
-  const { getLogoUrl } = useBatchMetadata(rigUris);
+  const { getLogoUrl } = useBatchMetadata(fundraiserUris);
 
   const selectedAuction: AuctionItem | undefined = auctions[selectedIndex];
 
@@ -77,7 +77,7 @@ export default function AuctionsPage() {
             {!isLoading &&
               auctions.map((auction, index) => (
                 <button
-                  key={auction.rigAddress}
+                  key={auction.fundraiserAddress}
                   onClick={() => setSelectedIndex(index)}
                   className={`w-full py-4 transition-all text-left ${
                     selectedIndex === index
@@ -90,7 +90,7 @@ export default function AuctionsPage() {
                       <div className="relative">
                         <TokenLogo
                           name={auction.tokenName}
-                          logoUrl={getLogoUrl(auction.rigUri)}
+                          logoUrl={getLogoUrl(auction.fundraiserUri)}
 
                           size="md-lg"
                         />
@@ -159,7 +159,7 @@ export default function AuctionsPage() {
                     <div className="flex items-center gap-2">
                       <TokenLogo
                         name={selectedAuction.tokenName}
-                        logoUrl={getLogoUrl(selectedAuction.rigUri)}
+                        logoUrl={getLogoUrl(selectedAuction.fundraiserUri)}
                         size="md-lg"
                       />
                       <div>
@@ -198,7 +198,7 @@ export default function AuctionsPage() {
                     : `-$${Math.abs(selectedAuction.profit).toFixed(2)} loss`}
                 </div>
                 <Link
-                  href={`/fundraiser/${selectedAuction.rigAddress}`}
+                  href={`/fundraiser/${selectedAuction.fundraiserAddress}`}
                   className="h-10 px-6 bg-moss-400 text-concrete-800 text-[14px] font-bold uppercase tracking-wider rounded-xl hover:bg-moss-300 transition-colors inline-flex items-center justify-center"
                 >
                   Buy Auction

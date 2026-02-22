@@ -3,13 +3,13 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import type { RigListItem } from "@/hooks/useAllRigs";
+import type { FundraiserListItem } from "@/hooks/useAllFundraisers";
 import { cn } from "@/lib/utils";
 import { ipfsToHttp } from "@/lib/constants";
-import { getUnitMinuteData, getUnitHourData } from "@/lib/subgraph-launchpad";
+import { getCoinMinuteData, getCoinHourData } from "@/lib/subgraph-launchpad";
 
-type RigCardProps = {
-  rig: RigListItem;
+type FundraiserCardProps = {
+  fundraiser: FundraiserListItem;
   isTopBump?: boolean;
   isNewBump?: boolean;
 };
@@ -73,21 +73,21 @@ function MiniSparkline({ prices }: { prices: number[] }) {
   );
 }
 
-export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardProps) {
-  const marketCapUsd = rig.marketCapUsd;
+export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = false }: FundraiserCardProps) {
+  const marketCapUsd = fundraiser.marketCapUsd;
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Fetch candle data — use minute candles for tokens < 24h old, hourly otherwise
-  const tokenAge = rig.createdAt ? Math.floor(Date.now() / 1000) - rig.createdAt : Infinity;
+  const tokenAge = fundraiser.createdAt ? Math.floor(Date.now() / 1000) - fundraiser.createdAt : Infinity;
   const { data: candles } = useQuery({
-    queryKey: ["miniSparkline", rig.unitAddress, tokenAge < 86400 ? "minute" : "hour"],
+    queryKey: ["miniSparkline", fundraiser.coinAddress, tokenAge < 86400 ? "minute" : "hour"],
     queryFn: async () => {
       const now = Math.floor(Date.now() / 1000);
       const since = now - 86400;
       if (tokenAge < 86400) {
-        return getUnitMinuteData(rig.unitAddress.toLowerCase(), since);
+        return getCoinMinuteData(fundraiser.coinAddress.toLowerCase(), since);
       }
-      return getUnitHourData(rig.unitAddress.toLowerCase(), since);
+      return getCoinHourData(fundraiser.coinAddress.toLowerCase(), since);
     },
     staleTime: 60_000,
     refetchInterval: 120_000,
@@ -101,16 +101,16 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
     const p = candles.map((c) => parseFloat(c.close));
     const oldPrice = parseFloat(candles[0].close);
     const change = oldPrice > 0
-      ? ((rig.priceUsd - oldPrice) / oldPrice) * 100
+      ? ((fundraiser.priceUsd - oldPrice) / oldPrice) * 100
       : 0;
     return { prices: p, change24h: change };
-  }, [candles, rig.priceUsd]);
+  }, [candles, fundraiser.priceUsd]);
 
   // Fetch metadata to get image URL
   useEffect(() => {
-    if (!rig.rigUri) return;
+    if (!fundraiser.fundraiserUri) return;
 
-    const metadataUrl = ipfsToHttp(rig.rigUri);
+    const metadataUrl = ipfsToHttp(fundraiser.fundraiserUri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
@@ -123,10 +123,10 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
       .catch(() => {
         // Silently fail - will show fallback
       });
-  }, [rig.rigUri]);
+  }, [fundraiser.fundraiserUri]);
 
   return (
-    <Link href={`/fundraiser/${rig.address}`} className="block">
+    <Link href={`/fundraiser/${fundraiser.address}`} className="block">
       <div
         className={cn(
           "flex items-center gap-3 py-4 transition-colors hover:bg-moss-400/[0.04] border-b border-border",
@@ -139,12 +139,12 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt={rig.tokenSymbol}
+              alt={fundraiser.tokenSymbol}
               className="w-10 h-10 object-cover"
             />
           ) : (
             <span className="text-[#8E8E8E] font-semibold text-sm">
-              {rig.tokenSymbol.slice(0, 2)}
+              {fundraiser.tokenSymbol.slice(0, 2)}
             </span>
           )}
         </div>
@@ -152,10 +152,10 @@ export function RigCard({ rig, isTopBump = false, isNewBump = false }: RigCardPr
         {/* Token Name & Symbol */}
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-[15px] truncate">
-            {rig.tokenSymbol}
+            {fundraiser.tokenSymbol}
           </div>
           <div className="text-[13px] text-muted-foreground truncate mt-0.5">
-            {rig.tokenName}
+            {fundraiser.tokenName}
           </div>
         </div>
 

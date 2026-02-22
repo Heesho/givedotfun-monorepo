@@ -10,7 +10,7 @@ import { ipfsToHttp } from "@/lib/constants";
 type AdminModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  rigAddress?: `0x${string}`;
+  fundraiserAddress?: `0x${string}`;
   tokenSymbol?: string;
   tokenName?: string;
   currentConfig: {
@@ -69,7 +69,7 @@ const SET_RECIPIENT_ABI = [
 export function AdminModal({
   isOpen,
   onClose,
-  rigAddress,
+  fundraiserAddress,
   tokenSymbol = "TOKEN",
   tokenName = "Token",
   currentConfig,
@@ -181,7 +181,7 @@ export function AdminModal({
 
   // Save metadata to IPFS then call setUri on-chain
   const handleSaveMetadata = async () => {
-    if (!rigAddress) return;
+    if (!fundraiserAddress) return;
     setPendingField("metadata");
     setIsUploadingMetadata(true);
 
@@ -232,7 +232,7 @@ export function AdminModal({
         args: [newUri],
       });
 
-      await execute([{ to: rigAddress, data, value: 0n }]);
+      await execute([{ to: fundraiserAddress, data, value: 0n }]);
     } catch {
       setIsUploadingMetadata(false);
       setPendingField(null);
@@ -241,7 +241,7 @@ export function AdminModal({
 
   // Generic save handler for contract calls
   const handleSave = async (field: string) => {
-    if (!rigAddress) return;
+    if (!fundraiserAddress) return;
     setPendingField(field);
 
     let call: Call | null = null;
@@ -253,7 +253,7 @@ export function AdminModal({
           functionName: "setTreasury",
           args: [treasury as `0x${string}`],
         });
-        call = { to: rigAddress, data, value: 0n };
+        call = { to: fundraiserAddress, data, value: 0n };
         break;
       }
       case "team": {
@@ -262,7 +262,7 @@ export function AdminModal({
           functionName: "setTeam",
           args: [team as `0x${string}`],
         });
-        call = { to: rigAddress, data, value: 0n };
+        call = { to: fundraiserAddress, data, value: 0n };
         break;
       }
       case "recipient": {
@@ -271,7 +271,7 @@ export function AdminModal({
           functionName: "setRecipient",
           args: [recipient as `0x${string}`],
         });
-        call = { to: rigAddress, data, value: 0n };
+        call = { to: fundraiserAddress, data, value: 0n };
         break;
       }
     }

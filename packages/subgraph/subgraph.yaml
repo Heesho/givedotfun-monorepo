@@ -20,8 +20,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Protocol
-        - Unit
-        - Rig
+        - Coin
         - Fundraiser
         - Account
       abis:
@@ -50,10 +49,10 @@ templates:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - Unit
-        - UnitMinuteData
-        - UnitHourData
-        - UnitDayData
+        - Coin
+        - CoinMinuteData
+        - CoinHourData
+        - CoinDayData
         - Swap
         - Account
       abis:
@@ -81,11 +80,10 @@ templates:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - Rig
         - Fundraiser
         - Donation
         - Account
-        - Unit
+        - Coin
       abis:
         - name: Fundraiser
           file: ./abis/Fundraiser.json
@@ -113,10 +111,10 @@ templates:
       file: ./src/fundraiser.ts
 
   # ==========================================================================
-  # UNIT TOKEN - Transfer events for holder tracking (optional)
+  # COIN TOKEN - Transfer events for holder tracking (optional)
   # ==========================================================================
   - kind: ethereum
-    name: Unit
+    name: Coin
     network: base
     source:
       abi: ERC20
@@ -125,12 +123,12 @@ templates:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - Unit
+        - Coin
         - Account
       abis:
         - name: ERC20
           file: ./abis/ERC20.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleUnitTransfer
-      file: ./src/unit.ts
+          handler: handleCoinTransfer
+      file: ./src/coin.ts

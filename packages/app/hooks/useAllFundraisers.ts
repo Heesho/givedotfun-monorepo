@@ -1,20 +1,20 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  getUnitsByActivity,
-  getUnitsByMarketCap,
-  getUnitsByCreatedAt,
-  searchRigs,
-  type SubgraphUnitListItem,
+  getCoinsByActivity,
+  getCoinsByMarketCap,
+  getCoinsByCreatedAt,
+  searchCoins,
+  type SubgraphCoinListItem,
 } from "@/lib/subgraph-launchpad";
 
-export type RigListItem = {
-  address: `0x${string}`;         // Rig contract address
-  unitAddress: `0x${string}`;     // Unit token address
+export type FundraiserListItem = {
+  address: `0x${string}`;         // Fundraiser contract address
+  coinAddress: `0x${string}`;     // Coin token address
   lpPairAddress: `0x${string}`;   // LP pair address
   tokenName: string;
   tokenSymbol: string;
-  rigUri: string;
+  fundraiserUri: string;
   launcher: `0x${string}`;
   // Market data (from subgraph)
   priceUsd: number;
@@ -32,41 +32,41 @@ export type RigListItem = {
 
 export type SortOption = "bump" | "top" | "new";
 
-// Hook to get unit list from subgraph with sorting
-export function useRigList(sortBy: SortOption = "top", first = 50) {
+// Hook to get coin list from subgraph with sorting
+export function useFundraiserList(sortBy: SortOption = "top", first = 50) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["unitList", sortBy, first],
+    queryKey: ["coinList", sortBy, first],
     queryFn: async () => {
-      if (sortBy === "bump") return getUnitsByActivity(first);
-      if (sortBy === "top") return getUnitsByMarketCap(first);
-      return getUnitsByCreatedAt(first); // "new"
+      if (sortBy === "bump") return getCoinsByActivity(first);
+      if (sortBy === "top") return getCoinsByMarketCap(first);
+      return getCoinsByCreatedAt(first); // "new"
     },
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: false,
     retry: false,
   });
-  return { units: data ?? [], isLoading, error };
+  return { coins: data ?? [], isLoading, error };
 }
 
-// Hook to search units by name/symbol
-export function useSearchUnits(searchQuery: string) {
+// Hook to search coins by name/symbol
+export function useSearchCoins(searchQuery: string) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["searchUnits", searchQuery],
+    queryKey: ["searchCoins", searchQuery],
     queryFn: async () => {
       if (!searchQuery || searchQuery.length < 2) return [];
-      return searchRigs(searchQuery, 20);
+      return searchCoins(searchQuery, 20);
     },
     enabled: searchQuery.length >= 2,
     staleTime: 10_000,
     retry: false,
   });
 
-  return { units: data ?? [], isLoading, error };
+  return { coins: data ?? [], isLoading, error };
 }
 
-// Convert SubgraphUnitListItem to RigListItem
-function unitToRigListItem(u: SubgraphUnitListItem): RigListItem {
+// Convert SubgraphCoinListItem to FundraiserListItem
+function coinToFundraiserListItem(u: SubgraphCoinListItem): FundraiserListItem {
   // Price: prefer priceUSD, fallback to price (which is in USDC ≈ USD)
   const priceUsd = parseFloat(u.priceUSD) || parseFloat(u.price) || 0;
   const totalSupply = parseFloat(u.totalSupply || "0");
@@ -107,13 +107,13 @@ function unitToRigListItem(u: SubgraphUnitListItem): RigListItem {
   }
 
   return {
-    address: u.rig.id.toLowerCase() as `0x${string}`,
-    unitAddress: u.id.toLowerCase() as `0x${string}`,
+    address: u.fundraiser.id.toLowerCase() as `0x${string}`,
+    coinAddress: u.id.toLowerCase() as `0x${string}`,
     lpPairAddress: (u.lpPair?.toLowerCase() ?? "0x0") as `0x${string}`,
     tokenName: u.name,
     tokenSymbol: u.symbol,
-    rigUri: u.rig.uri,
-    launcher: u.rig.launcher.id.toLowerCase() as `0x${string}`,
+    fundraiserUri: u.fundraiser.uri,
+    launcher: u.fundraiser.launcher.id.toLowerCase() as `0x${string}`,
     priceUsd,
     change24h,
     marketCapUsd,
@@ -127,28 +127,28 @@ function unitToRigListItem(u: SubgraphUnitListItem): RigListItem {
 }
 
 // Combined hook for explore page
-export function useExploreRigs(
+export function useExploreFundraisers(
   sortBy: SortOption = "top",
   searchQuery = "",
   _account: `0x${string}` | undefined // keep param for compat, not used
 ) {
-  const { units: searchResults, isLoading: isSearchLoading } = useSearchUnits(searchQuery);
-  const { units: listUnits, isLoading: isListLoading } = useRigList(sortBy);
+  const { coins: searchResults, isLoading: isSearchLoading } = useSearchCoins(searchQuery);
+  const { coins: listCoins, isLoading: isListLoading } = useFundraiserList(sortBy);
 
   const isSearching = searchQuery.length >= 2;
-  const units = isSearching ? searchResults : listUnits;
-  const isLoadingUnits = isSearching ? isSearchLoading : isListLoading;
+  const coins = isSearching ? searchResults : listCoins;
+  const isLoadingCoins = isSearching ? isSearchLoading : isListLoading;
 
-  // Convert subgraph data to RigListItem[]
-  const rigs: RigListItem[] = useMemo(() => {
-    return units
-      .filter(u => !!u.rig)
-      .map(unitToRigListItem);
-  }, [units]);
+  // Convert subgraph data to FundraiserListItem[]
+  const fundraisers: FundraiserListItem[] = useMemo(() => {
+    return coins
+      .filter(u => !!u.fundraiser)
+      .map(coinToFundraiserListItem);
+  }, [coins]);
 
   return {
-    rigs,
-    isLoading: isLoadingUnits,
+    fundraisers,
+    isLoading: isLoadingCoins,
     isUsingFallback: false,
   };
 }

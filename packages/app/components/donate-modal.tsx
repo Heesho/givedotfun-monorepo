@@ -7,7 +7,7 @@ import { useReadContract } from "wagmi";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
-import { useRigLeaderboard } from "@/hooks/useRigLeaderboard";
+import { useFundraiserLeaderboard } from "@/hooks/useFundraiserLeaderboard";
 import { useDonationHistory, type DonationEvent } from "@/hooks/useDonationHistory";
 import {
   useBatchedTransaction,
@@ -36,7 +36,7 @@ const PRESET_AMOUNTS = [1, 10, 100];
 type DonateModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  rigAddress: `0x${string}`;
+  fundraiserAddress: `0x${string}`;
   tokenSymbol?: string;
   tokenName?: string;
   tokenLogoUrl?: string | null;
@@ -65,7 +65,7 @@ function formatCountdown(seconds: number): string {
 export function DonateModal({
   isOpen,
   onClose,
-  rigAddress,
+  fundraiserAddress,
   tokenSymbol = "TOKEN",
   tokenName = "Token",
   tokenLogoUrl,
@@ -95,9 +95,9 @@ export function DonateModal({
     totalPending,
     refetch: refetchFund,
     isLoading: isFundLoading,
-  } = useFundraiserState(rigAddress, account);
+  } = useFundraiserState(fundraiserAddress, account);
 
-  const { metadata } = useTokenMetadata(fundraiserState?.rigUri);
+  const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
 
   const {
@@ -131,12 +131,12 @@ export function DonateModal({
     entries: leaderboardEntries,
     userRank,
     isLoading: isLeaderboardLoading,
-  } = useRigLeaderboard(rigAddress, account, 10);
+  } = useFundraiserLeaderboard(fundraiserAddress, account, 10);
 
   const {
     donations,
     isLoading: isHistoryLoading,
-  } = useDonationHistory(rigAddress, 10);
+  } = useDonationHistory(fundraiserAddress, 10);
 
   // ---------- Derived display values ----------
 
@@ -160,9 +160,9 @@ export function DonateModal({
     ? Number(formatUnits(fundraiserState.accountCurrentEpochDonation, QUOTE_TOKEN_DECIMALS))
     : 0;
 
-  // User's unit balance
-  const userUnitBalance = fundraiserState
-    ? Number(formatEther(fundraiserState.accountUnitBalance))
+  // User's coin balance
+  const userCoinBalance = fundraiserState
+    ? Number(formatEther(fundraiserState.accountCoinBalance))
     : 0;
 
   // Pending claims
@@ -284,12 +284,12 @@ export function DonateModal({
         multicallAddress,
         MULTICALL_ABI,
         "fund",
-        [rigAddress, account, recipientAddress, amount, message || defaultMessage]
+        [fundraiserAddress, account, recipientAddress, amount, message || defaultMessage]
       )
     );
 
     await execute(calls);
-  }, [account, fundraiserState, fundAmount, rigAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
+  }, [account, fundraiserState, fundAmount, fundraiserAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
 
   const handleClaim = useCallback(async () => {
     if (!account || claimableEpochs.length === 0 || txStatus === "pending") return;
@@ -299,11 +299,11 @@ export function DonateModal({
         CONTRACT_ADDRESSES.multicall as `0x${string}`,
         MULTICALL_ABI,
         "claimMultiple",
-        [rigAddress, account, dayIds]
+        [fundraiserAddress, account, dayIds]
       ),
     ];
     await execute(calls);
-  }, [account, claimableEpochs, rigAddress, execute, txStatus]);
+  }, [account, claimableEpochs, fundraiserAddress, execute, txStatus]);
 
   // ---------- Render ----------
 
@@ -522,24 +522,24 @@ export function DonateModal({
                     <div className="text-muted-foreground text-[12px] mb-1">Earned</div>
                     <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
                       <TokenLogo name={tokenSymbol} logoUrl={tokenLogoUrl} size="sm" />
-                      {(userUnitBalance + pendingTokens) >= 1000
-                        ? `${((userUnitBalance + pendingTokens) / 1000).toFixed(1)}K`
-                        : (userUnitBalance + pendingTokens).toFixed(0)}
+                      {(userCoinBalance + pendingTokens) >= 1000
+                        ? `${((userCoinBalance + pendingTokens) / 1000).toFixed(1)}K`
+                        : (userCoinBalance + pendingTokens).toFixed(0)}
                     </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-1">Value</div>
                     <div className="font-semibold text-[15px] tabular-nums">
-                      ${((userUnitBalance + pendingTokens) * currentPricePerToken).toFixed(2)}
+                      ${((userCoinBalance + pendingTokens) * currentPricePerToken).toFixed(2)}
                     </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-1">Claimed</div>
                     <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
                       <TokenLogo name={tokenSymbol} logoUrl={tokenLogoUrl} size="sm" />
-                      {userUnitBalance >= 1000
-                        ? `${(userUnitBalance / 1000).toFixed(1)}K`
-                        : userUnitBalance.toFixed(0)}
+                      {userCoinBalance >= 1000
+                        ? `${(userCoinBalance / 1000).toFixed(1)}K`
+                        : userCoinBalance.toFixed(0)}
                     </div>
                   </div>
                   <div>
@@ -592,7 +592,7 @@ export function DonateModal({
                 userRank={userRank ?? null}
                 tokenSymbol={tokenSymbol}
                 tokenName={tokenName}
-                rigUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${rigAddress}` : ""}
+                fundraiserUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${fundraiserAddress}` : ""}
                 isLoading={isLeaderboardLoading}
               />
             </div>

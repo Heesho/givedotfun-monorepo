@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getUnitMinuteData, getUnitHourData, getUnitDayData, type SubgraphUnitCandle } from "@/lib/subgraph-launchpad";
+import { getCoinMinuteData, getCoinHourData, getCoinDayData, type SubgraphCoinCandle } from "@/lib/subgraph-launchpad";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -178,28 +178,28 @@ function fillChartData(
 }
 
 // ---------------------------------------------------------------------------
-// Fetch price history from LP candle data (works for all rig types)
+// Fetch price history from LP candle data (works for all fundraiser types)
 // ---------------------------------------------------------------------------
 
 async function fetchCandlePriceHistory(
-  unitAddress: string,
+  coinAddress: string,
   timeframe: Timeframe,
   createdAt?: number,
 ): Promise<ChartDataPoint[]> {
   const config = getTimeframeConfig(timeframe, createdAt);
 
-  let candles: SubgraphUnitCandle[];
+  let candles: SubgraphCoinCandle[];
   if (config.useMinute) {
-    candles = await getUnitMinuteData(unitAddress, config.sinceTimestamp);
+    candles = await getCoinMinuteData(coinAddress, config.sinceTimestamp);
   } else if (config.useHourly) {
-    candles = await getUnitHourData(unitAddress, config.sinceTimestamp);
+    candles = await getCoinHourData(coinAddress, config.sinceTimestamp);
   } else {
-    candles = await getUnitDayData(unitAddress, config.sinceTimestamp);
+    candles = await getCoinDayData(coinAddress, config.sinceTimestamp);
   }
 
   if (!candles || candles.length === 0) return [];
 
-  return candles.map((c: SubgraphUnitCandle) => ({
+  return candles.map((c: SubgraphCoinCandle) => ({
     time: parseInt(c.timestamp),
     value: parseFloat(c.close),
   }));
@@ -210,9 +210,9 @@ async function fetchCandlePriceHistory(
 // ---------------------------------------------------------------------------
 
 export function usePriceHistory(
-  rigAddress: string,
+  fundraiserAddress: string,
   timeframe: Timeframe,
-  unitAddress?: string,
+  coinAddress?: string,
   currentPrice: number = 0,
   createdAt?: number,
   initialPrice?: number,
@@ -220,12 +220,12 @@ export function usePriceHistory(
   const config = getTimeframeConfig(timeframe, createdAt);
 
   const { data: rawData, isLoading } = useQuery({
-    queryKey: ["priceHistory", rigAddress, timeframe, unitAddress],
+    queryKey: ["priceHistory", fundraiserAddress, timeframe, coinAddress],
     queryFn: () =>
-      unitAddress
-        ? fetchCandlePriceHistory(unitAddress.toLowerCase(), timeframe, createdAt)
+      coinAddress
+        ? fetchCandlePriceHistory(coinAddress.toLowerCase(), timeframe, createdAt)
         : Promise.resolve([]),
-    enabled: !!rigAddress && !!unitAddress,
+    enabled: !!fundraiserAddress && !!coinAddress,
     staleTime: config.refetchInterval,
     refetchInterval: config.refetchInterval,
     placeholderData: (previousData) => previousData,

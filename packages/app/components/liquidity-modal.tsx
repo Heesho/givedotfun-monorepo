@@ -22,7 +22,7 @@ import { DEADLINE_BUFFER_SECONDS } from "@/lib/constants";
 type LiquidityModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  unitAddress: `0x${string}`;
+  coinAddress: `0x${string}`;
   tokenSymbol?: string;
   tokenName?: string;
   tokenBalance?: number;
@@ -53,7 +53,7 @@ function NumPadButton({
 export function LiquidityModal({
   isOpen,
   onClose,
-  unitAddress,
+  coinAddress,
   tokenSymbol = "TOKEN",
   tokenName = "Token",
   tokenBalance = 0,
@@ -135,8 +135,8 @@ export function LiquidityModal({
   }, [requiredUsdc]);
 
   // Allowance checks — skip approve when sufficient
-  const { data: unitAllowance } = useReadContract({
-    address: unitAddress,
+  const { data: coinAllowance } = useReadContract({
+    address: coinAddress,
     abi: ERC20_ABI,
     functionName: "allowance",
     args: [account!, routerAddress],
@@ -162,9 +162,9 @@ export function LiquidityModal({
 
     const calls: Call[] = [];
 
-    // Approve unit token for router (skip if allowance is sufficient)
-    if (unitAllowance === undefined || unitAllowance < tokenAmountWei) {
-      calls.push(encodeApproveCall(unitAddress, routerAddress, tokenAmountWei));
+    // Approve coin token for router (skip if allowance is sufficient)
+    if (coinAllowance === undefined || coinAllowance < tokenAmountWei) {
+      calls.push(encodeApproveCall(coinAddress, routerAddress, tokenAmountWei));
     }
 
     // Approve USDC for router (skip if allowance is sufficient)
@@ -179,7 +179,7 @@ export function LiquidityModal({
         UNIV2_ROUTER_ABI,
         "addLiquidity",
         [
-          unitAddress,
+          coinAddress,
           usdcAddress,
           tokenAmountWei,
           usdcAmountWei,
@@ -193,7 +193,7 @@ export function LiquidityModal({
     );
 
     await execute(calls);
-  }, [account, canCreate, tokenAmountWei, usdcAmountWei, unitAddress, execute, unitAllowance, usdcAllowance, routerAddress, usdcAddress]);
+  }, [account, canCreate, tokenAmountWei, usdcAmountWei, coinAddress, execute, coinAllowance, usdcAllowance, routerAddress, usdcAddress]);
 
   if (!isOpen) return null;
 

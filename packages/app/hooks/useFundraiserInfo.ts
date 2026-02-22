@@ -2,13 +2,13 @@ import { useReadContract } from "wagmi";
 import { base } from "wagmi/chains";
 import {
   CONTRACT_ADDRESSES,
-  RIG_ABI,
+  FUNDRAISER_ABI,
   ERC20_ABI,
 } from "@/lib/contracts";
 
-export type RigInfo = {
+export type FundraiserInfo = {
   address: `0x${string}`;
-  unitAddress: `0x${string}`;
+  coinAddress: `0x${string}`;
   auctionAddress: `0x${string}`;
   lpAddress: `0x${string}`;
   quoteAddress: `0x${string}`;
@@ -17,49 +17,49 @@ export type RigInfo = {
   tokenSymbol: string;
 };
 
-// Simplified core ABI for reading rig-to-auction and rig-to-LP mappings
+// Simplified core ABI for reading fundraiser-to-auction and fundraiser-to-LP mappings
 const CORE_ABI = [
   {
-    inputs: [{ internalType: "address", name: "rig", type: "address" }],
-    name: "rigToAuction",
+    inputs: [{ internalType: "address", name: "fundraiser", type: "address" }],
+    name: "fundraiserToAuction",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "rig", type: "address" }],
-    name: "rigToLP",
+    inputs: [{ internalType: "address", name: "fundraiser", type: "address" }],
+    name: "fundraiserToLP",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
 ] as const;
 
-export function useRigInfo(
-  rigAddress: `0x${string}` | undefined,
+export function useFundraiserInfo(
+  fundraiserAddress: `0x${string}` | undefined,
   coreAddress?: `0x${string}`,
 ) {
   const resolvedCore = coreAddress ?? CONTRACT_ADDRESSES.core as `0x${string}`;
 
-  // Get unit token address from rig contract
-  const { data: unitAddress } = useReadContract({
-    address: rigAddress,
-    abi: RIG_ABI,
-    functionName: "unit",
+  // Get coin token address from fundraiser contract
+  const { data: coinAddress } = useReadContract({
+    address: fundraiserAddress,
+    abi: FUNDRAISER_ABI,
+    functionName: "coin",
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
-  // Get quote token address from rig contract
+  // Get quote token address from fundraiser contract
   const { data: quoteAddress } = useReadContract({
-    address: rigAddress,
-    abi: RIG_ABI,
+    address: fundraiserAddress,
+    abi: FUNDRAISER_ABI,
     functionName: "quote",
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
@@ -67,11 +67,11 @@ export function useRigInfo(
   const { data: auctionAddress } = useReadContract({
     address: resolvedCore,
     abi: CORE_ABI,
-    functionName: "rigToAuction",
-    args: rigAddress ? [rigAddress] : undefined,
+    functionName: "fundraiserToAuction",
+    args: fundraiserAddress ? [fundraiserAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
@@ -79,17 +79,17 @@ export function useRigInfo(
   const { data: lpAddress } = useReadContract({
     address: resolvedCore,
     abi: CORE_ABI,
-    functionName: "rigToLP",
-    args: rigAddress ? [rigAddress] : undefined,
+    functionName: "fundraiserToLP",
+    args: fundraiserAddress ? [fundraiserAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
-  // Get owner (launcher) from rig contract
+  // Get owner (launcher) from fundraiser contract
   const { data: launcher } = useReadContract({
-    address: rigAddress,
+    address: fundraiserAddress,
     abi: [
       {
         inputs: [],
@@ -102,37 +102,37 @@ export function useRigInfo(
     functionName: "owner",
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
     },
   });
 
   // Get token name
   const { data: tokenName } = useReadContract({
-    address: unitAddress as `0x${string}`,
+    address: coinAddress as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "name",
     chainId: base.id,
     query: {
-      enabled: !!unitAddress,
+      enabled: !!coinAddress,
     },
   });
 
   // Get token symbol
   const { data: tokenSymbol } = useReadContract({
-    address: unitAddress as `0x${string}`,
+    address: coinAddress as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "symbol",
     chainId: base.id,
     query: {
-      enabled: !!unitAddress,
+      enabled: !!coinAddress,
     },
   });
 
-  const rigInfo: RigInfo | undefined =
-    rigAddress && unitAddress && auctionAddress && lpAddress && launcher
+  const fundraiserInfo: FundraiserInfo | undefined =
+    fundraiserAddress && coinAddress && auctionAddress && lpAddress && launcher
       ? {
-          address: rigAddress,
-          unitAddress: unitAddress as `0x${string}`,
+          address: fundraiserAddress,
+          coinAddress: coinAddress as `0x${string}`,
           auctionAddress: auctionAddress as `0x${string}`,
           lpAddress: lpAddress as `0x${string}`,
           quoteAddress: (quoteAddress as `0x${string}`) ?? CONTRACT_ADDRESSES.usdc,
@@ -143,7 +143,7 @@ export function useRigInfo(
       : undefined;
 
   return {
-    rigInfo,
-    isLoading: !rigInfo && !!rigAddress,
+    fundraiserInfo,
+    isLoading: !fundraiserInfo && !!fundraiserAddress,
   };
 }

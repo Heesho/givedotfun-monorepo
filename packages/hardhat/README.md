@@ -10,7 +10,7 @@ A perpetual funding platform on Base. Fundraisers are paired with USDC, initial 
 - [Fundraiser - Donation Pool](#fundraiser---donation-pool)
 - [Shared Infrastructure](#shared-infrastructure)
   - [Launch Sequence](#launch-sequence)
-  - [Unit Token](#unit-token)
+  - [Coin Token](#coin-token)
   - [Treasury Auctions](#treasury-auctions)
 - [Contract Architecture](#contract-architecture)
 - [Contract Reference](#contract-reference)
@@ -24,8 +24,8 @@ A perpetual funding platform on Base. Fundraisers are paired with USDC, initial 
 
 When someone launches a fundraiser on give.fun, the system:
 
-1. Deploys an ERC20 token (Unit) with voting/permit support
-2. Creates a Unit/USDC liquidity pool on Uniswap V2
+1. Deploys an ERC20 token (Coin) with voting/permit support
+2. Creates a Coin/USDC liquidity pool on Uniswap V2
 3. Burns the LP tokens permanently (liquidity can never be removed)
 4. Deploys a Fundraiser contract that controls all future token minting
 5. Deploys an Auction contract for treasury LP buybacks
@@ -91,25 +91,25 @@ The launch flow is orchestrated by Core:
 ```
 User calls Core.launch(params)
     |
-    +-- 1. Validate params (launcher, quoteToken, usdc, name, symbol, unitAmount)
+    +-- 1. Validate params (launcher, quoteToken, usdc, name, symbol, coinAmount)
     +-- 2. Transfer USDC from launcher
-    +-- 3. Deploy Unit token (ERC20 with voting/permit)
-    +-- 4. Mint initial Unit tokens for LP seeding
-    +-- 5. Create Uniswap V2 pair (Unit/USDC), add liquidity
+    +-- 3. Deploy Coin token (ERC20 with voting/permit)
+    +-- 4. Mint initial Coin tokens for LP seeding
+    +-- 5. Create Uniswap V2 pair (Coin/USDC), add liquidity
     +-- 6. Burn LP tokens to 0x000...dEaD (permanent liquidity)
-    +-- 7. Deploy Auction contract (LP buyback mechanism)
-    +-- 8. Deploy Fundraiser contract (validates fundraiser-specific params)
-    +-- 9. Lock minting rights: Unit.setRig(fundraiser) (one-time, irreversible)
+    +-- 7. Deploy Auction contract via AuctionFactory (LP buyback mechanism)
+    +-- 8. Deploy Fundraiser contract via FundraiserFactory (validates fundraiser-specific params)
+    +-- 9. Lock minting rights: Coin.setMinter(fundraiser) (one-time, irreversible)
     +-- 10. Transfer Fundraiser ownership to launcher
 ```
 
-### Unit Token
+### Coin Token
 
-Every launch creates a new Unit (ERC20) with:
+Every launch creates a new Coin (ERC20) with:
 
 - **ERC20Permit** - Gasless approvals via signatures
 - **ERC20Votes** - On-chain governance voting support
-- **Controlled minting** - Only the Fundraiser contract can mint, permanently locked via one-time `setRig()`
+- **Controlled minting** - Only the Fundraiser contract can mint, permanently locked via one-time `setMinter()`
 - **No supply cap** - Supply is bounded only by the halving schedule and tail emission
 - **Burn support** - Anyone can burn their own tokens
 
@@ -130,16 +130,16 @@ This creates deflationary pressure on the LP supply: as more treasury fees accum
                         +--+----+---+--------+
                            |    |
                            v    v
-                        Unit    Auction
-                        Factory Factory
-                           |    |
-                           v    v
-                        +-----+ +-----+
-                        |Unit | |Auct.|
-                        |ERC20| |     |
-                        +-----+ +-----+
+                    Coin   Fundraiser  Auction
+                    Factory  Factory   Factory
+                       |       |         |
+                       v       v         v
+                    +-----+ +------+ +-----+
+                    |Coin | |Fund- | |Auct.|
+                    |ERC20| |raiser| |     |
+                    +-----+ +------+ +-----+
 
-Core deploys Fundraiser contracts inline (no separate factory).
+All three child contracts are deployed through their respective factories.
 
                         +---------------------+
                         |     Multicall       |
@@ -156,10 +156,11 @@ contracts/
 +-- AuctionFactory.sol       # Deploys Auction instances
 +-- Core.sol                 # Launch orchestrator for Fundraisers
 +-- Fundraiser.sol           # Donation pool with epoch-based claims
++-- FundraiserFactory.sol    # Deploys Fundraiser instances
 +-- Multicall.sol            # Batch fund/claim + view helpers
-+-- Unit.sol                 # ERC20 token with voting/permit
-+-- UnitFactory.sol          # Deploys Unit instances
-+-- interfaces/              # All interfaces (IFundraiser, ICore, etc.)
++-- Coin.sol                 # ERC20 token with voting/permit
++-- CoinFactory.sol          # Deploys Coin instances
++-- interfaces/              # All interfaces (IFundraiser, ICore, ICoin, ICoinFactory, etc.)
 +-- mocks/                   # Test mocks (MockUSDC, MockUniswapV2, etc.)
 ```
 
@@ -170,19 +171,19 @@ contracts/
 ### Core
 
 ```solidity
-// Launch a new fundraiser (deploys Unit + LP + Auction + Fundraiser)
+// Launch a new fundraiser (deploys Coin + LP + Auction + Fundraiser)
 function launch(LaunchParams calldata params)
-    external returns (address unit, address rig, address auction, address lpToken)
+    external returns (address coin, address fundraiser, address auction, address lpToken)
 
 // Admin
 function setProtocolFeeAddress(address) external      // owner only
 function setMinUsdcForLaunch(uint256) external        // owner only
 
 // View
-function rigsLength() external view returns (uint256)
-function rigToIsRig(address) external view returns (bool)
-function rigToAuction(address) external view returns (address)
-function rigToLP(address) external view returns (address)
+function fundraisersLength() external view returns (uint256)
+function fundraiserToIsFundraiser(address) external view returns (bool)
+function fundraiserToAuction(address) external view returns (address)
+function fundraiserToLP(address) external view returns (address)
 ```
 
 ### Fundraiser
@@ -228,16 +229,16 @@ function epochId() external view returns (uint256)
 ### Multicall
 
 ```solidity
-function fund(address rig, address account, uint256 amount, string calldata _uri) external
-function claim(address rig, address account, uint256 epoch) external
-function claimMultiple(address rig, address account, uint256[] calldata epochIds) external
+function fund(address fundraiser, address account, uint256 amount, string calldata _uri) external
+function claim(address fundraiser, address account, uint256 epoch) external
+function claimMultiple(address fundraiser, address account, uint256[] calldata epochIds) external
 function buy(...) external
 function launch(...) external returns (...)
-function getRig(address rig, address account) external view returns (RigState memory)
-function getClaimableEpochs(address rig, address account, uint256 startEpoch, uint256 endEpoch) external view returns (ClaimableEpoch[] memory)
-function getTotalPendingRewards(address rig, address account, uint256 startEpoch, uint256 endEpoch) external view returns (uint256, uint256[] memory)
-function getEmissionSchedule(address rig, uint256 numEpochs) external view returns (uint256[] memory)
-function getAuction(address rig, address account) external view returns (AuctionState memory)
+function getFundraiser(address fundraiser, address account) external view returns (FundraiserState memory)
+function getClaimableEpochs(address fundraiser, address account, uint256 startEpoch, uint256 endEpoch) external view returns (ClaimableEpoch[] memory)
+function getTotalPendingRewards(address fundraiser, address account, uint256 startEpoch, uint256 endEpoch) external view returns (uint256, uint256[] memory)
+function getEmissionSchedule(address fundraiser, uint256 numEpochs) external view returns (uint256[] memory)
+function getAuction(address fundraiser, address account) external view returns (AuctionState memory)
 ```
 
 ---

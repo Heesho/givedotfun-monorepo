@@ -27,7 +27,7 @@ const THIRTY_DAYS = ONE_DAY * 30;
 
 describe("Fundraiser Invariant Tests", function () {
   let owner, treasury, team, protocol, recipient, user0, user1, user2;
-  let paymentToken, unitToken, rig, mockCore;
+  let paymentToken, coinToken, fundraiser, mockCore;
 
   before("Deploy contracts", async function () {
     await network.provider.send("hardhat_reset");
@@ -42,15 +42,15 @@ describe("Fundraiser Invariant Tests", function () {
     const mockCoreArtifact = await ethers.getContractFactory("MockCore");
     mockCore = await mockCoreArtifact.deploy(protocol.address);
 
-    // Deploy Unit token (owner is initial rig, will transfer to Fundraiser)
-    const unitArtifact = await ethers.getContractFactory("Unit");
-    unitToken = await unitArtifact.deploy("Fund Test Unit", "CTUNIT", owner.address);
+    // Deploy Coin token (owner is initial minter, will transfer to Fundraiser)
+    const coinArtifact = await ethers.getContractFactory("Coin");
+    coinToken = await coinArtifact.deploy("Fund Test Coin", "CTCOIN", owner.address);
 
     // Deploy Fundraiser with correct constructor arguments:
-    // unit, quote, core, treasury, team, recipient, Config{initialEmission, minEmission, halvingPeriod}
-    const rigArtifact = await ethers.getContractFactory("Fundraiser");
-    rig = await rigArtifact.deploy(
-      unitToken.address,     // unit
+    // coin, quote, core, treasury, team, recipient, Config{initialEmission, minEmission, halvingPeriod}
+    const fundraiserArtifact = await ethers.getContractFactory("Fundraiser");
+    fundraiser = await fundraiserArtifact.deploy(
+      coinToken.address,     // coin
       paymentToken.address,  // quote
       mockCore.address,      // core (mock with protocolFeeAddress)
       treasury.address,      // treasury
@@ -61,7 +61,7 @@ describe("Fundraiser Invariant Tests", function () {
     );
 
     // Grant minting rights
-    await unitToken.setRig(rig.address);
+    await coinToken.setMinter(fundraiser.address);
 
     // Fund users
     await paymentToken.mint(user0.address, convert("5000", 6));
@@ -75,36 +75,36 @@ describe("Fundraiser Invariant Tests", function () {
    */
   describe("INVARIANT: Donation Sums", function () {
     it("Day total should equal sum of individual donations", async function () {
-      const currentDay = await rig.currentEpoch();
+      const currentDay = await fundraiser.currentEpoch();
       const donationAmount = convert("100", 6);
 
       // Multiple users donate
-      await paymentToken.connect(user0).approve(rig.address, donationAmount);
-      await rig.connect(user0).fund(user0.address, donationAmount, "");
+      await paymentToken.connect(user0).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user0).fund(user0.address, donationAmount, "");
 
-      await paymentToken.connect(user1).approve(rig.address, donationAmount);
-      await rig.connect(user1).fund(user1.address, donationAmount, "");
+      await paymentToken.connect(user1).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user1).fund(user1.address, donationAmount, "");
 
-      await paymentToken.connect(user2).approve(rig.address, donationAmount);
-      await rig.connect(user2).fund(user2.address, donationAmount, "");
+      await paymentToken.connect(user2).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user2).fund(user2.address, donationAmount, "");
 
-      const dayTotal = await rig.epochToTotalDonated(currentDay);
-      const user0Donation = await rig.epochAccountToDonation(currentDay, user0.address);
-      const user1Donation = await rig.epochAccountToDonation(currentDay, user1.address);
-      const user2Donation = await rig.epochAccountToDonation(currentDay, user2.address);
+      const dayTotal = await fundraiser.epochToTotalDonated(currentDay);
+      const user0Donation = await fundraiser.epochAccountToDonation(currentDay, user0.address);
+      const user1Donation = await fundraiser.epochAccountToDonation(currentDay, user1.address);
+      const user2Donation = await fundraiser.epochAccountToDonation(currentDay, user2.address);
 
       expect(dayTotal).to.equal(user0Donation.add(user1Donation).add(user2Donation));
     });
 
     it("Multiple donations from same user should accumulate", async function () {
-      const currentDay = await rig.currentEpoch();
-      const donationBefore = await rig.epochAccountToDonation(currentDay, user0.address);
+      const currentDay = await fundraiser.currentEpoch();
+      const donationBefore = await fundraiser.epochAccountToDonation(currentDay, user0.address);
 
       const additionalDonation = convert("50", 6);
-      await paymentToken.connect(user0).approve(rig.address, additionalDonation);
-      await rig.connect(user0).fund(user0.address, additionalDonation, "");
+      await paymentToken.connect(user0).approve(fundraiser.address, additionalDonation);
+      await fundraiser.connect(user0).fund(user0.address, additionalDonation, "");
 
-      const donationAfter = await rig.epochAccountToDonation(currentDay, user0.address);
+      const donationAfter = await fundraiser.epochAccountToDonation(currentDay, user0.address);
       expect(donationAfter).to.equal(donationBefore.add(additionalDonation));
     });
   });
@@ -121,8 +121,8 @@ describe("Fundraiser Invariant Tests", function () {
       const teamBefore = await paymentToken.balanceOf(team.address);
       const protocolBefore = await paymentToken.balanceOf(protocol.address);
 
-      await paymentToken.connect(user0).approve(rig.address, donationAmount);
-      await rig.connect(user0).fund(user0.address, donationAmount, "");
+      await paymentToken.connect(user0).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user0).fund(user0.address, donationAmount, "");
 
       const recipientAfter = await paymentToken.balanceOf(recipient.address);
       const treasuryAfter = await paymentToken.balanceOf(treasury.address);
@@ -146,8 +146,8 @@ describe("Fundraiser Invariant Tests", function () {
       const teamBefore = await paymentToken.balanceOf(team.address);
       const protocolBefore = await paymentToken.balanceOf(protocol.address);
 
-      await paymentToken.connect(user1).approve(rig.address, donationAmount);
-      await rig.connect(user1).fund(user1.address, donationAmount, "");
+      await paymentToken.connect(user1).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user1).fund(user1.address, donationAmount, "");
 
       const recipientReceived = (await paymentToken.balanceOf(recipient.address)).sub(recipientBefore);
       const treasuryReceived = (await paymentToken.balanceOf(treasury.address)).sub(treasuryBefore);
@@ -177,34 +177,34 @@ describe("Fundraiser Invariant Tests", function () {
       // Move to a fresh day and make donations
       await increaseTime(ONE_DAY);
 
-      claimDay = await rig.currentEpoch();
+      claimDay = await fundraiser.currentEpoch();
 
       // User0 donates 75%
-      await paymentToken.connect(user0).approve(rig.address, convert("750", 6));
-      await rig.connect(user0).fund(user0.address, convert("750", 6), "");
+      await paymentToken.connect(user0).approve(fundraiser.address, convert("750", 6));
+      await fundraiser.connect(user0).fund(user0.address, convert("750", 6), "");
 
       // User1 donates 25%
-      await paymentToken.connect(user1).approve(rig.address, convert("250", 6));
-      await rig.connect(user1).fund(user1.address, convert("250", 6), "");
+      await paymentToken.connect(user1).approve(fundraiser.address, convert("250", 6));
+      await fundraiser.connect(user1).fund(user1.address, convert("250", 6), "");
 
       // Move to next day so we can claim
       await increaseTime(ONE_DAY);
     });
 
     it("User reward should be proportional to their donation share", async function () {
-      const dayEmission = await rig.getEpochEmission(claimDay);
-      const user0Donation = await rig.epochAccountToDonation(claimDay, user0.address);
-      const user1Donation = await rig.epochAccountToDonation(claimDay, user1.address);
-      const dayTotal = await rig.epochToTotalDonated(claimDay);
+      const dayEmission = await fundraiser.getEpochEmission(claimDay);
+      const user0Donation = await fundraiser.epochAccountToDonation(claimDay, user0.address);
+      const user1Donation = await fundraiser.epochAccountToDonation(claimDay, user1.address);
+      const dayTotal = await fundraiser.epochToTotalDonated(claimDay);
 
-      const user0BalBefore = await unitToken.balanceOf(user0.address);
-      await rig.claim(user0.address, claimDay);
-      const user0BalAfter = await unitToken.balanceOf(user0.address);
+      const user0BalBefore = await coinToken.balanceOf(user0.address);
+      await fundraiser.claim(user0.address, claimDay);
+      const user0BalAfter = await coinToken.balanceOf(user0.address);
       const user0Reward = user0BalAfter.sub(user0BalBefore);
 
-      const user1BalBefore = await unitToken.balanceOf(user1.address);
-      await rig.claim(user1.address, claimDay);
-      const user1BalAfter = await unitToken.balanceOf(user1.address);
+      const user1BalBefore = await coinToken.balanceOf(user1.address);
+      await fundraiser.claim(user1.address, claimDay);
+      const user1BalAfter = await coinToken.balanceOf(user1.address);
       const user1Reward = user1BalAfter.sub(user1BalBefore);
 
       // Expected rewards
@@ -227,27 +227,27 @@ describe("Fundraiser Invariant Tests", function () {
 
     before(async function () {
       await increaseTime(ONE_DAY);
-      testDay = await rig.currentEpoch();
+      testDay = await fundraiser.currentEpoch();
 
-      await paymentToken.connect(user2).approve(rig.address, convert("100", 6));
-      await rig.connect(user2).fund(user2.address, convert("100", 6), "");
+      await paymentToken.connect(user2).approve(fundraiser.address, convert("100", 6));
+      await fundraiser.connect(user2).fund(user2.address, convert("100", 6), "");
 
       await increaseTime(ONE_DAY);
     });
 
     it("Should mark account as claimed after claiming", async function () {
-      const hasClaimedBefore = await rig.epochAccountToHasClaimed(testDay, user2.address);
+      const hasClaimedBefore = await fundraiser.epochAccountToHasClaimed(testDay, user2.address);
       expect(hasClaimedBefore).to.equal(false);
 
-      await rig.claim(user2.address, testDay);
+      await fundraiser.claim(user2.address, testDay);
 
-      const hasClaimedAfter = await rig.epochAccountToHasClaimed(testDay, user2.address);
+      const hasClaimedAfter = await fundraiser.epochAccountToHasClaimed(testDay, user2.address);
       expect(hasClaimedAfter).to.equal(true);
     });
 
     it("Should revert on second claim attempt", async function () {
       await expect(
-        rig.claim(user2.address, testDay)
+        fundraiser.claim(user2.address, testDay)
       ).to.be.revertedWith("Fundraiser__AlreadyClaimed()");
     });
   });
@@ -257,18 +257,18 @@ describe("Fundraiser Invariant Tests", function () {
    */
   describe("INVARIANT: Claim Timing", function () {
     it("Should revert when claiming current day", async function () {
-      const currentDay = await rig.currentEpoch();
+      const currentDay = await fundraiser.currentEpoch();
 
       await expect(
-        rig.claim(user0.address, currentDay)
+        fundraiser.claim(user0.address, currentDay)
       ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
     });
 
     it("Should revert when claiming future day", async function () {
-      const currentDay = await rig.currentEpoch();
+      const currentDay = await fundraiser.currentEpoch();
 
       await expect(
-        rig.claim(user0.address, currentDay.add(10))
+        fundraiser.claim(user0.address, currentDay.add(10))
       ).to.be.revertedWith("Fundraiser__EpochNotEnded()");
     });
   });
@@ -278,20 +278,20 @@ describe("Fundraiser Invariant Tests", function () {
    */
   describe("INVARIANT: Emission Halving", function () {
     it("Emission should halve every 30 days", async function () {
-      const initialEmission = await rig.initialEmission();
-      const startTime = await rig.startTime();
+      const initialEmission = await fundraiser.initialEmission();
+      const startTime = await fundraiser.startTime();
       const currentTime = await getBlockTimestamp();
 
       const elapsed = currentTime - startTime.toNumber();
       const halvings = Math.floor(elapsed / THIRTY_DAYS);
 
       // Get emission for a past day
-      const currentDay = await rig.currentEpoch();
-      const emission = await rig.getEpochEmission(currentDay.sub(1));
+      const currentDay = await fundraiser.currentEpoch();
+      const emission = await fundraiser.getEpochEmission(currentDay.sub(1));
 
       if (halvings > 0) {
         const expectedEmission = initialEmission.div(ethers.BigNumber.from(2).pow(halvings));
-        const minEmission = await rig.minEmission();
+        const minEmission = await fundraiser.minEmission();
 
         if (expectedEmission.lt(minEmission)) {
           expect(emission).to.equal(minEmission);
@@ -303,14 +303,14 @@ describe("Fundraiser Invariant Tests", function () {
 
     it("Emission should never go below minEmission", async function () {
       // Fast forward many halving periods
-      const dayFarFuture = (await rig.currentEpoch()).add(1000);
+      const dayFarFuture = (await fundraiser.currentEpoch()).add(1000);
 
       // We can't directly test future days, but we can verify the formula
-      const minEmission = await rig.minEmission();
+      const minEmission = await fundraiser.minEmission();
 
       // For any day, emission >= minEmission
-      const currentDay = await rig.currentEpoch();
-      const emission = await rig.getEpochEmission(currentDay.sub(1));
+      const currentDay = await fundraiser.currentEpoch();
+      const emission = await fundraiser.getEpochEmission(currentDay.sub(1));
       expect(emission).to.be.gte(minEmission);
     });
   });
@@ -318,7 +318,7 @@ describe("Fundraiser Invariant Tests", function () {
 
 describe("Fundraiser Business Logic Tests", function () {
   let owner, treasury, team, protocol, recipient, user0, user1, user2;
-  let paymentToken, unitToken, rig, mockCore;
+  let paymentToken, coinToken, fundraiser, mockCore;
 
   before("Deploy contracts", async function () {
     await network.provider.send("hardhat_reset");
@@ -332,12 +332,12 @@ describe("Fundraiser Business Logic Tests", function () {
     const mockCoreArtifact = await ethers.getContractFactory("MockCore");
     mockCore = await mockCoreArtifact.deploy(protocol.address);
 
-    const unitArtifact = await ethers.getContractFactory("Unit");
-    unitToken = await unitArtifact.deploy("BL Fund Unit", "BLCUNIT", owner.address);
+    const coinArtifact = await ethers.getContractFactory("Coin");
+    coinToken = await coinArtifact.deploy("BL Fund Coin", "BLCCOIN", owner.address);
 
-    const rigArtifact = await ethers.getContractFactory("Fundraiser");
-    rig = await rigArtifact.deploy(
-      unitToken.address,     // unit
+    const fundraiserArtifact = await ethers.getContractFactory("Fundraiser");
+    fundraiser = await fundraiserArtifact.deploy(
+      coinToken.address,     // coin
       paymentToken.address,  // quote
       mockCore.address,      // core (mock with protocolFeeAddress)
       treasury.address,      // treasury
@@ -347,7 +347,7 @@ describe("Fundraiser Business Logic Tests", function () {
       "" // uri
     );
 
-    await unitToken.setRig(rig.address);
+    await coinToken.setMinter(fundraiser.address);
 
     await paymentToken.mint(user0.address, convert("5000", 6));
     await paymentToken.mint(user1.address, convert("5000", 6));
@@ -357,10 +357,10 @@ describe("Fundraiser Business Logic Tests", function () {
   describe("Recipient Management", function () {
     it("Should revert deployment with zero recipient address", async function () {
       // Deploying with zero address recipient should revert
-      const rigArtifact = await ethers.getContractFactory("Fundraiser");
+      const fundraiserArtifact = await ethers.getContractFactory("Fundraiser");
       await expect(
-        rigArtifact.deploy(
-          unitToken.address,
+        fundraiserArtifact.deploy(
+          coinToken.address,
           paymentToken.address,
           mockCore.address,
           treasury.address,
@@ -375,23 +375,23 @@ describe("Fundraiser Business Logic Tests", function () {
     it("Should allow owner to set recipient", async function () {
       const newRecipient = user2.address;
 
-      await rig.connect(owner).setRecipient(newRecipient);
-      expect(await rig.recipient()).to.equal(newRecipient);
+      await fundraiser.connect(owner).setRecipient(newRecipient);
+      expect(await fundraiser.recipient()).to.equal(newRecipient);
 
       // Reset for other tests
-      await rig.connect(owner).setRecipient(recipient.address);
-      expect(await rig.recipient()).to.equal(recipient.address);
+      await fundraiser.connect(owner).setRecipient(recipient.address);
+      expect(await fundraiser.recipient()).to.equal(recipient.address);
     });
 
     it("Should prevent setting zero address as recipient", async function () {
       await expect(
-        rig.connect(owner).setRecipient(AddressZero)
+        fundraiser.connect(owner).setRecipient(AddressZero)
       ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Only owner can set recipient", async function () {
       await expect(
-        rig.connect(user0).setRecipient(user1.address)
+        fundraiser.connect(user0).setRecipient(user1.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
@@ -399,30 +399,30 @@ describe("Fundraiser Business Logic Tests", function () {
   describe("Donation Validation", function () {
     it("Should revert on zero donation amount", async function () {
       await expect(
-        rig.connect(user0).fund(user0.address, 0, "")
+        fundraiser.connect(user0).fund(user0.address, 0, "")
       ).to.be.revertedWith("Fundraiser__BelowMinDonation()");
     });
 
     it("Should revert on zero account address", async function () {
-      await paymentToken.connect(user0).approve(rig.address, convert("100", 6));
+      await paymentToken.connect(user0).approve(fundraiser.address, convert("100", 6));
 
       await expect(
-        rig.connect(user0).fund(AddressZero, convert("100", 6), "")
+        fundraiser.connect(user0).fund(AddressZero, convert("100", 6), "")
       ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Should allow donating on behalf of another account", async function () {
       const donationAmount = convert("100", 6);
 
-      await paymentToken.connect(user0).approve(rig.address, donationAmount);
+      await paymentToken.connect(user0).approve(fundraiser.address, donationAmount);
 
       // user0 pays, but user1 gets the donation credit
-      const currentDay = await rig.currentEpoch();
-      const user1DonationBefore = await rig.epochAccountToDonation(currentDay, user1.address);
+      const currentDay = await fundraiser.currentEpoch();
+      const user1DonationBefore = await fundraiser.epochAccountToDonation(currentDay, user1.address);
 
-      await rig.connect(user0).fund(user1.address, donationAmount, "");
+      await fundraiser.connect(user0).fund(user1.address, donationAmount, "");
 
-      const user1DonationAfter = await rig.epochAccountToDonation(currentDay, user1.address);
+      const user1DonationAfter = await fundraiser.epochAccountToDonation(currentDay, user1.address);
       expect(user1DonationAfter).to.equal(user1DonationBefore.add(donationAmount));
     });
   });
@@ -432,10 +432,10 @@ describe("Fundraiser Business Logic Tests", function () {
 
     before(async function () {
       await increaseTime(ONE_DAY);
-      donationDay = await rig.currentEpoch();
+      donationDay = await fundraiser.currentEpoch();
 
-      await paymentToken.connect(user0).approve(rig.address, convert("100", 6));
-      await rig.connect(user0).fund(user0.address, convert("100", 6), "");
+      await paymentToken.connect(user0).approve(fundraiser.address, convert("100", 6));
+      await fundraiser.connect(user0).fund(user0.address, convert("100", 6), "");
 
       await increaseTime(ONE_DAY);
     });
@@ -443,44 +443,44 @@ describe("Fundraiser Business Logic Tests", function () {
     it("Should revert when claiming with no donation", async function () {
       // user2 never donated on donationDay
       await expect(
-        rig.claim(user2.address, donationDay)
+        fundraiser.claim(user2.address, donationDay)
       ).to.be.revertedWith("Fundraiser__NoDonation()");
     });
 
     it("Should revert on zero account address", async function () {
       await expect(
-        rig.claim(AddressZero, donationDay)
+        fundraiser.claim(AddressZero, donationDay)
       ).to.be.revertedWith("Fundraiser__ZeroAddress()");
     });
 
     it("Anyone can trigger claim for any account", async function () {
       // user2 can trigger claim for user0
-      const user0BalBefore = await unitToken.balanceOf(user0.address);
+      const user0BalBefore = await coinToken.balanceOf(user0.address);
 
-      await rig.connect(user2).claim(user0.address, donationDay);
+      await fundraiser.connect(user2).claim(user0.address, donationDay);
 
-      const user0BalAfter = await unitToken.balanceOf(user0.address);
+      const user0BalAfter = await coinToken.balanceOf(user0.address);
       expect(user0BalAfter).to.be.gt(user0BalBefore);
     });
   });
 
   describe("Day Isolation", function () {
     it("Donations on different days should be isolated", async function () {
-      const day1 = await rig.currentEpoch();
+      const day1 = await fundraiser.currentEpoch();
 
-      await paymentToken.connect(user1).approve(rig.address, convert("300", 6));
-      await rig.connect(user1).fund(user1.address, convert("100", 6), "");
+      await paymentToken.connect(user1).approve(fundraiser.address, convert("300", 6));
+      await fundraiser.connect(user1).fund(user1.address, convert("100", 6), "");
 
       await increaseTime(ONE_DAY);
-      const day2 = await rig.currentEpoch();
+      const day2 = await fundraiser.currentEpoch();
 
       // Different amount to show isolation
-      await rig.connect(user1).fund(user1.address, convert("200", 6), "");
+      await fundraiser.connect(user1).fund(user1.address, convert("200", 6), "");
 
-      const day1Donation = await rig.epochAccountToDonation(day1, user1.address);
-      const day2Donation = await rig.epochAccountToDonation(day2, user1.address);
-      const day1Total = await rig.epochToTotalDonated(day1);
-      const day2Total = await rig.epochToTotalDonated(day2);
+      const day1Donation = await fundraiser.epochAccountToDonation(day1, user1.address);
+      const day2Donation = await fundraiser.epochAccountToDonation(day2, user1.address);
+      const day1Total = await fundraiser.epochToTotalDonated(day1);
+      const day2Total = await fundraiser.epochToTotalDonated(day2);
 
       // Verify donations are tracked per day
       expect(day1Donation).to.equal(convert("100", 6));
@@ -493,13 +493,13 @@ describe("Fundraiser Business Logic Tests", function () {
     it("Claims for different days should be independent", async function () {
       await increaseTime(ONE_DAY);
 
-      const day1 = (await rig.currentEpoch()).sub(2);
-      const day2 = (await rig.currentEpoch()).sub(1);
+      const day1 = (await fundraiser.currentEpoch()).sub(2);
+      const day2 = (await fundraiser.currentEpoch()).sub(1);
 
       // Should be able to claim day1 but day2 separately
       // (if user1 had donations on both)
-      const hasClaimed1 = await rig.epochAccountToHasClaimed(day1, user1.address);
-      const hasClaimed2 = await rig.epochAccountToHasClaimed(day2, user1.address);
+      const hasClaimed1 = await fundraiser.epochAccountToHasClaimed(day1, user1.address);
+      const hasClaimed2 = await fundraiser.epochAccountToHasClaimed(day2, user1.address);
 
       // These should be independent
       expect(hasClaimed1).to.not.equal(undefined);
@@ -510,20 +510,20 @@ describe("Fundraiser Business Logic Tests", function () {
   describe("Edge Cases", function () {
     it("Should handle single donor getting 100% of daily emission", async function () {
       await increaseTime(ONE_DAY);
-      const soloDay = await rig.currentEpoch();
+      const soloDay = await fundraiser.currentEpoch();
 
       // Only user0 donates
-      await paymentToken.connect(user0).approve(rig.address, convert("50", 6));
-      await rig.connect(user0).fund(user0.address, convert("50", 6), "");
+      await paymentToken.connect(user0).approve(fundraiser.address, convert("50", 6));
+      await fundraiser.connect(user0).fund(user0.address, convert("50", 6), "");
 
       await increaseTime(ONE_DAY);
 
-      const dayEmission = await rig.getEpochEmission(soloDay);
-      const user0BalBefore = await unitToken.balanceOf(user0.address);
+      const dayEmission = await fundraiser.getEpochEmission(soloDay);
+      const user0BalBefore = await coinToken.balanceOf(user0.address);
 
-      await rig.claim(user0.address, soloDay);
+      await fundraiser.claim(user0.address, soloDay);
 
-      const user0BalAfter = await unitToken.balanceOf(user0.address);
+      const user0BalAfter = await coinToken.balanceOf(user0.address);
       const reward = user0BalAfter.sub(user0BalBefore);
 
       // Should receive ~100% of emission
@@ -532,16 +532,16 @@ describe("Fundraiser Business Logic Tests", function () {
 
     it("Should handle many small donations correctly", async function () {
       await increaseTime(ONE_DAY);
-      const manyDonationsDay = await rig.currentEpoch();
+      const manyDonationsDay = await fundraiser.currentEpoch();
 
       // Make 10 small donations
-      await paymentToken.connect(user0).approve(rig.address, convert("100", 6));
+      await paymentToken.connect(user0).approve(fundraiser.address, convert("100", 6));
 
       for (let i = 0; i < 10; i++) {
-        await rig.connect(user0).fund(user0.address, convert("10", 6), "");
+        await fundraiser.connect(user0).fund(user0.address, convert("10", 6), "");
       }
 
-      const totalDonation = await rig.epochAccountToDonation(manyDonationsDay, user0.address);
+      const totalDonation = await fundraiser.epochAccountToDonation(manyDonationsDay, user0.address);
       expect(totalDonation).to.equal(convert("100", 6));
     });
   });
@@ -549,25 +549,25 @@ describe("Fundraiser Business Logic Tests", function () {
   describe("Events", function () {
     it("Should emit Funded event on donation", async function () {
       const donationAmount = convert("100", 6);
-      await paymentToken.connect(user0).approve(rig.address, donationAmount);
+      await paymentToken.connect(user0).approve(fundraiser.address, donationAmount);
 
       await expect(
-        rig.connect(user0).fund(user0.address, donationAmount, "")
-      ).to.emit(rig, "Fundraiser__Funded");
+        fundraiser.connect(user0).fund(user0.address, donationAmount, "")
+      ).to.emit(fundraiser, "Fundraiser__Funded");
     });
 
     it("Should emit Claimed event on claim", async function () {
       await increaseTime(ONE_DAY);
-      const claimableDay = await rig.currentEpoch();
+      const claimableDay = await fundraiser.currentEpoch();
 
-      await paymentToken.connect(user2).approve(rig.address, convert("100", 6));
-      await rig.connect(user2).fund(user2.address, convert("100", 6), "");
+      await paymentToken.connect(user2).approve(fundraiser.address, convert("100", 6));
+      await fundraiser.connect(user2).fund(user2.address, convert("100", 6), "");
 
       await increaseTime(ONE_DAY);
 
       await expect(
-        rig.claim(user2.address, claimableDay)
-      ).to.emit(rig, "Fundraiser__Claimed");
+        fundraiser.claim(user2.address, claimableDay)
+      ).to.emit(fundraiser, "Fundraiser__Claimed");
     });
   });
 });

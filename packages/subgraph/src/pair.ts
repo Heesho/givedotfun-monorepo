@@ -5,10 +5,10 @@ import {
   UniswapV2Pair,
 } from '../generated/templates/UniswapV2Pair/UniswapV2Pair'
 import {
-  Unit,
-  UnitMinuteData,
-  UnitHourData,
-  UnitDayData,
+  Coin,
+  CoinMinuteData,
+  CoinHourData,
+  CoinDayData,
   Swap,
   Account,
   Protocol,
@@ -25,17 +25,17 @@ import {
   convertTokenToDecimal,
   getOrCreateProtocol,
   getOrCreateAccount,
-  getOrCreateUnitMinuteData,
-  getOrCreateUnitHourData,
-  getOrCreateUnitDayData,
-  updateUnitPrice,
+  getOrCreateCoinMinuteData,
+  getOrCreateCoinHourData,
+  getOrCreateCoinDayData,
+  updateCoinPrice,
 } from './helpers'
 
-// Helper to find Unit by LP pair address
-function getUnitByLpPair(pairAddress: Address): Unit | null {
-  // We need to find which Unit has this LP pair
-  // The Unit entity stores lpPair as Bytes, and the id is the unit token address
-  // We'll use the pair contract to get token0 and token1, then check which is the Unit
+// Helper to find Coin by LP pair address
+function getCoinByLpPair(pairAddress: Address): Coin | null {
+  // We need to find which Coin has this LP pair
+  // The Coin entity stores lpPair as Bytes, and the id is the coin token address
+  // We'll use the pair contract to get token0 and token1, then check which is the Coin
   let pair = UniswapV2Pair.bind(pairAddress)
 
   let token0Result = pair.try_token0()
@@ -48,65 +48,65 @@ function getUnitByLpPair(pairAddress: Address): Unit | null {
   let token0 = token0Result.value
   let token1 = token1Result.value
 
-  // Try loading Unit by token0 first, then token1
-  let unit = Unit.load(token0.toHexString())
-  if (unit !== null) {
-    return unit
+  // Try loading Coin by token0 first, then token1
+  let coin = Coin.load(token0.toHexString())
+  if (coin !== null) {
+    return coin
   }
 
-  unit = Unit.load(token1.toHexString())
-  return unit
+  coin = Coin.load(token1.toHexString())
+  return coin
 }
 
 export function handleSync(event: SyncEvent): void {
   let pairAddress = event.address
-  let unit = getUnitByLpPair(pairAddress)
-  if (unit === null) return
+  let coin = getCoinByLpPair(pairAddress)
+  if (coin === null) return
 
-  let previousLiquidity = unit.liquidity
+  let previousLiquidity = coin.liquidity
 
   let pair = UniswapV2Pair.bind(pairAddress)
   let token0Result = pair.try_token0()
   if (token0Result.reverted) return
 
   let token0 = token0Result.value
-  let isUnitToken0 = token0.toHexString() == unit.id
+  let isCoinToken0 = token0.toHexString() == coin.id
 
   // Parse reserves - Sync event emits reserve0 and reserve1 as uint112
-  // Unit has 18 decimals, USDC has 6 decimals
+  // Coin has 18 decimals, USDC has 6 decimals
   let reserve0Raw = BigDecimal.fromString(event.params.reserve0.toString())
   let reserve1Raw = BigDecimal.fromString(event.params.reserve1.toString())
 
-  let reserveUnit: BigDecimal
+  let reserveCoin: BigDecimal
   let reserveUsdc: BigDecimal
 
-  if (isUnitToken0) {
-    reserveUnit = reserve0Raw.div(BigDecimal.fromString('1000000000000000000')) // 1e18
+  if (isCoinToken0) {
+    reserveCoin = reserve0Raw.div(BigDecimal.fromString('1000000000000000000')) // 1e18
     reserveUsdc = reserve1Raw.div(BigDecimal.fromString('1000000')) // 1e6
   } else {
-    reserveUnit = reserve1Raw.div(BigDecimal.fromString('1000000000000000000')) // 1e18
+    reserveCoin = reserve1Raw.div(BigDecimal.fromString('1000000000000000000')) // 1e18
     reserveUsdc = reserve0Raw.div(BigDecimal.fromString('1000000')) // 1e6
   }
 
-  // Update Unit reserves
-  unit.reserveUnit = reserveUnit
-  unit.reserveUsdc = reserveUsdc
+  // Update Coin reserves
+  coin.reserveCoin = reserveCoin
+  coin.reserveUsdc = reserveUsdc
 
-  // Calculate price: price = reserveUsdc / reserveUnit (how much USDC per Unit)
+  // Calculate price: price = reserveUsdc / reserveCoin (how much USDC per Coin)
   let newPrice = ZERO_BD
-  if (reserveUnit.gt(ZERO_BD)) {
-    newPrice = reserveUsdc.div(reserveUnit)
+  if (reserveCoin.gt(ZERO_BD)) {
+    newPrice = reserveUsdc.div(reserveCoin)
   }
 
   // Update price and related metrics
-  updateUnitPrice(unit, newPrice)
+  updateCoinPrice(coin, newPrice)
 
   // Update liquidity (USDC side)
-  unit.liquidity = reserveUsdc
-  unit.liquidityUSD = reserveUsdc
+  coin.liquidity = reserveUsdc
+  coin.liquidityUSD = reserveUsdc
 
   // Update minute/hour/day data OHLC
-  let minuteData = getOrCreateUnitMinuteData(unit, event)
+  let minuteData = getOrCreateCoinMinuteData(coin, event)
   minuteData.close = newPrice
   if (newPrice.gt(minuteData.high)) {
     minuteData.high = newPrice
@@ -117,7 +117,7 @@ export function handleSync(event: SyncEvent): void {
   minuteData.liquidity = reserveUsdc
   minuteData.save()
 
-  let hourData = getOrCreateUnitHourData(unit, event)
+  let hourData = getOrCreateCoinHourData(coin, event)
   hourData.close = newPrice
   if (newPrice.gt(hourData.high)) {
     hourData.high = newPrice
@@ -128,7 +128,7 @@ export function handleSync(event: SyncEvent): void {
   hourData.liquidity = reserveUsdc
   hourData.save()
 
-  let dayData = getOrCreateUnitDayData(unit, event)
+  let dayData = getOrCreateCoinDayData(coin, event)
   dayData.close = newPrice
   if (newPrice.gt(dayData.high)) {
     dayData.high = newPrice
@@ -137,11 +137,11 @@ export function handleSync(event: SyncEvent): void {
     dayData.low = newPrice
   }
   dayData.liquidity = reserveUsdc
-  dayData.totalSupply = unit.totalSupply
-  dayData.totalMinted = unit.totalMinted
+  dayData.totalSupply = coin.totalSupply
+  dayData.totalMinted = coin.totalMinted
   dayData.save()
 
-  unit.save()
+  coin.save()
 
   // Update Protocol liquidity
   let protocol = getOrCreateProtocol()
@@ -157,48 +157,48 @@ export function handleSync(event: SyncEvent): void {
 
 export function handleSwap(event: SwapEvent): void {
   let pairAddress = event.address
-  let unit = getUnitByLpPair(pairAddress)
-  if (unit === null) return
+  let coin = getCoinByLpPair(pairAddress)
+  if (coin === null) return
 
   let pair = UniswapV2Pair.bind(pairAddress)
   let token0Result = pair.try_token0()
   if (token0Result.reverted) return
 
   let token0 = token0Result.value
-  let isUnitToken0 = token0.toHexString() == unit.id
+  let isCoinToken0 = token0.toHexString() == coin.id
 
-  // Parse swap amounts - Unit has 18 decimals, USDC has 6 decimals
-  let amountUnitIn: BigDecimal
-  let amountUnitOut: BigDecimal
+  // Parse swap amounts - Coin has 18 decimals, USDC has 6 decimals
+  let amountCoinIn: BigDecimal
+  let amountCoinOut: BigDecimal
   let amountUsdcIn: BigDecimal
   let amountUsdcOut: BigDecimal
 
-  if (isUnitToken0) {
-    amountUnitIn = convertTokenToDecimal(event.params.amount0In, BI_18)
-    amountUnitOut = convertTokenToDecimal(event.params.amount0Out, BI_18)
+  if (isCoinToken0) {
+    amountCoinIn = convertTokenToDecimal(event.params.amount0In, BI_18)
+    amountCoinOut = convertTokenToDecimal(event.params.amount0Out, BI_18)
     amountUsdcIn = convertTokenToDecimal(event.params.amount1In, BI_6)
     amountUsdcOut = convertTokenToDecimal(event.params.amount1Out, BI_6)
   } else {
-    amountUnitIn = convertTokenToDecimal(event.params.amount1In, BI_18)
-    amountUnitOut = convertTokenToDecimal(event.params.amount1Out, BI_18)
+    amountCoinIn = convertTokenToDecimal(event.params.amount1In, BI_18)
+    amountCoinOut = convertTokenToDecimal(event.params.amount1Out, BI_18)
     amountUsdcIn = convertTokenToDecimal(event.params.amount0In, BI_6)
     amountUsdcOut = convertTokenToDecimal(event.params.amount0Out, BI_6)
   }
 
   // Determine swap type: buy or sell
-  // Buy = USDC in, Unit out (user buying Unit with USDC)
-  // Sell = Unit in, USDC out (user selling Unit for USDC)
-  let isBuy = amountUsdcIn.gt(ZERO_BD) && amountUnitOut.gt(ZERO_BD)
+  // Buy = USDC in, Coin out (user buying Coin with USDC)
+  // Sell = Coin in, USDC out (user selling Coin for USDC)
+  let isBuy = amountUsdcIn.gt(ZERO_BD) && amountCoinOut.gt(ZERO_BD)
   let swapType = isBuy ? 'buy' : 'sell'
 
   // Calculate amounts for the swap
-  let amountUnit = isBuy ? amountUnitOut : amountUnitIn
+  let amountCoin = isBuy ? amountCoinOut : amountCoinIn
   let amountUsdc = isBuy ? amountUsdcIn : amountUsdcOut
 
   // Calculate execution price
   let price = ZERO_BD
-  if (amountUnit.gt(ZERO_BD)) {
-    price = amountUsdc.div(amountUnit)
+  if (amountCoin.gt(ZERO_BD)) {
+    price = amountUsdc.div(amountCoin)
   }
 
   // Get or create account
@@ -210,10 +210,10 @@ export function handleSwap(event: SwapEvent): void {
   // Create Swap entity
   let swapId = event.transaction.hash.toHexString() + '-' + event.logIndex.toString()
   let swap = new Swap(swapId)
-  swap.unit = unit.id
+  swap.coin = coin.id
   swap.account = account.id
   swap.type = swapType
-  swap.amountUnit = amountUnit
+  swap.amountCoin = amountCoin
   swap.amountUsdc = amountUsdc
   swap.price = price
   swap.timestamp = event.block.timestamp
@@ -222,38 +222,38 @@ export function handleSwap(event: SwapEvent): void {
   swap.logIndex = event.logIndex
   swap.save()
 
-  // Update Unit volume stats
-  unit.volumeTotal = unit.volumeTotal.plus(amountUsdc)
-  unit.txCount = unit.txCount.plus(ONE_BI)
-  unit.lastSwapAt = event.block.timestamp
-  unit.lastActivityAt = event.block.timestamp
-  unit.save()
+  // Update Coin volume stats
+  coin.volumeTotal = coin.volumeTotal.plus(amountUsdc)
+  coin.txCount = coin.txCount.plus(ONE_BI)
+  coin.lastSwapAt = event.block.timestamp
+  coin.lastActivityAt = event.block.timestamp
+  coin.save()
 
   // Update minute data
-  let minuteData = getOrCreateUnitMinuteData(unit, event)
-  minuteData.volumeUnit = minuteData.volumeUnit.plus(amountUnit)
+  let minuteData = getOrCreateCoinMinuteData(coin, event)
+  minuteData.volumeCoin = minuteData.volumeCoin.plus(amountCoin)
   minuteData.volumeUsdc = minuteData.volumeUsdc.plus(amountUsdc)
   minuteData.txCount = minuteData.txCount.plus(ONE_BI)
   minuteData.save()
 
   // Update hour data
-  let hourData = getOrCreateUnitHourData(unit, event)
-  hourData.volumeUnit = hourData.volumeUnit.plus(amountUnit)
+  let hourData = getOrCreateCoinHourData(coin, event)
+  hourData.volumeCoin = hourData.volumeCoin.plus(amountCoin)
   hourData.volumeUsdc = hourData.volumeUsdc.plus(amountUsdc)
   hourData.txCount = hourData.txCount.plus(ONE_BI)
   hourData.save()
 
   // Update day data
-  let dayData = getOrCreateUnitDayData(unit, event)
-  dayData.volumeUnit = dayData.volumeUnit.plus(amountUnit)
+  let dayData = getOrCreateCoinDayData(coin, event)
+  dayData.volumeCoin = dayData.volumeCoin.plus(amountCoin)
   dayData.volumeUsdc = dayData.volumeUsdc.plus(amountUsdc)
   dayData.txCount = dayData.txCount.plus(ONE_BI)
   dayData.save()
 
   // Keep convenience aggregates in sync for API consumers.
-  unit.volume24h = dayData.volumeUsdc
-  unit.txCount24h = dayData.txCount
-  unit.save()
+  coin.volume24h = dayData.volumeUsdc
+  coin.txCount24h = dayData.txCount
+  coin.save()
 
   // Update Protocol volume
   let protocol = getOrCreateProtocol()

@@ -1,6 +1,6 @@
 import { BigDecimal, BigInt, Address } from '@graphprotocol/graph-ts'
-import { Transfer as TransferEvent, ERC20 } from '../generated/templates/Unit/ERC20'
-import { Unit, Account } from '../generated/schema'
+import { Transfer as TransferEvent, ERC20 } from '../generated/templates/Coin/ERC20'
+import { Coin, Account } from '../generated/schema'
 import {
   ZERO_BI,
   ONE_BI,
@@ -13,10 +13,10 @@ import {
   getOrCreateAccount,
 } from './helpers'
 
-export function handleUnitTransfer(event: TransferEvent): void {
-  let unitAddress = event.address.toHexString()
-  let unit = Unit.load(unitAddress)
-  if (unit === null) return
+export function handleCoinTransfer(event: TransferEvent): void {
+  let coinAddress = event.address.toHexString()
+  let coin = Coin.load(coinAddress)
+  if (coin === null) return
 
   let from = event.params.from.toHexString()
   let to = event.params.to.toHexString()
@@ -24,14 +24,14 @@ export function handleUnitTransfer(event: TransferEvent): void {
 
   // Track mints (from zero address)
   if (from == ADDRESS_ZERO) {
-    unit.totalSupply = unit.totalSupply.plus(value)
-    unit.marketCap = unit.price.times(unit.totalSupply)
+    coin.totalSupply = coin.totalSupply.plus(value)
+    coin.marketCap = coin.price.times(coin.totalSupply)
   }
 
   // Track burns (to zero address)
   if (to == ADDRESS_ZERO) {
-    unit.totalSupply = unit.totalSupply.minus(value)
-    unit.marketCap = unit.price.times(unit.totalSupply)
+    coin.totalSupply = coin.totalSupply.minus(value)
+    coin.marketCap = coin.price.times(coin.totalSupply)
   }
 
   // Holder tracking via balanceOf
@@ -45,7 +45,7 @@ export function handleUnitTransfer(event: TransferEvent): void {
 
     let toBalanceResult = contract.try_balanceOf(Address.fromString(to))
     if (!toBalanceResult.reverted && toBalanceResult.value.equals(event.params.value)) {
-      unit.holderCount = unit.holderCount.plus(ONE_BI)
+      coin.holderCount = coin.holderCount.plus(ONE_BI)
     }
   }
 
@@ -57,11 +57,11 @@ export function handleUnitTransfer(event: TransferEvent): void {
 
     let fromBalanceResult = contract.try_balanceOf(Address.fromString(from))
     if (!fromBalanceResult.reverted && fromBalanceResult.value.isZero()) {
-      if (unit.holderCount.gt(ZERO_BI)) {
-        unit.holderCount = unit.holderCount.minus(ONE_BI)
+      if (coin.holderCount.gt(ZERO_BI)) {
+        coin.holderCount = coin.holderCount.minus(ONE_BI)
       }
     }
   }
 
-  unit.save()
+  coin.save()
 }

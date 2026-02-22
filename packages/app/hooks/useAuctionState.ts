@@ -8,7 +8,7 @@ import {
 } from "@/lib/contracts";
 
 export function useAuctionState(
-  rigAddress: `0x${string}` | undefined,
+  fundraiserAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined,
   multicallAddress?: `0x${string}`,
 ) {
@@ -16,10 +16,10 @@ export function useAuctionState(
     address: multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
     functionName: "getAuction",
-    args: rigAddress ? [rigAddress, account ?? zeroAddress] : undefined,
+    args: fundraiserAddress ? [fundraiserAddress, account ?? zeroAddress] : undefined,
     chainId: base.id,
     query: {
-      enabled: !!rigAddress,
+      enabled: !!fundraiserAddress,
       refetchInterval: 15_000,
       refetchOnWindowFocus: false,
     },
@@ -36,19 +36,19 @@ export function useAuctionState(
 }
 
 export type AuctionListItem = {
-  rigAddress: `0x${string}`;
+  fundraiserAddress: `0x${string}`;
   auctionState: AuctionState;
   profitLoss: bigint; // Quote value - LP cost in USDC equivalent
   isProfitable: boolean;
 };
 
 export function useAllAuctionStates(
-  rigAddresses: `0x${string}`[],
+  fundraiserAddresses: `0x${string}`[],
   account: `0x${string}` | undefined,
   multicallAddress?: `0x${string}`,
 ) {
   const resolvedMulticall = multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`;
-  const contracts = rigAddresses.map((address) => ({
+  const contracts = fundraiserAddresses.map((address) => ({
     address: resolvedMulticall,
     abi: MULTICALL_ABI,
     functionName: "getAuction" as const,
@@ -59,7 +59,7 @@ export function useAllAuctionStates(
   const { data: states, isLoading, error, refetch } = useReadContracts({
     contracts,
     query: {
-      enabled: rigAddresses.length > 0,
+      enabled: fundraiserAddresses.length > 0,
       refetchInterval: 30_000,
       refetchOnWindowFocus: false,
     },
@@ -83,7 +83,7 @@ export function useAllAuctionStates(
       const isProfitable = profitLoss > 0n;
 
       return {
-        rigAddress: rigAddresses[index],
+        fundraiserAddress: fundraiserAddresses[index],
         auctionState: state,
         profitLoss,
         isProfitable,

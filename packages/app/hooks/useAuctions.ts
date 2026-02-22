@@ -8,15 +8,15 @@ import {
   QUOTE_TOKEN_DECIMALS,
   type AuctionState,
 } from "@/lib/contracts";
-import { useRigList } from "./useAllRigs";
+import { useFundraiserList } from "./useAllFundraisers";
 import { useFarcaster } from "./useFarcaster";
-import type { SubgraphUnitListItem } from "@/lib/subgraph-launchpad";
+import type { SubgraphCoinListItem } from "@/lib/subgraph-launchpad";
 
 export type AuctionItem = {
-  rigAddress: `0x${string}`;
+  fundraiserAddress: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  rigUri: string;
+  fundraiserUri: string;
   // Auction state
   lpPrice: bigint; // Current LP cost (18 dec)
   quoteAccumulated: bigint; // USDC in auction (6 dec)
@@ -30,38 +30,38 @@ export type AuctionItem = {
   isActive: boolean; // Has USDC and price > 0
 };
 
-type IndexedRig = {
-  rigAddress: `0x${string}`;
-  unit: SubgraphUnitListItem;
+type IndexedFundraiser = {
+  fundraiserAddress: `0x${string}`;
+  coin: SubgraphCoinListItem;
 };
 
 export function useAuctions() {
-  const { units: allUnits, isLoading: isLoadingList } = useRigList("top", 100);
+  const { coins: allCoins, isLoading: isLoadingList } = useFundraiserList("top", 100);
   const { address: account } = useFarcaster();
 
-  // Build flat contract call array — all rigs use fundraiser multicall
-  const { contracts, indexToRig } = useMemo(() => {
+  // Build flat contract call array — all fundraisers use fundraiser multicall
+  const { contracts, indexToFundraiser } = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contractCalls: any[] = [];
-    const mapping: IndexedRig[] = [];
+    const mapping: IndexedFundraiser[] = [];
 
-    for (const u of allUnits) {
-      if (!u.rig?.uri?.startsWith("ipfs://")) continue;
-      const rigAddr = u.rig.id.toLowerCase() as `0x${string}`;
+    for (const u of allCoins) {
+      if (!u.fundraiser?.uri?.startsWith("ipfs://")) continue;
+      const fundraiserAddr = u.fundraiser.id.toLowerCase() as `0x${string}`;
       const multicall = getMulticallAddress();
 
       contractCalls.push({
         address: multicall,
         abi: MULTICALL_ABI,
         functionName: "getAuction" as const,
-        args: [rigAddr, account ?? zeroAddress] as const,
+        args: [fundraiserAddr, account ?? zeroAddress] as const,
         chainId: base.id,
       });
-      mapping.push({ rigAddress: rigAddr, unit: u });
+      mapping.push({ fundraiserAddress: fundraiserAddr, coin: u });
     }
 
-    return { contracts: contractCalls, indexToRig: mapping };
-  }, [allUnits, account]);
+    return { contracts: contractCalls, indexToFundraiser: mapping };
+  }, [allCoins, account]);
 
   const { data: states, isLoading: isLoadingStates } = useReadContracts({
     contracts,
@@ -80,7 +80,7 @@ export function useAuctions() {
         if (result.status !== "success" || !result.result) return null;
         const state = result.result as AuctionState;
 
-        const { rigAddress, unit } = indexToRig[index];
+        const { fundraiserAddress, coin } = indexToFundraiser[index];
 
         // Calculate profit/loss
         const lpCostInQuote = (state.price * state.lpTokenPrice) / BigInt(1e18);
@@ -93,10 +93,10 @@ export function useAuctions() {
         const isActive = state.quoteAccumulated > 0n && state.price > 0n;
 
         return {
-          rigAddress,
-          tokenName: unit.name,
-          tokenSymbol: unit.symbol,
-          rigUri: unit.rig.uri,
+          fundraiserAddress,
+          tokenName: coin.name,
+          tokenSymbol: coin.symbol,
+          fundraiserUri: coin.fundraiser.uri,
           lpPrice: state.price,
           quoteAccumulated: state.quoteAccumulated,
           lpTokenPrice: state.lpTokenPrice,
@@ -110,7 +110,7 @@ export function useAuctions() {
       })
       .filter((item): item is AuctionItem => item !== null && item.isActive)
       .sort((a, b) => b.profit - a.profit); // Most profitable first
-  }, [states, indexToRig]);
+  }, [states, indexToFundraiser]);
 
   return {
     auctions,

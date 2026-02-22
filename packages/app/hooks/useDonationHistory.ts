@@ -12,13 +12,13 @@ export type DonationEvent = {
 };
 
 export function useDonationHistory(
-  rigAddress: string | undefined,
+  fundraiserAddress: string | undefined,
   limit: number = 20,
 ) {
   const { data, isLoading } = useQuery({
-    queryKey: ["donationHistory", rigAddress, limit],
+    queryKey: ["donationHistory", fundraiserAddress, limit],
     queryFn: async () => {
-      const raw = await getDonations(rigAddress!, limit);
+      const raw = await getDonations(fundraiserAddress!, limit);
       return raw.map((d: SubgraphDonation): DonationEvent => ({
         donor: d.donor.id,
         day: BigInt(d.day),
@@ -29,7 +29,7 @@ export function useDonationHistory(
         txHash: d.txHash,
       }));
     },
-    enabled: !!rigAddress,
+    enabled: !!fundraiserAddress,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });

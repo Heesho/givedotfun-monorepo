@@ -4,9 +4,9 @@ import { Fundraiser as FundraiserContract } from '../../generated/Core/Fundraise
 import {
   UniswapV2Pair as PairTemplate,
   Fundraiser as FundraiserTemplate,
-  Unit as UnitTemplate,
+  Coin as CoinTemplate,
 } from '../../generated/templates'
-import { Protocol, Unit, Rig, Fundraiser, Account } from '../../generated/schema'
+import { Protocol, Coin, Fundraiser, Account } from '../../generated/schema'
 import {
   ZERO_BI,
   ONE_BI,
@@ -14,12 +14,11 @@ import {
   PROTOCOL_ID,
   BI_6,
   BI_18,
-  RIG_TYPE_FUND,
 } from '../constants'
 import {
   getOrCreateProtocol,
   getOrCreateAccount,
-  createUnit,
+  createCoin,
   convertTokenToDecimal,
 } from '../helpers'
 
@@ -28,28 +27,23 @@ const DEFAULT_MIN_DONATION = BigInt.fromI32(10_000)
 export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   // Load or create Protocol entity (singleton)
   let protocol = getOrCreateProtocol()
-  protocol.totalUnits = protocol.totalUnits.plus(ONE_BI)
-  protocol.totalRigs = protocol.totalRigs.plus(ONE_BI)
+  protocol.totalCoins = protocol.totalCoins.plus(ONE_BI)
+  protocol.totalFundraisers = protocol.totalFundraisers.plus(ONE_BI)
   protocol.lastUpdated = event.block.timestamp
   protocol.save()
 
   // Load or create launcher Account
   let launcher = getOrCreateAccount(event.params.launcher)
 
-  // Event params for Core:
-  // launcher (indexed), rig (indexed), unit (indexed), recipient, auction, lpToken, quoteToken,
-  // tokenName, tokenSymbol, uri, usdcAmount, unitAmount, initialEmission, minEmission,
-  // minDonation, halvingPeriod, auctionInitPrice, auctionEpochPeriod, auctionPriceMultiplier, auctionMinInitPrice
-
-  let unitAddress = event.params.unit
-  let rigAddress = event.params.rig
+  let coinAddress = event.params.coin
+  let fundraiserAddress = event.params.fundraiser
   let lpPairAddress = event.params.lpToken
   let quoteToken = event.params.quoteToken
   let recipientAddress = event.params.recipient
 
-  // Create Unit entity
-  let unit = createUnit(
-    unitAddress,
+  // Create Coin entity
+  let coin = createCoin(
+    coinAddress,
     lpPairAddress,
     quoteToken,
     launcher,
@@ -58,37 +52,32 @@ export function handleCoreLaunched(event: CoreLaunchedEvent): void {
     event
   )
 
-  // Create general Rig entity
-  let rig = new Rig(rigAddress.toHexString())
-  rig.unit = unit.id
-  rig.rigType = RIG_TYPE_FUND
-  rig.launcher = launcher.id
-  rig.auction = event.params.auction
-  rig.quoteToken = quoteToken
-  rig.uri = event.params.uri
-  rig.usdcAmount = convertTokenToDecimal(event.params.usdcAmount, BI_6)
-  rig.unitAmount = convertTokenToDecimal(event.params.unitAmount, BI_18)
-  rig.initialUps = event.params.initialEmission
-  rig.tailUps = event.params.minEmission
-  rig.halvingPeriod = event.params.halvingPeriod
-  rig.treasuryRevenue = ZERO_BD
-  rig.teamRevenue = ZERO_BD
-  rig.protocolRevenue = ZERO_BD
-  rig.totalMinted = ZERO_BD
-  rig.lastActivityAt = event.block.timestamp
-  rig.createdAt = event.block.timestamp
-  rig.createdAtBlock = event.block.number
-  rig.save()
+  // Create merged Fundraiser entity (combines old Rig + old Fundraiser)
+  let fundraiser = new Fundraiser(fundraiserAddress.toHexString())
+  fundraiser.coin = coin.id
+  fundraiser.launcher = launcher.id
+  fundraiser.auction = event.params.auction
+  fundraiser.quoteToken = quoteToken
+  fundraiser.uri = event.params.uri
+  fundraiser.usdcAmount = convertTokenToDecimal(event.params.usdcAmount, BI_6)
+  fundraiser.coinAmount = convertTokenToDecimal(event.params.coinAmount, BI_18)
+  fundraiser.initialUps = event.params.initialEmission
+  fundraiser.tailUps = event.params.minEmission
+  fundraiser.halvingPeriod = event.params.halvingPeriod
+  fundraiser.treasuryRevenue = ZERO_BD
+  fundraiser.teamRevenue = ZERO_BD
+  fundraiser.protocolRevenue = ZERO_BD
+  fundraiser.totalMinted = ZERO_BD
+  fundraiser.lastActivityAt = event.block.timestamp
+  fundraiser.createdAt = event.block.timestamp
+  fundraiser.createdAtBlock = event.block.number
 
-  // Create Fundraiser specialized entity
-  let fundraiser = new Fundraiser(rigAddress.toHexString())
-  fundraiser.rig = rig.id
+  // Fundraiser-specific fields (was separate Fundraiser entity)
   fundraiser.initialEmission = event.params.initialEmission
   fundraiser.minEmission = event.params.minEmission
-  let fundraiserContract = FundraiserContract.bind(rigAddress)
+  let fundraiserContract = FundraiserContract.bind(fundraiserAddress)
   let minDonationResult = fundraiserContract.try_MIN_DONATION()
   fundraiser.minDonation = minDonationResult.reverted ? DEFAULT_MIN_DONATION : minDonationResult.value
-  fundraiser.halvingPeriod = event.params.halvingPeriod
   fundraiser.epochDuration = event.params.epochDuration
   let treasuryResult = fundraiserContract.try_treasury()
   fundraiser.treasury = treasuryResult.reverted ? Address.zero() : treasuryResult.value
@@ -96,26 +85,18 @@ export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   fundraiser.team = teamResult.reverted ? Address.zero() : teamResult.value
   fundraiser.currentDay = ZERO_BI
   fundraiser.totalDonated = ZERO_BD
-  fundraiser.totalMinted = ZERO_BD
   fundraiser.uniqueDonors = ZERO_BI
   fundraiser.save()
 
-  // Note: initial Recipient entity is created by the RecipientSet event handler
-  // (emitted from the Fundraiser constructor)
-
-  // Link rig to fundraiser
-  rig.fundraiser = fundraiser.id
-  rig.save()
-
-  // Link unit to rig
-  // Set initial totalSupply from launch unitAmount — Transfer events fire before
-  // the Unit template is active, so the initial LP mint is missed by handleUnitTransfer
-  unit.rig = rig.id
-  unit.totalSupply = convertTokenToDecimal(event.params.unitAmount, BI_18)
-  unit.save()
+  // Link coin to fundraiser
+  // Set initial totalSupply from launch coinAmount — Transfer events fire before
+  // the Coin template is active, so the initial LP mint is missed by handleCoinTransfer
+  coin.fundraiser = fundraiser.id
+  coin.totalSupply = convertTokenToDecimal(event.params.coinAmount, BI_18)
+  coin.save()
 
   // Start indexing events from the new contracts
   PairTemplate.create(lpPairAddress)
-  FundraiserTemplate.create(rigAddress)
-  UnitTemplate.create(unitAddress)
+  FundraiserTemplate.create(fundraiserAddress)
+  CoinTemplate.create(coinAddress)
 }

@@ -9,14 +9,14 @@ The following parameters are set at deployment and can never be modified:
 - Emission parameters (`initialEmission`, `minEmission`, `halvingPeriod`)
 - Fee percentages (hardcoded as constants in the contract)
 - Quote token address
-- Unit token address
+- Coin token address
 - Auction configuration
 
 ---
 
 ## Locked Liquidity
 
-When a token is launched, initial liquidity is created on Uniswap V2 by pairing USDC with the newly minted Unit token. The resulting LP tokens are **burned** -- sent to the dead address (`0x000...dEaD`). This means:
+When a token is launched, initial liquidity is created on Uniswap V2 by pairing USDC with the newly minted Coin token. The resulting LP tokens are **burned** -- sent to the dead address (`0x000...dEaD`). This means:
 
 - Liquidity can never be pulled or rugged by the launcher.
 - The trading pair has a permanent liquidity floor.
@@ -49,7 +49,7 @@ Each fundraiser has an owner (the launcher). The owner has limited administrativ
 - **Change fee percentages** -- Fee splits are hardcoded constants (50/45/4/1).
 - **Halt or pause the fundraiser** -- There is no pause mechanism. Fundraisers run indefinitely.
 - **Withdraw user funds** -- Donations are distributed immediately on deposit.
-- **Change the quote token or unit token** -- These are immutable.
+- **Change the quote token or coin token** -- These are immutable.
 - **Modify the Auction contract** -- Auction parameters are set at deployment and cannot be changed.
 
 ---
@@ -68,7 +68,7 @@ Using a non-standard ERC20 as the quote token may result in incorrect fee calcul
 
 ### Uniswap V2 Router
 
-The Uniswap V2 router is trusted for initial LP creation during fundraiser launches. The router is called by Core to add liquidity and create the Unit/USDC trading pair.
+The Uniswap V2 router is trusted for initial LP creation during fundraiser launches. The router is called by Core to add liquidity and create the Coin/USDC trading pair.
 
 ---
 
@@ -117,10 +117,10 @@ Multiple layers of protection against front-running and sandwich attacks on auct
 | **Deadline checks** | Transaction reverts if `block.timestamp > deadline`. | Auction `buy()` |
 | **Slippage protection** | `maxPaymentTokenAmount` caps the maximum the user will pay. | Auction `buy()` |
 
-### Supply Cap (Unit Token)
+### Supply Cap (Coin Token)
 
-The Unit token extends OpenZeppelin's `ERC20Votes`, which enforces a maximum total supply of `type(uint224).max` (approximately 2.7 * 10^49 tokens). Any mint that would exceed this cap will revert.
+The Coin token extends OpenZeppelin's `ERC20Votes`, which enforces a maximum total supply of `type(uint224).max` (approximately 2.7 * 10^49 tokens). Any mint that would exceed this cap will revert.
 
-### Minting Restriction (Unit Token)
+### Minting Restriction (Coin Token)
 
-Only the designated fundraiser address can mint Unit tokens. The fundraiser address is locked permanently after it is set via `setRig()` -- this function can only be called once, and since the Fundraiser contracts have no `setRig()` function, the minting authority becomes effectively immutable after launch.
+Only the designated fundraiser address can mint Coin tokens. The fundraiser address is locked permanently after it is set via `setMinter()` -- this function can only be called once, and since the Fundraiser contracts have no `setMinter()` function, the minting authority becomes effectively immutable after launch.

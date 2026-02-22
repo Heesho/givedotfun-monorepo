@@ -13,8 +13,8 @@ const client = new GraphQLClient(LAUNCHPAD_SUBGRAPH_URL);
 
 export type SubgraphLaunchpad = {
   id: string;
-  totalUnits: string;
-  totalRigs: string;
+  totalCoins: string;
+  totalFundraisers: string;
   totalVolumeUsdc: string;
   totalLiquidityUsdc: string;
   totalTreasuryRevenue: string;
@@ -22,10 +22,10 @@ export type SubgraphLaunchpad = {
   totalMinted: string;
 };
 
-export type SubgraphRig = {
-  id: string; // Rig contract address
-  unit: {
-    id: string; // Unit token address
+export type SubgraphFundraiser = {
+  id: string; // Fundraiser contract address
+  coin: {
+    id: string; // Coin token address
     name: string;
     symbol: string;
     lpPair: string; // LP pair address (Bytes)
@@ -42,7 +42,7 @@ export type SubgraphRig = {
   quoteToken: string; // Bytes
   uri: string;
   usdcAmount: string; // BigDecimal — USDC deposited into LP at launch
-  unitAmount: string; // BigDecimal — Unit tokens deposited into LP at launch
+  coinAmount: string; // BigDecimal — Coin tokens deposited into LP at launch
   treasuryRevenue: string; // BigDecimal
   teamRevenue: string; // BigDecimal
   protocolRevenue: string; // BigDecimal
@@ -61,8 +61,8 @@ export type SubgraphRig = {
   } | null;
 };
 
-export type SubgraphUnitListItem = {
-  id: string; // Unit token address
+export type SubgraphCoinListItem = {
+  id: string; // Coin token address
   name: string;
   symbol: string;
   lpPair: string;
@@ -79,8 +79,8 @@ export type SubgraphUnitListItem = {
   lastActivityAt: string;
   createdAt: string;
   dayData?: { close: string; open: string; timestamp: string }[];
-  rig: {
-    id: string; // Rig contract address
+  fundraiser: {
+    id: string; // Fundraiser contract address
     uri: string;
     launcher: { id: string };
     auction: string;
@@ -90,7 +90,7 @@ export type SubgraphUnitListItem = {
 export type SubgraphAccount = {
   id: string;
   totalSwapVolume: string;
-  totalRigSpend: string;
+  totalFundraiserSpend: string;
   totalDonated: string;
   lastActivityAt: string;
 };
@@ -106,14 +106,14 @@ export type SubgraphDonation = {
   txHash: string;
 };
 
-export type SubgraphUnitCandle = {
+export type SubgraphCoinCandle = {
   id: string;
   timestamp: string;
   open: string; // BigDecimal price in USDC
   high: string;
   low: string;
   close: string;
-  volumeUnit: string;
+  volumeCoin: string;
   volumeUsdc: string;
   txCount: string;
 };
@@ -122,9 +122,9 @@ export type SubgraphUnitCandle = {
 // GraphQL field fragments (reusable field sets)
 // =============================================================================
 
-const RIG_FIELDS = `
+const FUNDRAISER_FIELDS = `
   id
-  unit {
+  coin {
     id
     name
     symbol
@@ -142,7 +142,7 @@ const RIG_FIELDS = `
   quoteToken
   uri
   usdcAmount
-  unitAmount
+  coinAmount
   treasuryRevenue
   teamRevenue
   protocolRevenue
@@ -163,7 +163,7 @@ const RIG_FIELDS = `
   }
 `;
 
-const UNIT_LIST_FIELDS = `
+const COIN_LIST_FIELDS = `
   id
   name
   symbol
@@ -185,7 +185,7 @@ const UNIT_LIST_FIELDS = `
     open
     timestamp
   }
-  rig {
+  fundraiser {
     id
     uri
     launcher { id }
@@ -202,8 +202,8 @@ export const GET_LAUNCHPAD_STATS_QUERY = gql`
   query GetProtocolStats {
     protocol(id: "givedotfun") {
       id
-      totalUnits
-      totalRigs
+      totalCoins
+      totalFundraisers
       totalVolumeUsdc
       totalLiquidityUsdc
       totalTreasuryRevenue
@@ -213,29 +213,29 @@ export const GET_LAUNCHPAD_STATS_QUERY = gql`
   }
 `;
 
-// Get rigs with pagination and ordering
-export const GET_RIGS_QUERY = gql`
-  query GetRigs(
+// Get fundraisers with pagination and ordering
+export const GET_FUNDRAISERS_QUERY = gql`
+  query GetFundraisers(
     $first: Int!
     $skip: Int!
-    $orderBy: Rig_orderBy!
+    $orderBy: Fundraiser_orderBy!
     $orderDirection: OrderDirection!
   ) {
-    rigs(
+    fundraisers(
       first: $first
       skip: $skip
       orderBy: $orderBy
       orderDirection: $orderDirection
     ) {
-      ${RIG_FIELDS}
+      ${FUNDRAISER_FIELDS}
     }
   }
 `;
 
-// Search units by name or symbol
-export const SEARCH_RIGS_QUERY = gql`
-  query SearchRigs($search: String!, $first: Int!) {
-    units(
+// Search coins by name or symbol
+export const SEARCH_COINS_QUERY = gql`
+  query SearchCoins($search: String!, $first: Int!) {
+    coins(
       first: $first
       where: {
         or: [
@@ -262,7 +262,7 @@ export const SEARCH_RIGS_QUERY = gql`
       totalMinted
       lastActivityAt
       createdAt
-      rig {
+      fundraiser {
         id
         uri
         launcher { id }
@@ -272,29 +272,29 @@ export const SEARCH_RIGS_QUERY = gql`
   }
 `;
 
-// Get a single rig by ID
-export const GET_RIG_QUERY = gql`
-  query GetRig($id: ID!) {
-    rig(id: $id) {
-      ${RIG_FIELDS}
+// Get a single fundraiser by ID
+export const GET_FUNDRAISER_QUERY = gql`
+  query GetFundraiser($id: ID!) {
+    fundraiser(id: $id) {
+      ${FUNDRAISER_FIELDS}
     }
   }
 `;
 
-// Get trending rigs (most recently active)
-export const GET_TRENDING_RIGS_QUERY = gql`
-  query GetTrendingRigs($first: Int!) {
-    rigs(first: $first, orderBy: lastActivityAt, orderDirection: desc) {
-      ${RIG_FIELDS}
+// Get trending fundraisers (most recently active)
+export const GET_TRENDING_FUNDRAISERS_QUERY = gql`
+  query GetTrendingFundraisers($first: Int!) {
+    fundraisers(first: $first, orderBy: lastActivityAt, orderDirection: desc) {
+      ${FUNDRAISER_FIELDS}
     }
   }
 `;
 
-// Get top rigs by treasury revenue
-export const GET_TOP_RIGS_QUERY = gql`
-  query GetTopRigs($first: Int!) {
-    rigs(first: $first, orderBy: treasuryRevenue, orderDirection: desc) {
-      ${RIG_FIELDS}
+// Get top fundraisers by treasury revenue
+export const GET_TOP_FUNDRAISERS_QUERY = gql`
+  query GetTopFundraisers($first: Int!) {
+    fundraisers(first: $first, orderBy: treasuryRevenue, orderDirection: desc) {
+      ${FUNDRAISER_FIELDS}
     }
   }
 `;
@@ -305,7 +305,7 @@ export const GET_ACCOUNT_QUERY = gql`
     account(id: $id) {
       id
       totalSwapVolume
-      totalRigSpend
+      totalFundraiserSpend
       totalDonated
       lastActivityAt
     }
@@ -314,9 +314,9 @@ export const GET_ACCOUNT_QUERY = gql`
 
 // Get donations for a Fundraiser
 export const GET_DONATIONS_QUERY = gql`
-  query GetDonations($rigAddress: String!, $limit: Int!) {
+  query GetDonations($fundraiserAddress: String!, $limit: Int!) {
     donations(
-      where: { fundraiser: $rigAddress }
+      where: { fundraiser: $fundraiserAddress }
       orderBy: timestamp
       orderDirection: desc
       first: $limit
@@ -335,11 +335,11 @@ export const GET_DONATIONS_QUERY = gql`
   }
 `;
 
-// Get minute candle data for a unit token
-export const GET_UNIT_MINUTE_DATA_QUERY = gql`
-  query GetUnitMinuteData($unitAddress: String!, $since: BigInt!) {
-    unitMinuteDatas(
-      where: { unit: $unitAddress, timestamp_gte: $since }
+// Get minute candle data for a coin token
+export const GET_COIN_MINUTE_DATA_QUERY = gql`
+  query GetCoinMinuteData($coinAddress: String!, $since: BigInt!) {
+    coinMinuteDatas(
+      where: { coin: $coinAddress, timestamp_gte: $since }
       orderBy: timestamp
       orderDirection: asc
       first: 1000
@@ -357,11 +357,11 @@ export const GET_UNIT_MINUTE_DATA_QUERY = gql`
   }
 `;
 
-// Get hourly candle data for a unit token
-export const GET_UNIT_HOUR_DATA_QUERY = gql`
-  query GetUnitHourData($unitAddress: String!, $since: BigInt!) {
-    unitHourDatas(
-      where: { unit: $unitAddress, timestamp_gte: $since }
+// Get hourly candle data for a coin token
+export const GET_COIN_HOUR_DATA_QUERY = gql`
+  query GetCoinHourData($coinAddress: String!, $since: BigInt!) {
+    coinHourDatas(
+      where: { coin: $coinAddress, timestamp_gte: $since }
       orderBy: timestamp
       orderDirection: asc
       first: 1000
@@ -379,11 +379,11 @@ export const GET_UNIT_HOUR_DATA_QUERY = gql`
   }
 `;
 
-// Get daily candle data for a unit token
-export const GET_UNIT_DAY_DATA_QUERY = gql`
-  query GetUnitDayData($unitAddress: String!, $since: BigInt!) {
-    unitDayDatas(
-      where: { unit: $unitAddress, timestamp_gte: $since }
+// Get daily candle data for a coin token
+export const GET_COIN_DAY_DATA_QUERY = gql`
+  query GetCoinDayData($coinAddress: String!, $since: BigInt!) {
+    coinDayDatas(
+      where: { coin: $coinAddress, timestamp_gte: $since }
       orderBy: timestamp
       orderDirection: asc
       first: 1000
@@ -401,17 +401,17 @@ export const GET_UNIT_DAY_DATA_QUERY = gql`
   }
 `;
 
-// Get hourly candle data for multiple units (for sparklines)
-export const GET_BATCH_UNIT_HOUR_DATA_QUERY = gql`
-  query GetBatchUnitHourData($unitAddresses: [String!]!, $since: BigInt!) {
-    unitHourDatas(
-      where: { unit_in: $unitAddresses, timestamp_gte: $since }
+// Get hourly candle data for multiple coins (for sparklines)
+export const GET_BATCH_COIN_HOUR_DATA_QUERY = gql`
+  query GetBatchCoinHourData($coinAddresses: [String!]!, $since: BigInt!) {
+    coinHourDatas(
+      where: { coin_in: $coinAddresses, timestamp_gte: $since }
       orderBy: timestamp
       orderDirection: asc
       first: 1000
     ) {
       id
-      unit {
+      coin {
         id
       }
       timestamp
@@ -420,17 +420,17 @@ export const GET_BATCH_UNIT_HOUR_DATA_QUERY = gql`
   }
 `;
 
-// Get minute candle data for multiple units (for sparklines on new tokens)
-export const GET_BATCH_UNIT_MINUTE_DATA_QUERY = gql`
-  query GetBatchUnitMinuteData($unitAddresses: [String!]!, $since: BigInt!) {
-    unitMinuteDatas(
-      where: { unit_in: $unitAddresses, timestamp_gte: $since }
+// Get minute candle data for multiple coins (for sparklines on new tokens)
+export const GET_BATCH_COIN_MINUTE_DATA_QUERY = gql`
+  query GetBatchCoinMinuteData($coinAddresses: [String!]!, $since: BigInt!) {
+    coinMinuteDatas(
+      where: { coin_in: $coinAddresses, timestamp_gte: $since }
       orderBy: timestamp
       orderDirection: asc
       first: 1000
     ) {
       id
-      unit {
+      coin {
         id
       }
       timestamp
@@ -440,41 +440,41 @@ export const GET_BATCH_UNIT_MINUTE_DATA_QUERY = gql`
 `;
 
 // =============================================================================
-// Unit listing queries (for explore page)
+// Coin listing queries (for explore page)
 // =============================================================================
 
-// Get units sorted by lastActivityAt (bump order)
-export const GET_UNITS_BY_ACTIVITY_QUERY = gql`
-  query GetUnitsByActivity($first: Int!) {
-    units(first: $first, orderBy: lastActivityAt, orderDirection: desc) {
-      ${UNIT_LIST_FIELDS}
+// Get coins sorted by lastActivityAt (bump order)
+export const GET_COINS_BY_ACTIVITY_QUERY = gql`
+  query GetCoinsByActivity($first: Int!) {
+    coins(first: $first, orderBy: lastActivityAt, orderDirection: desc) {
+      ${COIN_LIST_FIELDS}
     }
   }
 `;
 
-// Get units sorted by marketCap (top order)
-export const GET_UNITS_BY_MARKET_CAP_QUERY = gql`
-  query GetUnitsByMarketCap($first: Int!) {
-    units(first: $first, orderBy: marketCap, orderDirection: desc) {
-      ${UNIT_LIST_FIELDS}
+// Get coins sorted by marketCap (top order)
+export const GET_COINS_BY_MARKET_CAP_QUERY = gql`
+  query GetCoinsByMarketCap($first: Int!) {
+    coins(first: $first, orderBy: marketCap, orderDirection: desc) {
+      ${COIN_LIST_FIELDS}
     }
   }
 `;
 
-// Get units sorted by createdAt (new order)
-export const GET_UNITS_BY_CREATED_AT_QUERY = gql`
-  query GetUnitsByCreatedAt($first: Int!) {
-    units(first: $first, orderBy: createdAt, orderDirection: desc) {
-      ${UNIT_LIST_FIELDS}
+// Get coins sorted by createdAt (new order)
+export const GET_COINS_BY_CREATED_AT_QUERY = gql`
+  query GetCoinsByCreatedAt($first: Int!) {
+    coins(first: $first, orderBy: createdAt, orderDirection: desc) {
+      ${COIN_LIST_FIELDS}
     }
   }
 `;
 
-// Get all units (for portfolio balance checks)
-export const GET_ALL_UNITS_QUERY = gql`
-  query GetAllUnits($first: Int!) {
-    units(first: $first, orderBy: createdAt, orderDirection: desc) {
-      ${UNIT_LIST_FIELDS}
+// Get all coins (for portfolio balance checks)
+export const GET_ALL_COINS_QUERY = gql`
+  query GetAllCoins($first: Int!) {
+    coins(first: $first, orderBy: createdAt, orderDirection: desc) {
+      ${COIN_LIST_FIELDS}
     }
   }
 `;
@@ -495,7 +495,7 @@ export async function getLaunchpadStats(): Promise<SubgraphLaunchpad | null> {
   }
 }
 
-export async function getRigs(
+export async function getFundraisers(
   first = 20,
   skip = 0,
   orderBy:
@@ -504,51 +504,51 @@ export async function getRigs(
     | "lastActivityAt"
     | "treasuryRevenue" = "totalMinted",
   orderDirection: "asc" | "desc" = "desc"
-): Promise<SubgraphRig[]> {
+): Promise<SubgraphFundraiser[]> {
   try {
-    const data = await client.request<{ rigs: SubgraphRig[] }>(GET_RIGS_QUERY, {
+    const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(GET_FUNDRAISERS_QUERY, {
       first,
       skip,
       orderBy,
       orderDirection,
     });
-    return data.rigs;
+    return data.fundraisers;
   } catch (error) {
-    console.error("[getRigs] Error:", error);
+    console.error("[getFundraisers] Error:", error);
     return [];
   }
 }
 
-export async function searchRigs(
+export async function searchCoins(
   search: string,
   first = 20
-): Promise<SubgraphUnitListItem[]> {
+): Promise<SubgraphCoinListItem[]> {
   try {
-    const data = await client.request<{ units: SubgraphUnitListItem[] }>(
-      SEARCH_RIGS_QUERY,
+    const data = await client.request<{ coins: SubgraphCoinListItem[] }>(
+      SEARCH_COINS_QUERY,
       {
         search,
         first,
       }
     );
-    return data.units;
+    return data.coins;
   } catch (error) {
-    console.error("[searchRigs] Error:", error);
+    console.error("[searchCoins] Error:", error);
     return [];
   }
 }
 
-export async function getRig(id: string): Promise<SubgraphRig | null> {
+export async function getFundraiser(id: string): Promise<SubgraphFundraiser | null> {
   try {
-    const data = await client.request<{ rig: SubgraphRig | null }>(
-      GET_RIG_QUERY,
+    const data = await client.request<{ fundraiser: SubgraphFundraiser | null }>(
+      GET_FUNDRAISER_QUERY,
       {
         id: id.toLowerCase(),
       }
     );
-    return data.rig;
+    return data.fundraiser;
   } catch (error) {
-    console.error("[getRig] Error:", error);
+    console.error("[getFundraiser] Error:", error);
     return null;
   }
 }
@@ -568,90 +568,90 @@ export async function getAccount(id: string): Promise<SubgraphAccount | null> {
   }
 }
 
-export async function getTrendingRigs(first = 20): Promise<SubgraphRig[]> {
+export async function getTrendingFundraisers(first = 20): Promise<SubgraphFundraiser[]> {
   try {
-    const data = await client.request<{ rigs: SubgraphRig[] }>(
-      GET_TRENDING_RIGS_QUERY,
+    const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(
+      GET_TRENDING_FUNDRAISERS_QUERY,
       { first }
     );
-    return data.rigs;
+    return data.fundraisers;
   } catch (error) {
-    console.error("[getTrendingRigs] Error:", error);
+    console.error("[getTrendingFundraisers] Error:", error);
     return [];
   }
 }
 
-export async function getTopRigs(first = 20): Promise<SubgraphRig[]> {
+export async function getTopFundraisers(first = 20): Promise<SubgraphFundraiser[]> {
   try {
-    const data = await client.request<{ rigs: SubgraphRig[] }>(
-      GET_TOP_RIGS_QUERY,
+    const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(
+      GET_TOP_FUNDRAISERS_QUERY,
       { first }
     );
-    return data.rigs;
+    return data.fundraisers;
   } catch (error) {
-    console.error("[getTopRigs] Error:", error);
+    console.error("[getTopFundraisers] Error:", error);
     return [];
   }
 }
 
-// Unit listing functions (for explore page)
+// Coin listing functions (for explore page)
 
-export async function getUnitsByActivity(
+export async function getCoinsByActivity(
   first = 20
-): Promise<SubgraphUnitListItem[]> {
+): Promise<SubgraphCoinListItem[]> {
   try {
-    const data = await client.request<{ units: SubgraphUnitListItem[] }>(
-      GET_UNITS_BY_ACTIVITY_QUERY,
+    const data = await client.request<{ coins: SubgraphCoinListItem[] }>(
+      GET_COINS_BY_ACTIVITY_QUERY,
       { first }
     );
-    return data.units ?? [];
+    return data.coins ?? [];
   } catch (error) {
-    console.error("[getUnitsByActivity] Error:", error);
+    console.error("[getCoinsByActivity] Error:", error);
     return [];
   }
 }
 
-export async function getUnitsByMarketCap(
+export async function getCoinsByMarketCap(
   first = 20
-): Promise<SubgraphUnitListItem[]> {
+): Promise<SubgraphCoinListItem[]> {
   try {
-    const data = await client.request<{ units: SubgraphUnitListItem[] }>(
-      GET_UNITS_BY_MARKET_CAP_QUERY,
+    const data = await client.request<{ coins: SubgraphCoinListItem[] }>(
+      GET_COINS_BY_MARKET_CAP_QUERY,
       { first }
     );
-    return data.units ?? [];
+    return data.coins ?? [];
   } catch (error) {
-    console.error("[getUnitsByMarketCap] Error:", error);
+    console.error("[getCoinsByMarketCap] Error:", error);
     return [];
   }
 }
 
-export async function getUnitsByCreatedAt(
+export async function getCoinsByCreatedAt(
   first = 20
-): Promise<SubgraphUnitListItem[]> {
+): Promise<SubgraphCoinListItem[]> {
   try {
-    const data = await client.request<{ units: SubgraphUnitListItem[] }>(
-      GET_UNITS_BY_CREATED_AT_QUERY,
+    const data = await client.request<{ coins: SubgraphCoinListItem[] }>(
+      GET_COINS_BY_CREATED_AT_QUERY,
       { first }
     );
-    return data.units ?? [];
+    return data.coins ?? [];
   } catch (error) {
-    console.error("[getUnitsByCreatedAt] Error:", error);
+    console.error("[getCoinsByCreatedAt] Error:", error);
     return [];
   }
 }
 
-export async function getAllUnits(
+export async function getAllCoins(
   first = 100
-): Promise<SubgraphUnitListItem[]> {
+): Promise<SubgraphCoinListItem[]> {
   try {
-    const data = await client.request<{ units: SubgraphUnitListItem[] }>(
-      GET_ALL_UNITS_QUERY,
+    const data = await client.request<{ coins: SubgraphCoinListItem[] }>(
+      GET_ALL_COINS_QUERY,
       { first }
     );
-    return data.units ?? [];
+    return data.coins ?? [];
   } catch (error) {
-    console.error("[getAllUnits] Error:", error);
+    console.error("[getAllCoins] Error:", error);
     return [];
   }
 }
@@ -663,14 +663,14 @@ export function formatSubgraphAddress(address: string): `0x${string}` {
 
 // Get donations for a Fundraiser
 export async function getDonations(
-  rigAddress: string,
+  fundraiserAddress: string,
   limit = 20
 ): Promise<SubgraphDonation[]> {
   try {
     const data = await client.request<{ donations: SubgraphDonation[] }>(
       GET_DONATIONS_QUERY,
       {
-        rigAddress: rigAddress.toLowerCase(),
+        fundraiserAddress: fundraiserAddress.toLowerCase(),
         limit,
       }
     );
@@ -681,97 +681,97 @@ export async function getDonations(
   }
 }
 
-// Get minute candle data for a unit token
-export async function getUnitMinuteData(
-  unitAddress: string,
+// Get minute candle data for a coin token
+export async function getCoinMinuteData(
+  coinAddress: string,
   since: number
-): Promise<SubgraphUnitCandle[]> {
+): Promise<SubgraphCoinCandle[]> {
   try {
-    const data = await client.request<{ unitMinuteDatas: SubgraphUnitCandle[] }>(
-      GET_UNIT_MINUTE_DATA_QUERY,
+    const data = await client.request<{ coinMinuteDatas: SubgraphCoinCandle[] }>(
+      GET_COIN_MINUTE_DATA_QUERY,
       {
-        unitAddress: unitAddress.toLowerCase(),
+        coinAddress: coinAddress.toLowerCase(),
         since: since.toString(),
       }
     );
-    return data.unitMinuteDatas ?? [];
+    return data.coinMinuteDatas ?? [];
   } catch (error) {
-    console.error("[getUnitMinuteData] Error:", error);
+    console.error("[getCoinMinuteData] Error:", error);
     return [];
   }
 }
 
-// Get hourly candle data for a unit token
-export async function getUnitHourData(
-  unitAddress: string,
+// Get hourly candle data for a coin token
+export async function getCoinHourData(
+  coinAddress: string,
   since: number
-): Promise<SubgraphUnitCandle[]> {
+): Promise<SubgraphCoinCandle[]> {
   try {
-    const data = await client.request<{ unitHourDatas: SubgraphUnitCandle[] }>(
-      GET_UNIT_HOUR_DATA_QUERY,
+    const data = await client.request<{ coinHourDatas: SubgraphCoinCandle[] }>(
+      GET_COIN_HOUR_DATA_QUERY,
       {
-        unitAddress: unitAddress.toLowerCase(),
+        coinAddress: coinAddress.toLowerCase(),
         since: since.toString(),
       }
     );
-    return data.unitHourDatas ?? [];
+    return data.coinHourDatas ?? [];
   } catch (error) {
-    console.error("[getUnitHourData] Error:", error);
+    console.error("[getCoinHourData] Error:", error);
     return [];
   }
 }
 
-// Get daily candle data for a unit token
-export async function getUnitDayData(
-  unitAddress: string,
+// Get daily candle data for a coin token
+export async function getCoinDayData(
+  coinAddress: string,
   since: number
-): Promise<SubgraphUnitCandle[]> {
+): Promise<SubgraphCoinCandle[]> {
   try {
-    const data = await client.request<{ unitDayDatas: SubgraphUnitCandle[] }>(
-      GET_UNIT_DAY_DATA_QUERY,
+    const data = await client.request<{ coinDayDatas: SubgraphCoinCandle[] }>(
+      GET_COIN_DAY_DATA_QUERY,
       {
-        unitAddress: unitAddress.toLowerCase(),
+        coinAddress: coinAddress.toLowerCase(),
         since: since.toString(),
       }
     );
-    return data.unitDayDatas ?? [];
+    return data.coinDayDatas ?? [];
   } catch (error) {
-    console.error("[getUnitDayData] Error:", error);
+    console.error("[getCoinDayData] Error:", error);
     return [];
   }
 }
 
-// Batch fetch sparkline data for multiple units (last 24h hourly)
+// Batch fetch sparkline data for multiple coins (last 24h hourly)
 export type SparklineDataPoint = { timestamp: number; price: number };
 export type SparklineMap = Map<string, SparklineDataPoint[]>;
 
 export async function getBatchSparklineData(
-  unitAddresses: string[]
+  coinAddresses: string[]
 ): Promise<SparklineMap> {
-  if (unitAddresses.length === 0) return new Map();
+  if (coinAddresses.length === 0) return new Map();
 
   const since = Math.floor(Date.now() / 1000) - 86400; // Last 24 hours
 
   try {
     const data = await client.request<{
-      unitHourDatas: Array<{
-        unit: { id: string };
+      coinHourDatas: Array<{
+        coin: { id: string };
         timestamp: string;
         close: string;
       }>;
-    }>(GET_BATCH_UNIT_HOUR_DATA_QUERY, {
-      unitAddresses: unitAddresses.map((a) => a.toLowerCase()),
+    }>(GET_BATCH_COIN_HOUR_DATA_QUERY, {
+      coinAddresses: coinAddresses.map((a) => a.toLowerCase()),
       since: since.toString(),
     });
 
-    // Group by unit address
+    // Group by coin address
     const result: SparklineMap = new Map();
-    for (const candle of data.unitHourDatas ?? []) {
-      const unitId = candle.unit.id.toLowerCase();
-      if (!result.has(unitId)) {
-        result.set(unitId, []);
+    for (const candle of data.coinHourDatas ?? []) {
+      const coinId = candle.coin.id.toLowerCase();
+      if (!result.has(coinId)) {
+        result.set(coinId, []);
       }
-      result.get(unitId)!.push({
+      result.get(coinId)!.push({
         timestamp: parseInt(candle.timestamp),
         price: parseFloat(candle.close),
       });
@@ -786,31 +786,31 @@ export async function getBatchSparklineData(
 
 // Batch fetch minute-level sparkline data (last 4h, for new tokens without hourly candles)
 export async function getBatchSparklineMinuteData(
-  unitAddresses: string[]
+  coinAddresses: string[]
 ): Promise<SparklineMap> {
-  if (unitAddresses.length === 0) return new Map();
+  if (coinAddresses.length === 0) return new Map();
 
   const since = Math.floor(Date.now() / 1000) - 4 * 3600; // Last 4 hours
 
   try {
     const data = await client.request<{
-      unitMinuteDatas: Array<{
-        unit: { id: string };
+      coinMinuteDatas: Array<{
+        coin: { id: string };
         timestamp: string;
         close: string;
       }>;
-    }>(GET_BATCH_UNIT_MINUTE_DATA_QUERY, {
-      unitAddresses: unitAddresses.map((a) => a.toLowerCase()),
+    }>(GET_BATCH_COIN_MINUTE_DATA_QUERY, {
+      coinAddresses: coinAddresses.map((a) => a.toLowerCase()),
       since: since.toString(),
     });
 
     const result: SparklineMap = new Map();
-    for (const candle of data.unitMinuteDatas ?? []) {
-      const unitId = candle.unit.id.toLowerCase();
-      if (!result.has(unitId)) {
-        result.set(unitId, []);
+    for (const candle of data.coinMinuteDatas ?? []) {
+      const coinId = candle.coin.id.toLowerCase();
+      if (!result.has(coinId)) {
+        result.set(coinId, []);
       }
-      result.get(unitId)!.push({
+      result.get(coinId)!.push({
         timestamp: parseInt(candle.timestamp),
         price: parseFloat(candle.close),
       });

@@ -13,7 +13,6 @@ import {
 } from '../generated/templates/Fundraiser/Fundraiser'
 import { Core as CoreContract } from '../generated/templates/Fundraiser/Core'
 import {
-  Rig,
   Fundraiser,
   Recipient,
   FundraiserDayData,
@@ -22,7 +21,7 @@ import {
   Donor,
   DayDonor,
   Account,
-  Unit,
+  Coin,
   Protocol,
 } from '../generated/schema'
 import {
@@ -32,12 +31,12 @@ import {
   BI_18,
   BI_6,
   ADDRESS_ZERO,
-} from '../constants'
+} from './constants'
 import {
   convertTokenToDecimal,
   getOrCreateProtocol,
   getOrCreateAccount,
-} from '../helpers'
+} from './helpers'
 
 // Fee constants for Fundraiser (basis points)
 const RECIPIENT_BPS = BigInt.fromI32(5000) // 50%
@@ -71,22 +70,19 @@ function getOrCreateFundraiserDayData(fundraiser: Fundraiser, day: BigInt, times
     dayData.day = day
     dayData.totalDonated = ZERO_BD
     dayData.donorCount = ZERO_BI
-    dayData.emission = ZERO_BD // Could calculate from contract params
+    dayData.emission = ZERO_BD
     dayData.timestamp = timestamp
   }
   return dayData
 }
 
 export function handleFunded(event: FundedEvent): void {
-  let rigAddress = event.address.toHexString()
-  let fundraiser = Fundraiser.load(rigAddress)
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
   if (fundraiser === null) return
 
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
-
-  let unit = Unit.load(rig.unit)
-  if (unit === null) return
+  let coin = Coin.load(fundraiser.coin)
+  if (coin === null) return
 
   // Event params: sender, funder (indexed), amount, day
   let donorAddress = event.params.funder
@@ -95,7 +91,7 @@ export function handleFunded(event: FundedEvent): void {
 
   // Get or create donor account
   let donor = getOrCreateAccount(donorAddress)
-  donor.totalRigSpend = donor.totalRigSpend.plus(amount)
+  donor.totalFundraiserSpend = donor.totalFundraiserSpend.plus(amount)
   donor.lastActivityAt = event.block.timestamp
   donor.save()
 
@@ -172,28 +168,22 @@ export function handleFunded(event: FundedEvent): void {
     donorEntity.save()
     fundraiser.uniqueDonors = fundraiser.uniqueDonors.plus(ONE_BI)
   }
+  fundraiser.lastActivityAt = event.block.timestamp
   fundraiser.save()
 
-  // Update Rig activity (revenue tracking handled by TreasuryFee/TeamFee event handlers)
-  rig.lastActivityAt = event.block.timestamp
-  rig.save()
-
-  // Update Unit activity
-  unit.lastRigActivityAt = event.block.timestamp
-  unit.lastActivityAt = event.block.timestamp
-  unit.save()
+  // Update Coin activity
+  coin.lastFundraiserActivityAt = event.block.timestamp
+  coin.lastActivityAt = event.block.timestamp
+  coin.save()
 }
 
 export function handleFundClaimed(event: ClaimedEvent): void {
-  let rigAddress = event.address.toHexString()
-  let fundraiser = Fundraiser.load(rigAddress)
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
   if (fundraiser === null) return
 
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
-
-  let unit = Unit.load(rig.unit)
-  if (unit === null) return
+  let coin = Coin.load(fundraiser.coin)
+  if (coin === null) return
 
   // Event params: account (indexed), amount, day
   let claimerAddress = event.params.account
@@ -220,18 +210,14 @@ export function handleFundClaimed(event: ClaimedEvent): void {
 
   // Update Fundraiser total minted
   fundraiser.totalMinted = fundraiser.totalMinted.plus(amount)
+  fundraiser.lastActivityAt = event.block.timestamp
   fundraiser.save()
 
-  // Update Rig total minted
-  rig.totalMinted = rig.totalMinted.plus(amount)
-  rig.lastActivityAt = event.block.timestamp
-  rig.save()
-
-  // Update Unit total minted
-  unit.totalMinted = unit.totalMinted.plus(amount)
-  unit.lastRigActivityAt = event.block.timestamp
-  unit.lastActivityAt = event.block.timestamp
-  unit.save()
+  // Update Coin total minted
+  coin.totalMinted = coin.totalMinted.plus(amount)
+  coin.lastFundraiserActivityAt = event.block.timestamp
+  coin.lastActivityAt = event.block.timestamp
+  coin.save()
 
   // Update Protocol total minted
   let protocol = getOrCreateProtocol()
@@ -242,14 +228,14 @@ export function handleFundClaimed(event: ClaimedEvent): void {
 
 export function handleFundTreasuryFee(event: FundTreasuryFeeEvent): void {
   // Event params: treasury (indexed), day (indexed), amount
-  let rigAddress = event.address.toHexString()
+  let fundraiserAddress = event.address.toHexString()
   let amount = convertTokenToDecimal(event.params.amount, BI_6)
 
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
+  let fundraiser = Fundraiser.load(fundraiserAddress)
+  if (fundraiser === null) return
 
-  rig.treasuryRevenue = rig.treasuryRevenue.plus(amount)
-  rig.save()
+  fundraiser.treasuryRevenue = fundraiser.treasuryRevenue.plus(amount)
+  fundraiser.save()
 
   // Update Protocol treasury revenue
   let protocol = getOrCreateProtocol()
@@ -260,26 +246,26 @@ export function handleFundTreasuryFee(event: FundTreasuryFeeEvent): void {
 
 export function handleFundTeamFee(event: FundTeamFeeEvent): void {
   // Event params: team (indexed), day (indexed), amount
-  let rigAddress = event.address.toHexString()
+  let fundraiserAddress = event.address.toHexString()
   let amount = convertTokenToDecimal(event.params.amount, BI_6)
 
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
+  let fundraiser = Fundraiser.load(fundraiserAddress)
+  if (fundraiser === null) return
 
-  rig.teamRevenue = rig.teamRevenue.plus(amount)
-  rig.save()
+  fundraiser.teamRevenue = fundraiser.teamRevenue.plus(amount)
+  fundraiser.save()
 }
 
 export function handleFundProtocolFee(event: ProtocolFeeEvent): void {
   // Event params: protocol (indexed), day (indexed), amount
-  let rigAddress = event.address.toHexString()
+  let fundraiserAddress = event.address.toHexString()
   let amount = convertTokenToDecimal(event.params.amount, BI_6)
 
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
+  let fundraiser = Fundraiser.load(fundraiserAddress)
+  if (fundraiser === null) return
 
-  rig.protocolRevenue = rig.protocolRevenue.plus(amount)
-  rig.save()
+  fundraiser.protocolRevenue = fundraiser.protocolRevenue.plus(amount)
+  fundraiser.save()
 
   // Update Protocol total revenue
   let protocol = getOrCreateProtocol()
@@ -289,11 +275,11 @@ export function handleFundProtocolFee(event: ProtocolFeeEvent): void {
 }
 
 export function handleFundRecipientSet(event: RecipientSetEvent): void {
-  let rigAddress = event.address.toHexString()
-  let fundraiser = Fundraiser.load(rigAddress)
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
   if (fundraiser === null) return
 
-  let recipientId = rigAddress + '-' + event.params.recipient.toHexString()
+  let recipientId = fundraiserAddress + '-' + event.params.recipient.toHexString()
   let recipient = Recipient.load(recipientId)
   if (recipient === null) {
     recipient = new Recipient(recipientId)
@@ -307,17 +293,17 @@ export function handleFundRecipientSet(event: RecipientSetEvent): void {
 }
 
 export function handleFundUriSet(event: UriSetEvent): void {
-  let rigAddress = event.address.toHexString()
-  let rig = Rig.load(rigAddress)
-  if (rig === null) return
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
+  if (fundraiser === null) return
 
-  rig.uri = event.params.uri
-  rig.save()
+  fundraiser.uri = event.params.uri
+  fundraiser.save()
 }
 
 export function handleFundTreasurySet(event: TreasurySetEvent): void {
-  let rigAddress = event.address.toHexString()
-  let fundraiser = Fundraiser.load(rigAddress)
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
   if (fundraiser === null) return
 
   fundraiser.treasury = event.params.treasury
@@ -325,8 +311,8 @@ export function handleFundTreasurySet(event: TreasurySetEvent): void {
 }
 
 export function handleFundTeamSet(event: TeamSetEvent): void {
-  let rigAddress = event.address.toHexString()
-  let fundraiser = Fundraiser.load(rigAddress)
+  let fundraiserAddress = event.address.toHexString()
+  let fundraiser = Fundraiser.load(fundraiserAddress)
   if (fundraiser === null) return
 
   fundraiser.team = event.params.team

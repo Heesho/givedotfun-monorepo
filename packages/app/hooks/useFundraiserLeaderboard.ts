@@ -68,8 +68,8 @@ function aggregateDonors(
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useRigLeaderboard(
-  rigAddress: string | undefined,
+export function useFundraiserLeaderboard(
+  fundraiserAddress: string | undefined,
   account: string | undefined,
   limit: number = 10,
 ): {
@@ -81,9 +81,9 @@ export function useRigLeaderboard(
     data: raw,
     isLoading,
   } = useQuery({
-    queryKey: ["rigLeaderboard", rigAddress, limit],
-    queryFn: () => getDonations(rigAddress!, 1000), // fetch up to 1000 events to aggregate
-    enabled: !!rigAddress,
+    queryKey: ["fundraiserLeaderboard", fundraiserAddress, limit],
+    queryFn: () => getDonations(fundraiserAddress!, 1000), // fetch up to 1000 events to aggregate
+    enabled: !!fundraiserAddress,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });

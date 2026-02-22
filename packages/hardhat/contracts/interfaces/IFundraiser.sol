@@ -21,7 +21,7 @@ interface IFundraiser {
     function MIN_DONATION() external view returns (uint256);
 
     // Immutables
-    function unit() external view returns (address);
+    function coin() external view returns (address);
     function quote() external view returns (address);
     function core() external view returns (address);
     function startTime() external view returns (uint256);

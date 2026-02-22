@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-give.fun is a crypto GoFundMe -- a perpetual funding platform on Base. Communities can create fundraisers for creators, charities, or projects, where donors contribute USDC and earn proportional Unit token emissions in return. 50% of every donation goes directly to the recipient, with the rest split among treasury, team, and protocol. The platform runs as a Farcaster mini-app.
+give.fun is a crypto GoFundMe -- a perpetual funding platform on Base. Communities can create fundraisers for creators, charities, or projects, where donors contribute USDC and earn proportional Coin token emissions in return. 50% of every donation goes directly to the recipient, with the rest split among treasury, team, and protocol. The platform runs as a Farcaster mini-app.
 
-Each fundraiser launch creates a **Fundraiser** (the distribution mechanism), a **Unit** (the ERC20 token), and an **Auction** (for treasury sales). Initial liquidity is permanently locked (LP tokens burned to dead address).
+Each fundraiser launch creates a **Fundraiser** (the distribution mechanism), a **Coin** (the ERC20 token), and an **Auction** (for treasury sales). Initial liquidity is permanently locked (LP tokens burned to dead address).
 
 ## How It Works
 
-Users donate a payment token (USDC) into epoch pools via a Fundraiser contract. Donations are split immediately: 50% to the designated recipient, 45% to treasury, 4% to team, 1% to protocol. After each epoch ends, donors claim their proportional share of that epoch's Unit token emission based on their contribution relative to total donations. Emissions halve on a configurable schedule.
+Users donate a payment token (USDC) into epoch pools via a Fundraiser contract. Donations are split immediately: 50% to the designated recipient, 45% to treasury, 4% to team, 1% to protocol. After each epoch ends, donors claim their proportional share of that epoch's Coin token emission based on their contribution relative to total donations. Emissions halve on a configurable schedule.
 
 ## Tech Stack
 
@@ -39,9 +39,10 @@ packages/
 │   ├── contracts/
 │   │   ├── Core.sol              # Launch orchestrator for Fundraisers
 │   │   ├── Fundraiser.sol        # Donation pool with epoch-based claims
+│   │   ├── FundraiserFactory.sol # Deploys Fundraiser instances
 │   │   ├── Multicall.sol         # Batch ops + view helpers
-│   │   ├── Unit.sol              # ERC20 token created per launch
-│   │   ├── UnitFactory.sol       # Deploys Unit tokens
+│   │   ├── Coin.sol              # ERC20 token created per launch
+│   │   ├── CoinFactory.sol       # Deploys Coin tokens
 │   │   ├── Auction.sol           # Dutch auction for treasury sales
 │   │   ├── AuctionFactory.sol    # Deploys Auctions
 │   ├── scripts/      # Deployment and verification scripts
@@ -51,19 +52,19 @@ packages/
     │   ├── cores/    # Core launch handlers
     │   ├── fundraiser.ts # Fundraiser event handlers
     │   ├── pair.ts   # Uniswap V2 pair price/volume tracking
-    │   └── unit.ts   # ERC20 transfer tracking
+    │   └── coin.ts   # ERC20 transfer tracking
     ├── abis/         # Contract ABIs
     └── schema.graphql
 ```
 
 ## Key Contracts
 
-- **Core.sol**: Entry point for launching fundraisers. Handles token creation, LP setup, and fundraiser deployment. Deploys Fundraiser contracts inline.
+- **Core.sol**: Entry point for launching fundraisers. Handles Coin token creation, LP setup, and fundraiser deployment via factories.
 - **Fundraiser.sol**: The donation-based distribution mechanism. Handles epoch pools, emissions, and fee splits.
 - **Multicall.sol**: Read helper for batched frontend queries.
-- **Unit.sol**: ERC20 token created for each launch. Mintable only by its parent fundraiser.
+- **Coin.sol**: ERC20 token created for each launch. Mintable only by its parent fundraiser.
 - **Auction.sol**: Dutch auction for treasury token sales (separate from the fundraiser mechanism).
-- **Factories**: UnitFactory and AuctionFactory deploy child contracts.
+- **Factories**: CoinFactory, AuctionFactory, and FundraiserFactory deploy child contracts.
 
 ## Development Commands
 

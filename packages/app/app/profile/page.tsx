@@ -9,7 +9,7 @@ import { useFarcaster } from "@/hooks/useFarcaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
-import type { UserHolding, UserLaunchedRig } from "@/hooks/useUserProfile";
+import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
 import { formatNumber } from "@/lib/format";
 import { TokenLogo } from "@/components/token-logo";
 
@@ -32,7 +32,7 @@ function formatUsd(value: number): string {
 // ---------------------------------------------------------------------------
 
 function HoldingRow({ holding }: { holding: UserHolding }) {
-  const { logoUrl } = useTokenMetadata(holding.rigUri);
+  const { logoUrl } = useTokenMetadata(holding.fundraiserUri);
 
   return (
     <Link href={`/fundraiser/${holding.address}`} className="block">
@@ -70,26 +70,26 @@ function HoldingRow({ holding }: { holding: UserHolding }) {
 // LaunchedRow
 // ---------------------------------------------------------------------------
 
-function LaunchedRow({ rig }: { rig: UserLaunchedRig }) {
-  const { logoUrl } = useTokenMetadata(rig.rigUri);
+function LaunchedRow({ fundraiser }: { fundraiser: UserLaunchedFundraiser }) {
+  const { logoUrl } = useTokenMetadata(fundraiser.fundraiserUri);
 
   return (
-    <Link href={`/fundraiser/${rig.address}`} className="block">
+    <Link href={`/fundraiser/${fundraiser.address}`} className="block">
       <div className="flex items-center justify-between py-3 hover:bg-secondary/30 -mx-4 px-4 transition-colors rounded-lg">
         <div className="flex items-center gap-3 min-w-0">
-          <TokenLogo name={rig.tokenName} logoUrl={logoUrl} size="md-lg" />
+          <TokenLogo name={fundraiser.tokenName} logoUrl={logoUrl} size="md-lg" />
           <div className="min-w-0">
             <div className="text-[15px] font-medium truncate">
-              {rig.tokenName}
+              {fundraiser.tokenName}
             </div>
             <div className="text-[12px] text-muted-foreground">
-              {rig.tokenSymbol}
+              {fundraiser.tokenSymbol}
             </div>
           </div>
         </div>
         <div className="text-right shrink-0 ml-3">
           <div className="text-[15px] font-semibold tabular-nums">
-            {rig.marketCapUsd > 0 ? formatUsd(rig.marketCapUsd) : "--"}
+            {fundraiser.marketCapUsd > 0 ? formatUsd(fundraiser.marketCapUsd) : "--"}
           </div>
           <div className="text-[12px] text-muted-foreground tabular-nums">
             Mcap
@@ -100,7 +100,7 @@ function LaunchedRow({ rig }: { rig: UserLaunchedRig }) {
         <img
           src="/botanicals/growth-vine.svg"
           className="h-2 opacity-60"
-          style={{ width: `${Math.min(100, Math.max(10, (rig.marketCapUsd / 10000) * 100))}%` }}
+          style={{ width: `${Math.min(100, Math.max(10, (fundraiser.marketCapUsd / 10000) * 100))}%` }}
           alt=""
         />
       </div>
@@ -230,7 +230,7 @@ export default function ProfilePage() {
 
   // Data hooks
   const { user, address } = useFarcaster();
-  const { holdings, launchedRigs, totalHoldingsValueUsd, isLoading } = useUserProfile(address);
+  const { holdings, launchedFundraisers, totalHoldingsValueUsd, isLoading } = useUserProfile(address);
 
   // USDC balance
   const { data: usdcBalance, refetch: refetchUsdc } = useReadContract({
@@ -384,7 +384,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {holdings.length > 0 ? (
               holdings.map((h) => (
-                <Link key={h.unitAddress} href={`/fundraiser/${h.address}`}>
+                <Link key={h.coinAddress} href={`/fundraiser/${h.address}`}>
                   <div
                     className="w-3 h-3 rounded-full bg-moss-400 animate-pulse-glow flex-shrink-0"
                     title={h.tokenName}
@@ -423,9 +423,9 @@ export default function ProfilePage() {
             }`}
           >
             Your Fundraisers
-            {launchedRigs.length > 0 && (
+            {launchedFundraisers.length > 0 && (
               <span className="ml-1.5 text-[12px] text-muted-foreground">
-                {launchedRigs.length}
+                {launchedFundraisers.length}
               </span>
             )}
           </button>
@@ -451,7 +451,7 @@ export default function ProfilePage() {
                 <div className="py-1">
                   {holdings.map((holding) => (
                     <HoldingRow
-                      key={holding.unitAddress}
+                      key={holding.coinAddress}
                       holding={holding}
                     />
                   ))}
@@ -462,7 +462,7 @@ export default function ProfilePage() {
 
           {activeTab === "launched" && (
             <>
-              {launchedRigs.length === 0 ? (
+              {launchedFundraisers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <img src="/botanicals/empty-garden.svg" className="w-20 h-20 mb-3 opacity-60" alt="" />
                   <div className="headline-brutal text-[15px] mb-1">No fundraisers yet</div>
@@ -476,10 +476,10 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="py-1">
-                  {launchedRigs.map((rig) => (
+                  {launchedFundraisers.map((fundraiser) => (
                     <LaunchedRow
-                      key={rig.address}
-                      rig={rig}
+                      key={fundraiser.address}
+                      fundraiser={fundraiser}
                     />
                   ))}
                 </div>
