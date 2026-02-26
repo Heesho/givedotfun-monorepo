@@ -39,7 +39,7 @@ export default function AuctionsPage() {
 
   // Collect fundraiser URIs for batch metadata fetch
   const fundraiserUris = useMemo(
-    () => auctions.map((a) => a.fundraiserUri),
+    () => auctions.map((a) => a.uri),
     [auctions]
   );
   const { getLogoUrl } = useBatchMetadata(fundraiserUris);
@@ -47,7 +47,7 @@ export default function AuctionsPage() {
   const selectedAuction: AuctionItem | undefined = auctions[selectedIndex];
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-concrete-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -57,7 +57,7 @@ export default function AuctionsPage() {
       >
         {/* Header */}
         <div className="px-4 pb-4">
-          <h1 className="text-2xl headline-brutal mb-1">Auctions</h1>
+          <h1 className="text-2xl font-semibold tracking-tight mb-1">Auctions</h1>
           <p className="text-[13px] text-muted-foreground">
             Trade LP tokens for USDC rewards
           </p>
@@ -81,8 +81,8 @@ export default function AuctionsPage() {
                   onClick={() => setSelectedIndex(index)}
                   className={`w-full py-4 transition-all text-left ${
                     selectedIndex === index
-                      ? "bg-moss-400/[0.06]"
-                      : "hover:bg-moss-400/[0.04]"
+                      ? "bg-white/[0.03]"
+                      : "hover:bg-white/[0.02]"
                   }${index < auctions.length - 1 ? " border-b border-border" : ""}`}
                 >
                   <div className="flex items-center justify-between">
@@ -90,13 +90,12 @@ export default function AuctionsPage() {
                       <div className="relative">
                         <TokenLogo
                           name={auction.tokenName}
-                          logoUrl={getLogoUrl(auction.fundraiserUri)}
-
+                          logoUrl={getLogoUrl(auction.uri)}
                           size="md-lg"
                         />
                         {selectedIndex === index && (
-                          <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-moss-400 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-concrete-800" />
+                          <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                            <Check className="w-3 h-3 text-black" />
                           </div>
                         )}
                       </div>
@@ -114,7 +113,7 @@ export default function AuctionsPage() {
                     <div className="text-right">
                       <div
                         className={`font-medium text-[15px] tabular-nums ${
-                          auction.isProfitable ? "text-prism-400" : "text-[#8E8E8E]"
+                          auction.isProfitable ? "text-zinc-300" : "text-zinc-500"
                         }`}
                       >
                         {formatProfit(auction.profit)}
@@ -159,7 +158,7 @@ export default function AuctionsPage() {
                     <div className="flex items-center gap-2">
                       <TokenLogo
                         name={selectedAuction.tokenName}
-                        logoUrl={getLogoUrl(selectedAuction.fundraiserUri)}
+                        logoUrl={getLogoUrl(selectedAuction.uri)}
                         size="md-lg"
                       />
                       <div>
@@ -172,8 +171,8 @@ export default function AuctionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-concrete-700 flex items-center justify-center">
-                    <ArrowRight className="w-4 h-4 text-[#8E8E8E]" />
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <ArrowRight className="w-4 h-4 text-zinc-500" />
                   </div>
                   <div className="text-right">
                     <div className="text-[12px] text-muted-foreground mb-1">
@@ -190,7 +189,7 @@ export default function AuctionsPage() {
               <div className="flex items-center justify-between">
                 <div
                   className={`text-[15px] font-medium tabular-nums ${
-                    selectedAuction.isProfitable ? "text-prism-400" : "text-[#8E8E8E]"
+                    selectedAuction.isProfitable ? "text-zinc-300" : "text-zinc-500"
                   }`}
                 >
                   {selectedAuction.isProfitable
@@ -199,7 +198,7 @@ export default function AuctionsPage() {
                 </div>
                 <Link
                   href={`/fundraiser/${selectedAuction.fundraiserAddress}`}
-                  className="h-10 px-6 bg-moss-400 text-concrete-800 text-[14px] font-bold uppercase tracking-wider rounded-xl hover:bg-moss-300 transition-colors inline-flex items-center justify-center"
+                  className="h-10 px-6 bg-white text-black text-[14px] font-semibold rounded-xl hover:bg-zinc-200 transition-colors inline-flex items-center justify-center"
                 >
                   Buy Auction
                 </Link>

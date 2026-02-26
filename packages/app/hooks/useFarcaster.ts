@@ -170,10 +170,10 @@ export async function shareMiningAchievement(options: {
   tokenSymbol: string;
   tokenName: string;
   amountMined: string;
-  fundraiserUrl: string;
+  rigUrl: string;
   message?: string;
 }): Promise<boolean> {
-  const { tokenSymbol, tokenName, amountMined, fundraiserUrl, message } = options;
+  const { tokenSymbol, tokenName, amountMined, rigUrl, message } = options;
 
   let text = `⛏️ Just mined ${amountMined} $${tokenSymbol} on ${tokenName}!`;
 
@@ -185,7 +185,7 @@ export async function shareMiningAchievement(options: {
 
   return composeCast({
     text,
-    embeds: [fundraiserUrl],
+    embeds: [rigUrl],
   });
 }
 

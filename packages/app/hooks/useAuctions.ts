@@ -4,11 +4,11 @@ import { base } from "wagmi/chains";
 import { zeroAddress, formatUnits } from "viem";
 import {
   MULTICALL_ABI,
-  getMulticallAddress,
+  CONTRACT_ADDRESSES,
   QUOTE_TOKEN_DECIMALS,
   type AuctionState,
 } from "@/lib/contracts";
-import { useFundraiserList } from "./useAllFundraisers";
+import { useCoinList } from "./useAllFundraisers";
 import { useFarcaster } from "./useFarcaster";
 import type { SubgraphCoinListItem } from "@/lib/subgraph-launchpad";
 
@@ -16,7 +16,7 @@ export type AuctionItem = {
   fundraiserAddress: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  fundraiserUri: string;
+  uri: string;
   // Auction state
   lpPrice: bigint; // Current LP cost (18 dec)
   quoteAccumulated: bigint; // USDC in auction (6 dec)
@@ -36,10 +36,12 @@ type IndexedFundraiser = {
 };
 
 export function useAuctions() {
-  const { coins: allCoins, isLoading: isLoadingList } = useFundraiserList("top", 100);
+  const { coins: allCoins, isLoading: isLoadingList } = useCoinList("top", 100);
   const { address: account } = useFarcaster();
 
-  // Build flat contract call array — all fundraisers use fundraiser multicall
+  const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
+
+  // Build flat contract call array using single multicall
   const { contracts, indexToFundraiser } = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const contractCalls: any[] = [];
@@ -48,10 +50,9 @@ export function useAuctions() {
     for (const u of allCoins) {
       if (!u.fundraiser?.uri?.startsWith("ipfs://")) continue;
       const fundraiserAddr = u.fundraiser.id.toLowerCase() as `0x${string}`;
-      const multicall = getMulticallAddress();
 
       contractCalls.push({
-        address: multicall,
+        address: multicallAddr,
         abi: MULTICALL_ABI,
         functionName: "getAuction" as const,
         args: [fundraiserAddr, account ?? zeroAddress] as const,
@@ -61,7 +62,7 @@ export function useAuctions() {
     }
 
     return { contracts: contractCalls, indexToFundraiser: mapping };
-  }, [allCoins, account]);
+  }, [allCoins, account, multicallAddr]);
 
   const { data: states, isLoading: isLoadingStates } = useReadContracts({
     contracts,
@@ -96,7 +97,7 @@ export function useAuctions() {
           fundraiserAddress,
           tokenName: coin.name,
           tokenSymbol: coin.symbol,
-          fundraiserUri: coin.fundraiser.uri,
+          uri: coin.fundraiser.uri,
           lpPrice: state.price,
           quoteAccumulated: state.quoteAccumulated,
           lpTokenPrice: state.lpTokenPrice,

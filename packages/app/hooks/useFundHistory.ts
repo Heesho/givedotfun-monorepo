@@ -11,12 +11,12 @@ export type DonationEvent = {
   txHash: string;
 };
 
-export function useDonationHistory(
+export function useFundHistory(
   fundraiserAddress: string | undefined,
   limit: number = 20,
 ) {
   const { data, isLoading } = useQuery({
-    queryKey: ["donationHistory", fundraiserAddress, limit],
+    queryKey: ["fundHistory", fundraiserAddress, limit],
     queryFn: async () => {
       const raw = await getDonations(fundraiserAddress!, limit);
       return raw.map((d: SubgraphDonation): DonationEvent => ({

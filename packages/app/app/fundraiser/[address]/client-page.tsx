@@ -5,8 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useReadContract } from "wagmi";
-import { base } from "wagmi/chains";
 import { formatEther, formatUnits } from "viem";
 import { NavBar } from "@/components/nav-bar";
 import { DonateModal } from "@/components/donate-modal";
@@ -14,7 +12,6 @@ import { TradeModal } from "@/components/trade-modal";
 import { AuctionModal } from "@/components/auction-modal";
 import { LiquidityModal } from "@/components/liquidity-modal";
 import { AdminModal } from "@/components/admin-modal";
-import { useFundraiserInfo } from "@/hooks/useFundraiserInfo";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useFarcaster, composeCast } from "@/hooks/useFarcaster";
@@ -23,8 +20,6 @@ import { usePriceHistory } from "@/hooks/usePriceHistory";
 import {
   CONTRACT_ADDRESSES,
   QUOTE_TOKEN_DECIMALS,
-  getMulticallAddress,
-  FUNDRAISER_ABI,
 } from "@/lib/contracts";
 import { getFundraiser } from "@/lib/subgraph-launchpad";
 import { truncateAddress, formatPrice, formatNumber, formatMarketCap } from "@/lib/format";
@@ -80,7 +75,7 @@ function formatPeriod(seconds: string | undefined): string {
 // Loading skeleton for the page
 function LoadingSkeleton() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-concrete-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -88,11 +83,6 @@ function LoadingSkeleton() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
-        <img
-          src="/botanicals/fern-frond.svg"
-          className="absolute top-0 left-0 w-40 opacity-[0.10] pointer-events-none select-none rotate-180"
-          aria-hidden="true"
-        />
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
@@ -109,6 +99,7 @@ function LoadingSkeleton() {
 
         {/* Content skeleton */}
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
+          {/* Token info skeleton */}
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-secondary animate-pulse" />
@@ -122,7 +113,11 @@ function LoadingSkeleton() {
               <div className="w-14 h-4 bg-secondary rounded animate-pulse" />
             </div>
           </div>
+
+          {/* Chart skeleton */}
           <div className="h-44 mb-2 -mx-4 bg-secondary/30 animate-pulse rounded" />
+
+          {/* Timeframe selector skeleton */}
           <div className="flex justify-between mb-5 px-2">
             {["1H", "1D", "1W", "1M", "ALL"].map((tf) => (
               <div key={tf} className="px-3.5 py-1.5 rounded-lg bg-secondary/50 text-[13px] text-muted-foreground">
@@ -130,6 +125,8 @@ function LoadingSkeleton() {
               </div>
             ))}
           </div>
+
+          {/* Stats skeleton */}
           <div className="mb-6">
             <div className="w-16 h-6 bg-secondary rounded animate-pulse mb-3" />
             <div className="grid grid-cols-2 gap-y-4 gap-x-8">
@@ -140,6 +137,13 @@ function LoadingSkeleton() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* About skeleton */}
+          <div className="mb-6">
+            <div className="w-16 h-6 bg-secondary rounded animate-pulse mb-3" />
+            <div className="w-full h-4 bg-secondary rounded animate-pulse mb-2" />
+            <div className="w-3/4 h-4 bg-secondary rounded animate-pulse mb-2" />
           </div>
         </div>
       </div>
@@ -161,36 +165,23 @@ export default function FundraiserDetailPage() {
     queryFn: () => getFundraiser(address),
     enabled: !!address,
     staleTime: 30_000,
-    refetchInterval: (query) => {
-      const fundraiser = query.state.data;
-      if (!fundraiser) return 3000;
-      if (!fundraiser.fundraiser) return 3000;
-      return false;
-    },
   });
 
-  const multicallAddress = getMulticallAddress();
-  const coreAddress = CONTRACT_ADDRESSES.core as `0x${string}`;
-
-  // Fetch fundraiser state
-  const { fundraiserState, isLoading: isFundLoading } = useFundraiserState(
+  // Fetch on-chain fundraiser state via multicall
+  const { fundraiserState, isLoading: isFundraiserStateLoading } = useFundraiserState(
     fundraiserAddress,
     account,
-    true
-  );
-
-  // Fetch fundraiser info (coin/auction/LP addresses, token name/symbol, launcher)
-  const { fundraiserInfo, isLoading: isFundraiserInfoLoading } = useFundraiserInfo(
-    fundraiserAddress,
-    coreAddress,
   );
 
   // Normalize fields
   const coinPrice = fundraiserState?.coinPrice;
   const fundraiserUri = fundraiserState?.fundraiserUri;
+  const accountCoinBalance = fundraiserState?.accountCoinBalance;
   const accountQuoteBalance = fundraiserState?.accountQuoteBalance;
   const accountUsdcBalance = fundraiserState?.accountUsdcBalance;
-  const accountCoinBalance = fundraiserState?.accountCoinBalance;
+
+  // Coin address from subgraph
+  const coinAddress = subgraphFundraiser?.coin?.id as `0x${string}` | undefined;
 
   // Fetch token metadata from IPFS
   const { metadata, logoUrl } = useTokenMetadata(fundraiserUri);
@@ -198,47 +189,55 @@ export default function FundraiserDetailPage() {
   // Fetch DexScreener data for liquidity/volume/price change
   const { pairData } = useDexScreener(
     fundraiserAddress,
-    fundraiserInfo?.coinAddress,
-    coreAddress,
+    coinAddress,
   );
 
   // Derived values
-  const tokenName = fundraiserInfo?.tokenName || subgraphFundraiser?.coin?.name || "Loading...";
-  const tokenSymbol = fundraiserInfo?.tokenSymbol || subgraphFundraiser?.coin?.symbol || "--";
+  const tokenName = subgraphFundraiser?.coin?.name || "Loading...";
+  const tokenSymbol = subgraphFundraiser?.coin?.symbol || "--";
 
+  // Price in USD = coinPrice (USDC, 18 dec) -- USDC ~= $1
   const priceUsd = coinPrice
     ? Number(formatEther(coinPrice))
     : 0;
 
+  // Total supply from subgraph (coin.totalSupply includes initial LP tokens)
   const totalSupplyRaw = subgraphFundraiser?.coin?.totalSupply
     ? parseFloat(subgraphFundraiser.coin.totalSupply)
     : 0;
   const totalSupply = totalSupplyRaw;
 
+  // Market cap = totalSupply * coinPrice (USDC ~= $1)
   const marketCapUsd =
     coinPrice && totalSupplyRaw > 0
       ? totalSupplyRaw * Number(formatEther(coinPrice))
       : 0;
 
+  // User position
   const userCoinBalance = accountCoinBalance
     ? Number(formatEther(accountCoinBalance))
     : 0;
   const positionBalanceUsd = userCoinBalance * priceUsd;
   const hasPosition = userCoinBalance > 0;
 
+  // User quote balance (USDC, 6 decimals)
   const userQuoteBalance = accountQuoteBalance
     ? Number(formatUnits(accountQuoteBalance, QUOTE_TOKEN_DECIMALS))
     : 0;
 
+  // User USDC balance (6 decimals)
   const userUsdcBalance = accountUsdcBalance
     ? Number(formatUnits(accountUsdcBalance, QUOTE_TOKEN_DECIMALS))
     : 0;
 
+  // Stats from subgraph (primary) + DexScreener (fallback)
+  // Multiply by 2 since subgraph liquidity is just USDC side of the pool
   const liquidityUsd = subgraphFundraiser?.coin?.liquidity
     ? parseFloat(subgraphFundraiser.coin.liquidity) * 2
     : (pairData?.liquidity?.usd ?? 0);
   const volume24h = pairData?.volume?.h24 ?? 0;
 
+  // Revenue from subgraph (BigDecimal strings already in quote token units)
   const treasuryRevenue = subgraphFundraiser?.treasuryRevenue
     ? parseFloat(subgraphFundraiser.treasuryRevenue)
     : 0;
@@ -246,17 +245,17 @@ export default function FundraiserDetailPage() {
     ? parseFloat(subgraphFundraiser.teamRevenue)
     : 0;
 
-  // Launcher address from useFundraiserInfo
-  const launcherAddress = fundraiserInfo?.launcher || null;
+  // Launcher address from subgraph
+  const launcherAddress = subgraphFundraiser?.launcher?.id || null;
 
-  // Ownership check
+  // Ownership check: compare connected wallet to launcher address
   const isOwner = !!(
     account &&
     launcherAddress &&
     account.toLowerCase() === launcherAddress.toLowerCase()
   );
 
-  // Created date from subgraph
+  // Created date from subgraph (needed for chart)
   const createdAtTimestamp = subgraphFundraiser?.createdAt
     ? Number(subgraphFundraiser.createdAt)
     : undefined;
@@ -265,7 +264,7 @@ export default function FundraiserDetailPage() {
     : null;
   const launchDateStr = createdAt ? getRelativeTime(createdAt) : "--";
 
-  // Initial LP price
+  // Initial LP price: usdcAmount / coinAmount from launch params
   const initialPrice = useMemo(() => {
     const usdc = parseFloat(subgraphFundraiser?.usdcAmount ?? "0");
     const coin = parseFloat(subgraphFundraiser?.coinAmount ?? "0");
@@ -273,17 +272,18 @@ export default function FundraiserDetailPage() {
     return 0;
   }, [subgraphFundraiser?.usdcAmount, subgraphFundraiser?.coinAmount]);
 
-  // Chart data
+  // Chart data from subgraph price history
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const { data: chartData } = usePriceHistory(
     fundraiserAddress,
     timeframe,
-    fundraiserInfo?.coinAddress,
+    coinAddress,
     priceUsd,
     createdAtTimestamp,
     initialPrice,
   );
 
+  // Timeframe-based price change: compare first chart data point to current price
   const displayChange = useMemo(() => {
     if (!chartData || chartData.length === 0 || priceUsd === 0) return 0;
     const firstPoint = chartData.find(d => d.value > 0);
@@ -321,14 +321,15 @@ export default function FundraiserDetailPage() {
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isLoading = isSubgraphLoading || (!!address && isFundLoading && isFundraiserInfoLoading);
+  // Show loading skeleton while critical data loads
+  const isLoading = isSubgraphLoading || (!!address && isFundraiserStateLoading);
 
   if (isLoading && !subgraphFundraiser) {
     return <LoadingSkeleton />;
   }
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-concrete-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -336,11 +337,6 @@ export default function FundraiserDetailPage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
-        <img
-          src="/botanicals/fern-frond.svg"
-          className="absolute top-0 left-0 w-40 opacity-[0.10] pointer-events-none select-none rotate-180"
-          aria-hidden="true"
-        />
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
@@ -349,6 +345,7 @@ export default function FundraiserDetailPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
+          {/* Center - Price appears on scroll */}
           <div className={`text-center transition-opacity duration-200 ${showHeaderPrice ? "opacity-100" : "opacity-0"}`}>
             <div className="text-[15px] font-semibold">{formatPrice(priceUsd)}</div>
             <div className="text-[11px] text-muted-foreground">{tokenSymbol}</div>
@@ -369,12 +366,10 @@ export default function FundraiserDetailPage() {
           {/* Token Info Section */}
           <div ref={tokenInfoRef} className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
-              <div className="glow-pedestal">
-                <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" showVineRing={true} />
-              </div>
+              <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
               <div>
                 <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                <div className="headline-brutal text-[15px]">{tokenSymbol}</div>
+                <div className="text-[15px] font-medium">{tokenSymbol}</div>
               </div>
             </div>
             <div className="text-right">
@@ -384,11 +379,11 @@ export default function FundraiserDetailPage() {
                   : formatPrice(priceUsd)}
               </div>
               {hoverData ? (
-                <div className="text-[13px] font-medium text-[#8E8E8E]">
+                <div className="text-[13px] font-medium text-zinc-400">
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className="text-[13px] font-medium text-[#8E8E8E]">
+                <div className="text-[13px] font-medium text-zinc-400">
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -414,7 +409,7 @@ export default function FundraiserDetailPage() {
                 onClick={() => setTimeframe(tf)}
                 className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
                   timeframe === tf
-                    ? "bg-concrete-700 text-white"
+                    ? "bg-zinc-700 text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
@@ -426,7 +421,7 @@ export default function FundraiserDetailPage() {
           {/* User Position Section */}
           {hasPosition && (
             <div className="mb-6">
-              <h2 className="headline-brutal text-[16px] mb-3">YOUR POSITION</h2>
+              <div className="font-semibold text-[18px] mb-3">Your position</div>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
@@ -447,41 +442,41 @@ export default function FundraiserDetailPage() {
 
           {/* Global Stats Grid */}
           <div className="mb-6">
-            <h2 className="headline-brutal text-[16px] mb-3">STATS</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="slab slab-accent p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Market cap</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+            <div className="font-semibold text-[18px] mb-3">Stats</div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   {formatMarketCap(marketCapUsd)}
                 </div>
               </div>
-              <div className="slab p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Total supply</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   {formatNumber(totalSupply)}
                 </div>
               </div>
-              <div className="slab p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Liquidity</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   ${formatNumber(liquidityUsd)}
                 </div>
               </div>
-              <div className="slab p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">24h volume</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   ${formatNumber(volume24h)}
                 </div>
               </div>
-              <div className="slab p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Treasury</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   ${treasuryRevenue.toFixed(2)}
                 </div>
               </div>
-              <div className="slab p-3">
-                <div className="text-[11px] uppercase tracking-wider text-[#8E8E8E] mb-1">Team</div>
-                <div className="text-[15px] font-bold text-white tabular-nums">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                <div className="font-semibold text-[15px] tabular-nums">
                   ${teamRevenue.toFixed(2)}
                 </div>
               </div>
@@ -490,10 +485,11 @@ export default function FundraiserDetailPage() {
 
           {/* About Section */}
           <div className="mb-6">
-            <h2 className="headline-brutal text-[16px] mb-3">ABOUT</h2>
+            <div className="font-semibold text-[18px] mb-3">About</div>
 
+            {/* Deployed by row */}
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-              <span className="text-[#8E8E8E]">Fundraiser</span>
+              <span className="text-zinc-400">Fundraiser</span>
               <span className="text-muted-foreground/60">·</span>
               <span>Deployed by</span>
               {launcherAddress ? (
@@ -507,6 +503,7 @@ export default function FundraiserDetailPage() {
               <span className="text-muted-foreground/60">{launchDateStr}</span>
             </div>
 
+            {/* Description from metadata */}
             {metadata?.description && (
               <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
                 {metadata.description}
@@ -514,15 +511,15 @@ export default function FundraiserDetailPage() {
             )}
             {!metadata?.description && (
               <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                A fundraiser coin. Contributors donate daily and claim each day&apos;s emission proportional to their share.
+                A fundraiser coin. Contributors donate and claim each epoch&apos;s emission proportional to their share.
               </p>
             )}
 
             {/* Address + link buttons */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {fundraiserInfo?.coinAddress && (
+              {coinAddress && (
                 <a
-                  href={`https://basescan.org/token/${fundraiserInfo.coinAddress}`}
+                  href={`https://basescan.org/token/${coinAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
@@ -530,9 +527,9 @@ export default function FundraiserDetailPage() {
                   {tokenSymbol}
                 </a>
               )}
-              {fundraiserInfo?.lpAddress && (
+              {subgraphFundraiser?.coin?.lpPair && (
                 <a
-                  href={`https://basescan.org/address/${fundraiserInfo.lpAddress}`}
+                  href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
@@ -568,31 +565,31 @@ export default function FundraiserDetailPage() {
             </div>
 
             {/* Fundraiser Parameters */}
-            <img src="/botanicals/vine-divider.svg" className="w-full h-4 opacity-30 my-4" aria-hidden="true" />
             <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-              {!subgraphFundraiser?.fundraiser && (
-                <>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i}>
-                      <div className="w-20 h-3 bg-secondary rounded animate-pulse mb-1" />
-                      <div className="w-16 h-5 bg-secondary rounded animate-pulse" />
-                    </div>
-                  ))}
-                </>
-              )}
-              {subgraphFundraiser?.fundraiser && (
+              {subgraphFundraiser ? (
                 <>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Initial emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.fundraiser.initialEmission)}</div>
+                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.initialEmission)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Min emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.fundraiser.minEmission)}</div>
+                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.minEmission)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
-                    <div className="font-semibold text-[14px]">{formatPeriod(String(parseInt(subgraphFundraiser.fundraiser.halvingPeriod) * parseInt(subgraphFundraiser.fundraiser.epochDuration)))}</div>
+                    <div className="font-semibold text-[14px]">
+                      {formatPeriod(
+                        String(
+                          parseInt(subgraphFundraiser.halvingPeriod) *
+                          parseInt(subgraphFundraiser.epochDuration)
+                        )
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
+                    <div className="font-semibold text-[14px]">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
                   </div>
                   {metadata?.recipientName && (
                     <div>
@@ -601,9 +598,11 @@ export default function FundraiserDetailPage() {
                     </div>
                   )}
                   <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">{metadata?.recipientName ? "Recipient address" : "Recipient"}</div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">
+                      {metadata?.recipientName ? "Recipient address" : "Recipient"}
+                    </div>
                     <div className="font-semibold text-[14px] font-mono">
-                      <AddressLink address={subgraphFundraiser.fundraiser.recipients?.[0]?.recipient ?? null} />
+                      <AddressLink address={subgraphFundraiser.recipient ?? fundraiserState?.recipient ?? null} />
                     </div>
                   </div>
                   {fundraiserState?.treasury && (
@@ -623,6 +622,15 @@ export default function FundraiserDetailPage() {
                     </div>
                   )}
                 </>
+              ) : (
+                <>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i}>
+                      <div className="w-20 h-3 bg-secondary rounded animate-pulse mb-1" />
+                      <div className="w-16 h-5 bg-secondary rounded animate-pulse" />
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           </div>
@@ -641,7 +649,7 @@ export default function FundraiserDetailPage() {
         )}
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-concrete-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
           <div className="flex items-center justify-between w-full max-w-[520px] px-4 py-3 bg-background">
             <div>
               <div className="text-muted-foreground text-[12px]">Market Cap</div>
@@ -652,6 +660,7 @@ export default function FundraiserDetailPage() {
             <div className="relative">
               {isConnected ? (
                 <>
+                  {/* Action Menu Popup - appears above button */}
                   {showActionMenu && (
                     <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-1.5">
                       <button
@@ -660,7 +669,7 @@ export default function FundraiserDetailPage() {
                           setTradeMode("buy");
                           setShowTradeModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
                         Buy
                       </button>
@@ -670,7 +679,7 @@ export default function FundraiserDetailPage() {
                           setTradeMode("sell");
                           setShowTradeModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
                         Sell
                       </button>
@@ -679,7 +688,7 @@ export default function FundraiserDetailPage() {
                           setShowActionMenu(false);
                           setShowDonateModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-lg bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
                         Donate
                       </button>
@@ -688,7 +697,7 @@ export default function FundraiserDetailPage() {
                           setShowActionMenu(false);
                           setShowAuctionModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-lg bg-prism-400 text-concrete-800 font-bold uppercase tracking-wider pulse-reward text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
                         Auction
                       </button>
@@ -697,7 +706,7 @@ export default function FundraiserDetailPage() {
                           setShowActionMenu(false);
                           setShowLiquidityModal(true);
                         }}
-                        className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
+                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
                         Liquidity
                       </button>
@@ -707,7 +716,7 @@ export default function FundraiserDetailPage() {
                             setShowActionMenu(false);
                             setShowAdminModal(true);
                           }}
-                          className="w-32 py-2.5 rounded-lg bg-concrete-600 hover:bg-concrete-700 text-white font-bold uppercase tracking-wider text-[14px] transition-colors"
+                          className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                         >
                           Admin
                         </button>
@@ -716,10 +725,10 @@ export default function FundraiserDetailPage() {
                   )}
                   <button
                     onClick={() => setShowActionMenu(!showActionMenu)}
-                    className={`w-32 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg transition-all ${
+                    className={`w-32 h-10 text-[14px] font-semibold rounded-xl transition-all ${
                       showActionMenu
-                        ? "bg-concrete-800 border-2 border-moss-400 text-moss-400"
-                        : "bg-moss-400 text-concrete-800"
+                        ? "bg-black border-2 border-white text-white"
+                        : "bg-white text-black"
                     }`}
                   >
                     {showActionMenu ? "\u2715" : "Actions"}
@@ -729,7 +738,7 @@ export default function FundraiserDetailPage() {
                 <button
                   onClick={() => connect()}
                   disabled={isConnecting || isInFrame === true}
-                  className="w-40 h-10 text-[14px] font-bold uppercase tracking-wider rounded-lg bg-moss-400 text-concrete-800 hover:bg-moss-400/90 transition-colors disabled:opacity-50"
+                  className="w-40 h-10 text-[14px] font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
                 >
                   {isConnecting ? "Connecting..." : "Connect Wallet"}
                 </button>
@@ -749,8 +758,8 @@ export default function FundraiserDetailPage() {
         tokenName={tokenName}
         tokenLogoUrl={logoUrl}
         recipientName={metadata?.recipientName}
-        epochDuration={subgraphFundraiser?.fundraiser?.epochDuration ? Number(subgraphFundraiser.fundraiser.epochDuration) : 86400}
-        recipientAddress={subgraphFundraiser?.fundraiser?.recipients?.[0]?.recipient ?? null}
+        recipientAddress={subgraphFundraiser?.recipient ?? fundraiserState?.recipient ?? undefined}
+        epochDuration={subgraphFundraiser?.epochDuration ? parseInt(subgraphFundraiser.epochDuration) : undefined}
       />
 
       {/* Trade Modal (Buy/Sell) */}
@@ -760,10 +769,10 @@ export default function FundraiserDetailPage() {
         mode={tradeMode}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
-        coinAddress={(fundraiserInfo?.coinAddress ?? "0x0") as `0x${string}`}
+        unitAddress={(coinAddress ?? "0x0") as `0x${string}`}
         marketPrice={priceUsd}
         userQuoteBalance={accountQuoteBalance ?? 0n}
-        userCoinBalance={accountCoinBalance ?? 0n}
+        userUnitBalance={accountCoinBalance ?? 0n}
       />
 
       {/* Auction Modal */}
@@ -773,14 +782,13 @@ export default function FundraiserDetailPage() {
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
-        multicallAddress={multicallAddress}
       />
 
       {/* Liquidity Modal */}
       <LiquidityModal
         isOpen={showLiquidityModal}
         onClose={() => setShowLiquidityModal(false)}
-        coinAddress={(fundraiserInfo?.coinAddress ?? "0x0") as `0x${string}`}
+        unitAddress={(coinAddress ?? "0x0") as `0x${string}`}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
         tokenBalance={userCoinBalance}
@@ -799,7 +807,7 @@ export default function FundraiserDetailPage() {
           treasury: fundraiserState?.treasury ?? "",
           team: fundraiserState?.team ?? null,
           uri: fundraiserUri ?? "",
-          recipient: subgraphFundraiser?.fundraiser?.recipients?.[0]?.recipient ?? null,
+          recipient: subgraphFundraiser?.recipient ?? fundraiserState?.recipient ?? null,
         }}
       />
 

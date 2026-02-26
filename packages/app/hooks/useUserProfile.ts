@@ -15,7 +15,7 @@ export type UserHolding = {
   coinAddress: `0x${string}`;   // Coin token address
   tokenName: string;
   tokenSymbol: string;
-  fundraiserUri: string;
+  uri: string;
   balance: bigint;              // Raw token balance (18 decimals)
   balanceNum: number;           // Formatted balance
   priceUsd: number;             // Price per token in USD
@@ -26,7 +26,7 @@ export type UserLaunchedFundraiser = {
   address: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  fundraiserUri: string;
+  uri: string;
   totalMinted: number;
   coinPrice: number;
   marketCapUsd: number;
@@ -100,7 +100,7 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
         coinAddress: coin.id.toLowerCase() as `0x${string}`,
         tokenName: coin.name,
         tokenSymbol: coin.symbol,
-        fundraiserUri: coin.fundraiser?.uri ?? "",
+        uri: coin.fundraiser?.uri ?? "",
         balance,
         balanceNum,
         priceUsd,
@@ -132,7 +132,7 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
           address: (u.fundraiser?.id?.toLowerCase() ?? "0x0") as `0x${string}`,
           tokenName: u.name,
           tokenSymbol: u.symbol,
-          fundraiserUri: u.fundraiser?.uri ?? "",
+          uri: u.fundraiser?.uri ?? "",
           totalMinted,
           coinPrice,
           marketCapUsd,

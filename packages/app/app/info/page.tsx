@@ -6,48 +6,61 @@ const INFO_SECTIONS = [
   {
     title: "What is give.fun?",
     content:
-      "A fair-launch fundraising platform on Base. No presales, no insiders, no rugs. Tokens are earned through donations to creators and causes.",
+      "A crypto GoFundMe on Base. Create perpetual fundraisers for creators, charities, projects, or causes. Donors contribute USDC and earn proportional token emissions in return.",
     bullets: [
-      "Liquidity is locked forever -- LP tokens are burned on launch",
-      "All contracts are immutable -- nobody can change the rules",
-      "Donate to causes and earn tokens proportional to your contribution",
+      "Liquidity is locked forever — LP tokens are burned on launch",
+      "All contracts are immutable — nobody can change the rules",
+      "50% of every donation goes directly to the recipient",
     ],
   },
   {
-    title: "How Donating Works",
+    title: "How It Works",
     content:
-      "Donate to a creator or cause and earn tokens in return. Each day's token emission is split among donors based on how much they contributed.",
+      "Donate USDC into daily epoch pools. Your share of that epoch's token emission matches your share of total donations. Emissions halve on a schedule but never drop below a set floor.",
     bullets: [
-      "50% of every donation goes straight to the recipient",
-      "Your share of that day's emission matches your share of donations",
-      "Emissions halve on a schedule but never drop below a set floor",
+      "Each epoch (day) has a fixed token emission to distribute",
+      "Your proportional share of donations = your share of tokens",
+      "Claim your earned tokens after each epoch ends",
+      "Emissions halve over time, creating decreasing supply inflation",
     ],
   },
   {
-    title: "Why It's Fair",
+    title: "Fee Structure",
     content:
-      "No hidden allocations. No team tokens. No presales. The token distribution is entirely determined by donations -- the more you give, the more you earn.",
+      "Every donation is split transparently. The majority goes directly to the designated recipient.",
     bullets: [
-      "Everyone sees the same rules in real-time",
-      "No hidden allocations or team tokens",
-      "Treasury fees are auctioned off for LP tokens, which get burned -- permanently deepening liquidity",
+      "50% — Recipient (the person or cause being funded)",
+      "45% — Treasury (grows liquidity via auctions)",
+      "4% — Team (the launcher who created the fundraiser)",
+      "1% — Protocol fee",
+    ],
+  },
+  {
+    title: "Treasury Auctions",
+    content:
+      "Treasury fees accumulate as USDC and are auctioned off to LP token holders. This permanently deepens liquidity for the token.",
+    bullets: [
+      "Auction price decays over time (Dutch auction)",
+      "Buy when the price makes it profitable",
+      "LP tokens used in auctions get burned — liquidity only grows",
     ],
   },
   {
     title: "For Launchers",
     content:
-      "Launch a fundraiser with your own emission schedule and recipient. Everything is configured at launch and locked forever.",
+      "Launch a fundraiser with your own emission schedule and halving parameters. Everything is configured at launch and locked forever.",
     bullets: [
-      "Set your own halvings, emission rates, and epoch durations",
-      "Earn 4% of all activity on your fundraiser as the team fee",
-      "Treasury accumulates fees that get auctioned to grow your liquidity",
+      "Set initial and floor emission rates",
+      "Configure halving period and epoch duration",
+      "Earn 4% of all donations as the team fee",
+      "Treasury accumulates fees that get auctioned to grow liquidity",
     ],
   },
 ];
 
 export default function InfoPage() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-concrete-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -57,7 +70,7 @@ export default function InfoPage() {
       >
         {/* Header */}
         <div className="px-4 pb-4">
-          <h1 className="text-2xl headline-brutal">ABOUT</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">About</h1>
         </div>
 
         {/* Content */}
@@ -80,7 +93,7 @@ export default function InfoPage() {
                       key={i}
                       className="text-sm text-muted-foreground flex items-start gap-2"
                     >
-                      <span className="text-moss-400 mt-0.5">•</span>
+                      <span className="text-zinc-500 mt-0.5">&bull;</span>
                       {bullet}
                     </li>
                   ))}

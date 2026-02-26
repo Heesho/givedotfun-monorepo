@@ -26,7 +26,6 @@ type AuctionModalProps = {
   fundraiserAddress: `0x${string}`;
   tokenSymbol: string;
   tokenName: string;
-  multicallAddress?: `0x${string}`;
 };
 
 export function AuctionModal({
@@ -35,16 +34,13 @@ export function AuctionModal({
   fundraiserAddress,
   tokenSymbol,
   tokenName,
-  multicallAddress,
 }: AuctionModalProps) {
   const { address: account } = useFarcaster();
-  const multicallAddr =
-    multicallAddress ?? (CONTRACT_ADDRESSES.multicall as `0x${string}`);
+  const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
 
   const { auctionState, isLoading, refetch: refetchAuction } = useAuctionState(
     fundraiserAddress,
-    account,
-    multicallAddr
+    account
   );
 
   const { execute, status, txHash, error, reset } = useBatchedTransaction();
@@ -142,7 +138,7 @@ export function AuctionModal({
   const isError = status === "error";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -245,12 +241,12 @@ export function AuctionModal({
                   disabled={!account || !isAuctionActive || !hasEnoughLp || isPending || isSuccess}
                   className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all flex items-center justify-center gap-2 ${
                     isSuccess
-                      ? "bg-moss-300 text-concrete-800"
+                      ? "bg-zinc-300 text-black"
                       : isError
-                      ? "bg-concrete-600 text-white"
+                      ? "bg-zinc-600 text-white"
                       : !account || !isAuctionActive || !hasEnoughLp || isPending
-                      ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
-                      : "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
+                      ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                      : "bg-white text-black hover:bg-zinc-200"
                   }`}
                 >
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

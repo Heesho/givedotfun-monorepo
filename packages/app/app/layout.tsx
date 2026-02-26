@@ -23,10 +23,10 @@ const miniAppEmbed = {
 
 export const metadata: Metadata = {
   title: "give.fun",
-  description: "A fair-launch fundraising platform on Base. Donate to causes and earn tokens.",
+  description: "A crypto GoFundMe on Base. Create fundraisers, donate USDC, earn tokens.",
   openGraph: {
     title: "give.fun",
-    description: "A fair-launch fundraising platform on Base. Donate to causes and earn tokens.",
+    description: "A crypto GoFundMe on Base. Create fundraisers, donate USDC, earn tokens.",
     url: appDomain,
     images: [
       {

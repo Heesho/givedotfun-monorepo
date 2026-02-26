@@ -7,8 +7,8 @@ import { useReadContract } from "wagmi";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
-import { useFundraiserLeaderboard } from "@/hooks/useFundraiserLeaderboard";
-import { useDonationHistory, type DonationEvent } from "@/hooks/useDonationHistory";
+import { useRigLeaderboard } from "@/hooks/useRigLeaderboard";
+import { useFundHistory, type DonationEvent } from "@/hooks/useFundHistory";
 import {
   useBatchedTransaction,
   encodeApproveCall,
@@ -23,7 +23,7 @@ import {
 } from "@/lib/contracts";
 import { Leaderboard } from "@/components/leaderboard";
 import { DonationHistoryItem } from "@/components/donation-history-item";
-import { truncateAddress, timeAgo, formatUSDC } from "@/lib/format";
+import { timeAgo, formatUSDC } from "@/lib/format";
 import { TokenLogo } from "@/components/token-logo";
 
 // Preset funding amounts
@@ -41,8 +41,8 @@ type DonateModalProps = {
   tokenName?: string;
   tokenLogoUrl?: string | null;
   recipientName?: string;
-  epochDuration?: number;
   recipientAddress?: string | null;
+  epochDuration?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -70,8 +70,8 @@ export function DonateModal({
   tokenName = "Token",
   tokenLogoUrl,
   recipientName,
-  epochDuration: epochDurationProp = 86400,
-  recipientAddress: recipientAddressProp = null,
+  recipientAddress: recipientAddressProp,
+  epochDuration: epochDurationProp,
 }: DonateModalProps) {
   // ---------- Local UI state ----------
   const [fundAmount, setFundAmount] = useState("1");
@@ -109,7 +109,7 @@ export function DonateModal({
   } = useBatchedTransaction();
 
   // Allowance check — skip approve when sufficient
-  const multicallAddress = CONTRACT_ADDRESSES.multicall as `0x${string}`;
+  const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
   const fundAmountWei = (() => {
     try {
       const v = parseFloat(fundAmount);
@@ -121,7 +121,7 @@ export function DonateModal({
     address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "allowance",
-    args: [account!, multicallAddress],
+    args: [account!, multicallAddr],
     query: {
       enabled: !!account && fundAmountWei > 0n,
     },
@@ -131,12 +131,12 @@ export function DonateModal({
     entries: leaderboardEntries,
     userRank,
     isLoading: isLeaderboardLoading,
-  } = useFundraiserLeaderboard(fundraiserAddress, account, 10);
+  } = useRigLeaderboard(fundraiserAddress, account, 10);
 
   const {
     donations,
     isLoading: isHistoryLoading,
-  } = useDonationHistory(fundraiserAddress, 10);
+  } = useFundHistory(fundraiserAddress, 10);
 
   // ---------- Derived display values ----------
 
@@ -172,12 +172,12 @@ export function DonateModal({
   // Epoch countdown from chain data
   const startTime = fundraiserState ? Number(fundraiserState.startTime) : 0;
   const currentEpoch = fundraiserState ? Number(fundraiserState.currentEpoch) : 0;
-  const epochDuration = epochDurationProp;
+  const epochDuration = epochDurationProp ?? 86400;
   const dayEndTime = startTime > 0 ? startTime + (currentEpoch + 1) * epochDuration : 0;
   const dayEndsIn = Math.max(0, dayEndTime - now);
 
-  // Recipient address (gets 50% of donations) — passed from parent
-  const recipientAddress = recipientAddressProp;
+  // Recipient address from multicall state or prop
+  const recipientAddress = fundraiserState?.recipient ?? recipientAddressProp ?? null;
 
   // Parsed amount from input
   const parsedAmount = parseFloat(fundAmount) || 0;
@@ -266,13 +266,13 @@ export function DonateModal({
 
     const calls: Call[] = [];
 
-    // Approve quote token for fund multicall (skip if allowance is sufficient)
+    // Approve quote token for multicall (skip if allowance is sufficient)
     const needsApproval = currentAllowance === undefined || currentAllowance < amount;
     if (needsApproval) {
       calls.push(
         encodeApproveCall(
           CONTRACT_ADDRESSES.usdc as `0x${string}`,
-          multicallAddress,
+          multicallAddr,
           amount
         )
       );
@@ -281,7 +281,7 @@ export function DonateModal({
     // Fund call
     calls.push(
       encodeContractCall(
-        multicallAddress,
+        multicallAddr,
         MULTICALL_ABI,
         "fund",
         [fundraiserAddress, account, recipientAddress, amount, message || defaultMessage]
@@ -289,28 +289,28 @@ export function DonateModal({
     );
 
     await execute(calls);
-  }, [account, fundraiserState, fundAmount, fundraiserAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddress]);
+  }, [account, fundraiserState, fundAmount, fundraiserAddress, recipientAddress, execute, txStatus, currentAllowance, multicallAddr, message, defaultMessage]);
 
   const handleClaim = useCallback(async () => {
     if (!account || claimableEpochs.length === 0 || txStatus === "pending") return;
     const dayIds = claimableEpochs.map((d) => d.epoch);
     const calls: Call[] = [
       encodeContractCall(
-        CONTRACT_ADDRESSES.multicall as `0x${string}`,
+        multicallAddr,
         MULTICALL_ABI,
         "claimMultiple",
         [fundraiserAddress, account, dayIds]
       ),
     ];
     await execute(calls);
-  }, [account, claimableEpochs, fundraiserAddress, execute, txStatus]);
+  }, [account, claimableEpochs, fundraiserAddress, execute, txStatus, multicallAddr]);
 
   // ---------- Render ----------
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -391,7 +391,7 @@ export function DonateModal({
                 </div>
               </div>
 
-              {/* Fund Preset Amounts - no header */}
+              {/* Donate Preset Amounts */}
               <div className="mb-1">
                 {!isCustom ? (
                   <div className="flex gap-1.5">
@@ -402,8 +402,8 @@ export function DonateModal({
                         className={`
                           flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all
                           ${selectedPreset === amount
-                            ? "bg-moss-400 text-concrete-800"
-                            : "bg-concrete-600 text-white hover:bg-concrete-500"
+                            ? "bg-white text-black"
+                            : "bg-zinc-800 text-white hover:bg-zinc-700"
                           }
                         `}
                       >
@@ -412,7 +412,7 @@ export function DonateModal({
                     ))}
                     <button
                       onClick={handleCustomSelect}
-                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-concrete-600 text-white hover:bg-concrete-500"
+                      className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all bg-zinc-800 text-white hover:bg-zinc-700"
                     >
                       Other
                     </button>
@@ -425,11 +425,11 @@ export function DonateModal({
                         setFundAmount("1");
                         setSelectedPreset(1);
                       }}
-                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-concrete-600 text-white hover:bg-concrete-500 transition-all"
+                      className="px-3 py-2 rounded-lg text-[13px] font-semibold bg-zinc-800 text-white hover:bg-zinc-700 transition-all"
                     >
                       ✕
                     </button>
-                    <div className="flex-1 flex items-center gap-2 bg-concrete-700 rounded-lg px-3 py-1.5">
+                    <div className="flex-1 flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-1.5">
                       <span className="text-base text-muted-foreground">$</span>
                       <input
                         type="number"
@@ -437,7 +437,7 @@ export function DonateModal({
                         onChange={(e) => handleCustomChange(e.target.value)}
                         placeholder="0.00"
                         autoFocus
-                        className="flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#8E8E8E] tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-zinc-600 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                   </div>
@@ -454,7 +454,7 @@ export function DonateModal({
 
               {/* Your Position */}
               <div className="mb-6">
-                <div className="headline-brutal text-[18px] mb-3">Your position</div>
+                <div className="font-semibold text-[18px] mb-3">Your position</div>
 
                 {/* Pending Claims */}
                 {unclaimedDayCount > 0 && (
@@ -474,14 +474,14 @@ export function DonateModal({
                     <button
                       onClick={handleClaim}
                       disabled={txStatus === "pending" || txStatus === "success"}
-                      className={`px-5 py-2 text-[13px] font-bold uppercase tracking-wider rounded-xl transition-all flex items-center gap-1.5 ${
+                      className={`px-5 py-2 text-[13px] font-semibold rounded-xl transition-all flex items-center gap-1.5 ${
                         txStatus === "success"
-                          ? "bg-moss-300 text-concrete-800"
+                          ? "bg-zinc-300 text-black"
                           : txStatus === "error"
-                          ? "bg-concrete-600 text-white"
+                          ? "bg-zinc-600 text-white"
                           : txStatus === "pending"
-                          ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
-                          : "bg-prism-400 text-concrete-800 hover:bg-prism-300 pulse-reward"
+                          ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                          : "bg-white text-black hover:bg-zinc-200"
                       }`}
                     >
                       {txStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -543,7 +543,7 @@ export function DonateModal({
                     </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-[12px] mb-1">Funded</div>
+                    <div className="text-muted-foreground text-[12px] mb-1">Donated</div>
                     <div className="font-semibold text-[15px] tabular-nums">
                       --
                     </div>
@@ -551,9 +551,9 @@ export function DonateModal({
                 </div>
               </div>
 
-              {/* Recent Mines */}
+              {/* Recent Donations */}
               <div className="mt-6">
-                <h2 className="headline-brutal text-[18px] mb-3">Recent Donations</h2>
+                <h2 className="text-[18px] font-semibold mb-3">Recent Donations</h2>
                 {isHistoryLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -612,9 +612,9 @@ export function DonateModal({
               onChange={(e) => setMessage(e.target.value)}
               placeholder={defaultMessage}
               maxLength={100}
-              className="w-full bg-concrete-700 rounded-xl px-4 py-2 text-[15px] outline-none placeholder:text-[#8E8E8E] mb-2"
+              className="w-full bg-zinc-800 rounded-xl px-4 py-2 text-[15px] outline-none placeholder:text-zinc-500 mb-2"
             />
-            {/* Amount, Balance, Mine Button */}
+            {/* Amount, Balance, Donate Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div>
@@ -636,21 +636,21 @@ export function DonateModal({
                 className={`
                   w-32 h-10 text-[14px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2
                   ${txStatus === "success"
-                    ? "bg-moss-300 text-concrete-800"
+                    ? "bg-zinc-300 text-black"
                     : txStatus === "error"
-                    ? "bg-concrete-600 text-white"
+                    ? "bg-zinc-600 text-white"
                     : txStatus === "pending"
-                    ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
+                    ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
                     : parsedAmount > 0 && parsedAmount <= userBalance
-                      ? "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
-                      : "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
+                      ? "bg-white text-black hover:bg-zinc-200"
+                      : "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                   }
                 `}
               >
                 {txStatus === "pending" && <Loader2 className="w-4 h-4 animate-spin" />}
                 {txStatus === "success" && <CheckCircle className="w-4 h-4" />}
                 {txStatus === "pending"
-                  ? "Funding..."
+                  ? "Donating..."
                   : txStatus === "success"
                   ? "Success"
                   : txStatus === "error"

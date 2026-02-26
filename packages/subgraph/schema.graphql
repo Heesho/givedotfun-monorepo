@@ -258,6 +258,7 @@ type Fundraiser @entity(immutable: false) {
   halvingPeriod: BigInt!               # Time or token amount for halving
 
   # Revenue tracking (in quoteToken)
+  recipientRevenue: BigDecimal!        # Fees sent to recipient (50%)
   treasuryRevenue: BigDecimal!         # Fees sent to auction/treasury
   teamRevenue: BigDecimal!             # Fees to team
   protocolRevenue: BigDecimal!         # Fees to protocol
@@ -330,7 +331,7 @@ type Donation @entity(immutable: true) {
   fundraiser: Fundraiser!
 
   donor: Account!
-  recipient: Bytes!                    # Recipient address chosen by donor
+  recipient: Bytes                     # Recipient address (read from fundraiser contract-level recipient)
 
   day: BigInt!                         # Day number
   amount: BigDecimal!                  # Donation amount

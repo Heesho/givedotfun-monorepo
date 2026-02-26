@@ -32,10 +32,10 @@ type TradeModalProps = {
   mode: "buy" | "sell";
   tokenSymbol: string;
   tokenName: string;
-  coinAddress: `0x${string}`;
+  unitAddress: `0x${string}`;
   marketPrice: number;
   userQuoteBalance: bigint;
-  userCoinBalance: bigint;
+  userUnitBalance: bigint;
 };
 
 // ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-concrete-700/50 active:bg-concrete-600/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
     >
       {children}
     </button>
@@ -90,10 +90,10 @@ export function TradeModal({
   mode,
   tokenSymbol,
   tokenName,
-  coinAddress,
+  unitAddress,
   marketPrice,
   userQuoteBalance,
-  userCoinBalance,
+  userUnitBalance,
 }: TradeModalProps) {
   // ---- Local state --------------------------------------------------------
   const [amount, setAmount] = useState("0");
@@ -115,8 +115,8 @@ export function TradeModal({
   // ---- Derived amounts ----------------------------------------------------
   const sellDecimals = isBuy ? QUOTE_TOKEN_DECIMALS : 18;
   const outDecimals = isBuy ? 18 : QUOTE_TOKEN_DECIMALS;
-  const sellToken = isBuy ? usdcAddress : coinAddress;
-  const buyToken = isBuy ? coinAddress : usdcAddress;
+  const sellToken = isBuy ? usdcAddress : unitAddress;
+  const buyToken = isBuy ? unitAddress : usdcAddress;
 
   const parsedInput = useMemo(() => {
     try {
@@ -132,9 +132,9 @@ export function TradeModal({
   // ---- Balance display ----------------------------------------------------
   const displayBalance = isBuy
     ? formatUnits(userQuoteBalance, QUOTE_TOKEN_DECIMALS)
-    : formatEther(userCoinBalance);
+    : formatEther(userUnitBalance);
 
-  const userBalanceWei = isBuy ? userQuoteBalance : userCoinBalance;
+  const userBalanceWei = isBuy ? userQuoteBalance : userUnitBalance;
   const insufficientBalance = parsedInput > 0n && parsedInput > userBalanceWei;
 
   const availableDisplay = isBuy
@@ -158,7 +158,7 @@ export function TradeModal({
     address: CONTRACT_ADDRESSES.uniV2Factory as `0x${string}`,
     abi: UNIV2_FACTORY_ABI,
     functionName: "getPair",
-    args: [usdcAddress, coinAddress],
+    args: [usdcAddress, unitAddress],
   });
 
   const hasPair =
@@ -183,19 +183,19 @@ export function TradeModal({
     query: { enabled: hasPair },
   });
 
-  // Spot price from LP reserves (USDC per Coin)
+  // Spot price from LP reserves (USDC per Unit)
   const { spotPrice, reserveIn, reserveOut } = useMemo(() => {
     if (!reserves || !token0) return { spotPrice: null, reserveIn: 0n, reserveOut: 0n };
     const [reserve0, reserve1] = reserves;
     const isToken0Usdc = token0.toLowerCase() === usdcAddress.toLowerCase();
     const reserveUsdc = isToken0Usdc ? reserve0 : reserve1;
-    const reserveCoin = isToken0Usdc ? reserve1 : reserve0;
-    if (reserveCoin === 0n) return { spotPrice: 0, reserveIn: 0n, reserveOut: 0n };
-    // USDC per Coin = (reserveUsdc / 1e6) / (reserveCoin / 1e18)
-    const price = (Number(reserveUsdc) * 1e12) / Number(reserveCoin);
+    const reserveUnit = isToken0Usdc ? reserve1 : reserve0;
+    if (reserveUnit === 0n) return { spotPrice: 0, reserveIn: 0n, reserveOut: 0n };
+    // USDC per Unit = (reserveUsdc / 1e6) / (reserveUnit / 1e18)
+    const price = (Number(reserveUsdc) * 1e12) / Number(reserveUnit);
     // reserveIn/Out relative to the trade direction
-    const rIn = isBuy ? reserveUsdc : reserveCoin;
-    const rOut = isBuy ? reserveCoin : reserveUsdc;
+    const rIn = isBuy ? reserveUsdc : reserveUnit;
+    const rOut = isBuy ? reserveUnit : reserveUsdc;
     return { spotPrice: price, reserveIn: rIn, reserveOut: rOut };
   }, [reserves, token0, usdcAddress, isBuy]);
 
@@ -369,7 +369,7 @@ export function TradeModal({
   const isSuccess = status === "success";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-concrete-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -458,9 +458,9 @@ export function TradeModal({
 
           {/* Error messages */}
           {(quoteError || txError) && (
-            <div className="px-3 py-2 rounded-lg bg-concrete-600/30 border border-concrete-600/40 flex items-start gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 text-[#8E8E8E] mt-0.5 flex-shrink-0" />
-              <span className="text-[12px] text-[#8E8E8E]">
+            <div className="px-3 py-2 rounded-lg bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
+              <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+              <span className="text-[12px] text-zinc-400">
                 {(() => {
                   const msg = txError?.message || quoteError?.message || "";
                   if (msg.includes("rejected") || msg.includes("denied")) return "Transaction cancelled";
@@ -481,10 +481,10 @@ export function TradeModal({
             onClick={handleConfirm}
             className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
-                ? "bg-concrete-600 text-[#8E8E8E] cursor-not-allowed"
+                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                 : isSuccess
-                ? "bg-moss-300 text-concrete-800"
-                : "bg-moss-400 text-concrete-800 font-bold uppercase tracking-wider hover:bg-moss-300"
+                ? "bg-zinc-300 text-black"
+                : "bg-white text-black hover:bg-zinc-200"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

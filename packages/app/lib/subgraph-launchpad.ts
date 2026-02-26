@@ -46,19 +46,17 @@ export type SubgraphFundraiser = {
   treasuryRevenue: string; // BigDecimal
   teamRevenue: string; // BigDecimal
   protocolRevenue: string; // BigDecimal
+  recipientRevenue: string; // BigDecimal
   totalMinted: string; // BigDecimal
   lastActivityAt: string; // BigInt
   createdAt: string;
   createdAtBlock: string;
-  fundraiser: {
-    id: string;
-    initialEmission: string;
-    minEmission: string;
-    halvingPeriod: string;
-    minDonation: string;
-    epochDuration: string;
-    recipients: { recipient: string }[];
-  } | null;
+  initialEmission: string;
+  minEmission: string;
+  halvingPeriod: string;
+  minDonation: string;
+  epochDuration: string;
+  recipient: string | null; // Bytes, nullable
 };
 
 export type SubgraphCoinListItem = {
@@ -91,7 +89,6 @@ export type SubgraphAccount = {
   id: string;
   totalSwapVolume: string;
   totalFundraiserSpend: string;
-  totalDonated: string;
   lastActivityAt: string;
 };
 
@@ -102,6 +99,7 @@ export type SubgraphDonation = {
   amount: string; // BigDecimal (USDC)
   uri: string;
   recipientAmount: string; // BigDecimal
+  recipient: string | null; // nullable
   timestamp: string;
   txHash: string;
 };
@@ -146,21 +144,17 @@ const FUNDRAISER_FIELDS = `
   treasuryRevenue
   teamRevenue
   protocolRevenue
+  recipientRevenue
   totalMinted
   lastActivityAt
   createdAt
   createdAtBlock
-  fundraiser {
-    id
-    initialEmission
-    minEmission
-    halvingPeriod
-    minDonation
-    epochDuration
-    recipients {
-      recipient
-    }
-  }
+  initialEmission
+  minEmission
+  halvingPeriod
+  minDonation
+  epochDuration
+  recipient
 `;
 
 const COIN_LIST_FIELDS = `
@@ -246,28 +240,7 @@ export const SEARCH_COINS_QUERY = gql`
       orderBy: marketCap
       orderDirection: desc
     ) {
-      id
-      name
-      symbol
-      lpPair
-      price
-      priceUSD
-      marketCap
-      marketCapUSD
-      liquidity
-      liquidityUSD
-      volume24h
-      priceChange24h
-      totalSupply
-      totalMinted
-      lastActivityAt
-      createdAt
-      fundraiser {
-        id
-        uri
-        launcher { id }
-        auction
-      }
+      ${COIN_LIST_FIELDS}
     }
   }
 `;
@@ -306,7 +279,6 @@ export const GET_ACCOUNT_QUERY = gql`
       id
       totalSwapVolume
       totalFundraiserSpend
-      totalDonated
       lastActivityAt
     }
   }
@@ -329,6 +301,7 @@ export const GET_DONATIONS_QUERY = gql`
       amount
       uri
       recipientAmount
+      recipient
       timestamp
       txHash
     }
@@ -350,7 +323,7 @@ export const GET_COIN_MINUTE_DATA_QUERY = gql`
       high
       low
       close
-      volumeUnit
+      volumeCoin
       volumeUsdc
       txCount
     }
@@ -372,7 +345,7 @@ export const GET_COIN_HOUR_DATA_QUERY = gql`
       high
       low
       close
-      volumeUnit
+      volumeCoin
       volumeUsdc
       txCount
     }
@@ -394,7 +367,7 @@ export const GET_COIN_DAY_DATA_QUERY = gql`
       high
       low
       close
-      volumeUnit
+      volumeCoin
       volumeUsdc
       txCount
     }
@@ -506,12 +479,15 @@ export async function getFundraisers(
   orderDirection: "asc" | "desc" = "desc"
 ): Promise<SubgraphFundraiser[]> {
   try {
-    const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(GET_FUNDRAISERS_QUERY, {
-      first,
-      skip,
-      orderBy,
-      orderDirection,
-    });
+    const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(
+      GET_FUNDRAISERS_QUERY,
+      {
+        first,
+        skip,
+        orderBy,
+        orderDirection,
+      }
+    );
     return data.fundraisers;
   } catch (error) {
     console.error("[getFundraisers] Error:", error);
@@ -538,14 +514,15 @@ export async function searchCoins(
   }
 }
 
-export async function getFundraiser(id: string): Promise<SubgraphFundraiser | null> {
+export async function getFundraiser(
+  id: string
+): Promise<SubgraphFundraiser | null> {
   try {
-    const data = await client.request<{ fundraiser: SubgraphFundraiser | null }>(
-      GET_FUNDRAISER_QUERY,
-      {
-        id: id.toLowerCase(),
-      }
-    );
+    const data = await client.request<{
+      fundraiser: SubgraphFundraiser | null;
+    }>(GET_FUNDRAISER_QUERY, {
+      id: id.toLowerCase(),
+    });
     return data.fundraiser;
   } catch (error) {
     console.error("[getFundraiser] Error:", error);
@@ -568,7 +545,9 @@ export async function getAccount(id: string): Promise<SubgraphAccount | null> {
   }
 }
 
-export async function getTrendingFundraisers(first = 20): Promise<SubgraphFundraiser[]> {
+export async function getTrendingFundraisers(
+  first = 20
+): Promise<SubgraphFundraiser[]> {
   try {
     const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(
       GET_TRENDING_FUNDRAISERS_QUERY,
@@ -581,7 +560,9 @@ export async function getTrendingFundraisers(first = 20): Promise<SubgraphFundra
   }
 }
 
-export async function getTopFundraisers(first = 20): Promise<SubgraphFundraiser[]> {
+export async function getTopFundraisers(
+  first = 20
+): Promise<SubgraphFundraiser[]> {
   try {
     const data = await client.request<{ fundraisers: SubgraphFundraiser[] }>(
       GET_TOP_FUNDRAISERS_QUERY,
@@ -687,13 +668,12 @@ export async function getCoinMinuteData(
   since: number
 ): Promise<SubgraphCoinCandle[]> {
   try {
-    const data = await client.request<{ coinMinuteDatas: SubgraphCoinCandle[] }>(
-      GET_COIN_MINUTE_DATA_QUERY,
-      {
-        coinAddress: coinAddress.toLowerCase(),
-        since: since.toString(),
-      }
-    );
+    const data = await client.request<{
+      coinMinuteDatas: SubgraphCoinCandle[];
+    }>(GET_COIN_MINUTE_DATA_QUERY, {
+      coinAddress: coinAddress.toLowerCase(),
+      since: since.toString(),
+    });
     return data.coinMinuteDatas ?? [];
   } catch (error) {
     console.error("[getCoinMinuteData] Error:", error);

@@ -3,13 +3,13 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import type { FundraiserListItem } from "@/hooks/useAllFundraisers";
+import type { CoinListItem } from "@/hooks/useAllFundraisers";
 import { cn } from "@/lib/utils";
 import { ipfsToHttp } from "@/lib/constants";
 import { getCoinMinuteData, getCoinHourData } from "@/lib/subgraph-launchpad";
 
 type FundraiserCardProps = {
-  fundraiser: FundraiserListItem;
+  coin: CoinListItem;
   isTopBump?: boolean;
   isNewBump?: boolean;
 };
@@ -60,7 +60,7 @@ function MiniSparkline({ prices }: { prices: number[] }) {
   })();
 
   return (
-    <svg width="60" height="24" className="overflow-visible text-moss-400">
+    <svg width="60" height="24" className="overflow-visible text-zinc-400">
       <polyline
         points={points}
         fill="none"
@@ -73,21 +73,21 @@ function MiniSparkline({ prices }: { prices: number[] }) {
   );
 }
 
-export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = false }: FundraiserCardProps) {
-  const marketCapUsd = fundraiser.marketCapUsd;
+export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: FundraiserCardProps) {
+  const marketCapUsd = coin.marketCapUsd;
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Fetch candle data — use minute candles for tokens < 24h old, hourly otherwise
-  const tokenAge = fundraiser.createdAt ? Math.floor(Date.now() / 1000) - fundraiser.createdAt : Infinity;
+  const tokenAge = coin.createdAt ? Math.floor(Date.now() / 1000) - coin.createdAt : Infinity;
   const { data: candles } = useQuery({
-    queryKey: ["miniSparkline", fundraiser.coinAddress, tokenAge < 86400 ? "minute" : "hour"],
+    queryKey: ["miniSparkline", coin.coinAddress, tokenAge < 86400 ? "minute" : "hour"],
     queryFn: async () => {
       const now = Math.floor(Date.now() / 1000);
       const since = now - 86400;
       if (tokenAge < 86400) {
-        return getCoinMinuteData(fundraiser.coinAddress.toLowerCase(), since);
+        return getCoinMinuteData(coin.coinAddress.toLowerCase(), since);
       }
-      return getCoinHourData(fundraiser.coinAddress.toLowerCase(), since);
+      return getCoinHourData(coin.coinAddress.toLowerCase(), since);
     },
     staleTime: 60_000,
     refetchInterval: 120_000,
@@ -101,16 +101,16 @@ export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = fals
     const p = candles.map((c) => parseFloat(c.close));
     const oldPrice = parseFloat(candles[0].close);
     const change = oldPrice > 0
-      ? ((fundraiser.priceUsd - oldPrice) / oldPrice) * 100
+      ? ((coin.priceUsd - oldPrice) / oldPrice) * 100
       : 0;
     return { prices: p, change24h: change };
-  }, [candles, fundraiser.priceUsd]);
+  }, [candles, coin.priceUsd]);
 
   // Fetch metadata to get image URL
   useEffect(() => {
-    if (!fundraiser.fundraiserUri) return;
+    if (!coin.uri) return;
 
-    const metadataUrl = ipfsToHttp(fundraiser.fundraiserUri);
+    const metadataUrl = ipfsToHttp(coin.uri);
     if (!metadataUrl) return;
 
     fetch(metadataUrl)
@@ -123,28 +123,28 @@ export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = fals
       .catch(() => {
         // Silently fail - will show fallback
       });
-  }, [fundraiser.fundraiserUri]);
+  }, [coin.uri]);
 
   return (
-    <Link href={`/fundraiser/${fundraiser.address}`} className="block">
+    <Link href={`/fundraiser/${coin.address}`} className="block">
       <div
         className={cn(
-          "flex items-center gap-3 py-4 transition-colors hover:bg-moss-400/[0.04] border-b border-border",
+          "flex items-center gap-3 py-4 transition-colors hover:bg-white/[0.02] border-b border-border",
           isNewBump && "animate-bump-enter",
           isTopBump && !isNewBump && "animate-bump-glow"
         )}
       >
         {/* Token Logo */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-concrete-700 flex items-center justify-center overflow-hidden">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt={fundraiser.tokenSymbol}
+              alt={coin.tokenSymbol}
               className="w-10 h-10 object-cover"
             />
           ) : (
-            <span className="text-[#8E8E8E] font-semibold text-sm">
-              {fundraiser.tokenSymbol.slice(0, 2)}
+            <span className="text-zinc-400 font-semibold text-sm">
+              {coin.tokenSymbol.slice(0, 2)}
             </span>
           )}
         </div>
@@ -152,10 +152,10 @@ export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = fals
         {/* Token Name & Symbol */}
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-[15px] truncate">
-            {fundraiser.tokenSymbol}
+            {coin.tokenSymbol}
           </div>
           <div className="text-[13px] text-muted-foreground truncate mt-0.5">
-            {fundraiser.tokenName}
+            {coin.tokenName}
           </div>
         </div>
 
@@ -169,9 +169,7 @@ export function FundraiserCard({ fundraiser, isTopBump = false, isNewBump = fals
           <div className="text-[15px] font-medium tabular-nums">
             {formatUsd(marketCapUsd)}
           </div>
-          <div className={`text-[13px] tabular-nums mt-0.5 ${
-            change24h > 0 ? "text-prism-400" : change24h < 0 ? "text-red-400" : "text-[#8E8E8E]"
-          }`}>
+          <div className="text-[13px] tabular-nums mt-0.5 text-zinc-400">
             {change24h >= 0 ? "+" : ""}{change24h.toFixed(2)}%
           </div>
         </div>

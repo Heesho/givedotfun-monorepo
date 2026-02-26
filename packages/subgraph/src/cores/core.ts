@@ -64,6 +64,7 @@ export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   fundraiser.initialUps = event.params.initialEmission
   fundraiser.tailUps = event.params.minEmission
   fundraiser.halvingPeriod = event.params.halvingPeriod
+  fundraiser.recipientRevenue = ZERO_BD
   fundraiser.treasuryRevenue = ZERO_BD
   fundraiser.teamRevenue = ZERO_BD
   fundraiser.protocolRevenue = ZERO_BD

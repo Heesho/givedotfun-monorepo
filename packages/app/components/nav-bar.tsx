@@ -24,10 +24,10 @@ export function NavBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center bg-concrete-800"
+      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center bg-zinc-800"
     >
       <div
-        className="flex justify-around items-center w-full max-w-[520px] bg-concrete-800 border-t border-concrete-600 px-8"
+        className="flex justify-around items-center w-full max-w-[520px] bg-background px-8"
         style={{
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
           paddingTop: "12px",
@@ -43,8 +43,8 @@ export function NavBar() {
               className={cn(
                 "w-6 h-6 transition-colors",
                 item.isActive
-                  ? "text-moss-400"
-                  : "text-[#8E8E8E] hover:text-[#BEBEBE]"
+                  ? "text-white"
+                  : "text-zinc-500 hover:text-zinc-300"
               )}
               strokeWidth={1.5}
             />

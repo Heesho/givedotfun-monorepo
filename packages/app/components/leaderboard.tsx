@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Crown, Medal, Users, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LeaderboardEntry } from "@/hooks/useFundraiserLeaderboard";
+import { LeaderboardEntry } from "@/hooks/useRigLeaderboard";
 import { composeCast } from "@/hooks/useFarcaster";
 
 type LeaderboardProps = {
@@ -16,10 +16,10 @@ type LeaderboardProps = {
 };
 
 function getRankIcon(rank: number) {
-  if (rank === 1) return <Crown className="w-4 h-4 text-moss-400" />;
-  if (rank === 2) return <Medal className="w-4 h-4 text-moss-400/70" />;
-  if (rank === 3) return <Medal className="w-4 h-4 text-moss-400/50" />;
-  return <span className="w-4 text-center text-xs text-[#8E8E8E]">#{rank}</span>;
+  if (rank === 1) return <Crown className="w-4 h-4 text-zinc-100" />;
+  if (rank === 2) return <Medal className="w-4 h-4 text-zinc-300" />;
+  if (rank === 3) return <Medal className="w-4 h-4 text-zinc-400" />;
+  return <span className="w-4 text-center text-xs text-zinc-500">#{rank}</span>;
 }
 
 function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; tokenSymbol: string }) {
@@ -40,7 +40,7 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
       {/* Avatar */}
       <Avatar className="h-7 w-7 flex-shrink-0">
         <AvatarImage src={avatarUrl} alt={displayName} />
-        <AvatarFallback className="bg-concrete-700 text-white text-[10px]">
+        <AvatarFallback className="bg-zinc-800 text-white text-[10px]">
           {entry.address.slice(2, 4).toUpperCase()}
         </AvatarFallback>
       </Avatar>
@@ -51,15 +51,15 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
           <span className={cn(
             "text-sm truncate",
             entry.isCurrentUser && "font-semibold text-white",
-            entry.isFriend && !entry.isCurrentUser && "text-foreground/80"
+            entry.isFriend && !entry.isCurrentUser && "text-zinc-300"
           )}>
             {displayName}
           </span>
           {entry.isCurrentUser && (
-            <span className="text-[10px] bg-moss-400/20 text-moss-400 px-1.5 py-0.5 rounded-full">You</span>
+            <span className="text-[10px] bg-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded-full">You</span>
           )}
           {entry.isFriend && !entry.isCurrentUser && (
-            <Users className="w-3 h-3 text-[#8E8E8E]" />
+            <Users className="w-3 h-3 text-zinc-400" />
           )}
         </div>
       </div>
@@ -67,7 +67,7 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
       {/* Donated amount */}
       <div className="text-right flex-shrink-0">
         <div className="text-sm font-medium">{entry.donatedFormatted}</div>
-        <div className="text-[10px] text-[#8E8E8E]">USDC</div>
+        <div className="text-[10px] text-zinc-500">donated</div>
       </div>
     </div>
   );
@@ -84,7 +84,7 @@ export function Leaderboard({
   const handleShareChallenge = async () => {
     if (!userRank) return;
 
-    const text = `I'm ranked #${userRank} on the ${tokenName} ($${tokenSymbol}) donor leaderboard! Join me in supporting this fundraiser!`;
+    const text = `I'm ranked #${userRank} on the ${tokenName} ($${tokenSymbol}) donor leaderboard on give.fun! Join me 👇`;
 
     await composeCast({
       text,
@@ -95,10 +95,10 @@ export function Leaderboard({
   if (isLoading) {
     return (
       <div className="mt-6">
-        <h2 className="headline-brutal text-[18px] mb-3">TOP DONORS</h2>
+        <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 bg-concrete-700/50 rounded-lg animate-pulse" />
+            <div key={i} className="h-12 bg-zinc-900/30 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -108,7 +108,7 @@ export function Leaderboard({
   if (entries.length === 0) {
     return (
       <div className="mt-6">
-        <h2 className="headline-brutal text-[18px] mb-3">TOP DONORS</h2>
+        <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
           No donors yet
         </div>
@@ -119,14 +119,14 @@ export function Leaderboard({
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="headline-brutal text-[18px]">TOP DONORS</h2>
+        <h2 className="text-[18px] font-semibold">Leaderboard</h2>
       </div>
 
       {/* User rank summary if not in top entries */}
       {userRank && userRank > entries.length && (
-        <div className="mb-3 p-2.5 rounded-lg bg-concrete-700 border border-concrete-600">
+        <div className="mb-3 p-2.5 rounded-lg bg-zinc-800 border border-zinc-700">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#8E8E8E]">Your rank</span>
+            <span className="text-sm text-zinc-400">Your rank</span>
             <span className="text-sm font-semibold text-white">#{userRank}</span>
           </div>
         </div>

@@ -39,10 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${tokenName} ($${tokenSymbol}) | give.fun`,
-    description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating and earning tokens now!`,
+    description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating!`,
     openGraph: {
       title: `${tokenName} ($${tokenSymbol}) | give.fun`,
-      description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating and earning tokens now!`,
+      description: `${tokenName} ($${tokenSymbol}) on give.fun. Start donating!`,
       url: fundraiserUrl,
       images: [
         {

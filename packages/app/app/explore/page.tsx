@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search, Zap, Clock, Star, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
-import { useExploreFundraisers, type FundraiserListItem, type SortOption } from "@/hooks/useAllFundraisers";
+import { useExploreFundraisers, type CoinListItem, type SortOption } from "@/hooks/useAllFundraisers";
 import { useBatchMetadata } from "@/hooks/useMetadata";
 import { useSparklineData } from "@/hooks/useSparklineData";
 import { useFarcaster } from "@/hooks/useFarcaster";
@@ -32,7 +32,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 100 100"
-      className="w-16 h-8 text-moss-400"
+      className="w-16 h-8 text-zinc-400"
       preserveAspectRatio="none"
     >
       <polyline
@@ -75,21 +75,21 @@ export default function ExplorePage() {
   const [sortBy, setSortBy] = useState<SortOption>("bump");
   const { address: account } = useFarcaster();
 
-  const { fundraisers, isLoading } = useExploreFundraisers(sortBy, searchQuery, account);
+  const { coins, isLoading } = useExploreFundraisers(sortBy, searchQuery, account);
 
   // Batch fetch metadata for logos
-  const fundraiserUris = fundraisers.map((r) => r.fundraiserUri).filter(Boolean);
-  const { getLogoUrl } = useBatchMetadata(fundraiserUris);
+  const coinUris = coins.map((c) => c.uri).filter(Boolean);
+  const { getLogoUrl } = useBatchMetadata(coinUris);
 
   // Batch fetch hourly sparkline data (7 days, more granular than daily)
-  const coinAddresses = fundraisers.map((r) => r.coinAddress);
+  const coinAddresses = coins.map((c) => c.coinAddress);
   const { getSparkline } = useSparklineData(coinAddresses);
 
   const isSearching = searchQuery.length > 0;
-  const showEmpty = !isLoading && fundraisers.length === 0;
+  const showEmpty = !isLoading && coins.length === 0;
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-concrete-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
@@ -100,7 +100,7 @@ export default function ExplorePage() {
         {/* Header */}
         <div className="px-4 pb-2">
           <div className="mb-4">
-            <h1 className="headline-brutal text-xl">EXPLORE FUNDRAISERS</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Explore</h1>
           </div>
 
           {/* Search Bar */}
@@ -108,10 +108,10 @@ export default function ExplorePage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search fundraisers..."
+              placeholder="Search coins..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-10 rounded-xl input-recessed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-moss-400/40 text-[15px] transition-shadow"
+              className="w-full h-11 pl-10 pr-10 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
             />
             {searchQuery && (
               <button
@@ -133,10 +133,10 @@ export default function ExplorePage() {
               <button
                 key={tab.key}
                 onClick={() => setSortBy(tab.key)}
-                className={`flex items-center gap-1.5 px-3 pb-2 pt-1 text-[13px] font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition-all ${
                   sortBy === tab.key
-                    ? "bg-transparent text-foreground border-b-[3px] border-moss-400 rounded-none"
-                    : "bg-transparent text-muted-foreground hover:text-foreground border-b-[3px] border-transparent rounded-none"
+                    ? "bg-white text-black"
+                    : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
                 }`}
               >
                 <tab.icon className="w-3.5 h-3.5" />
@@ -157,13 +157,13 @@ export default function ExplorePage() {
             </div>
           )}
 
-          {/* Loaded - render fundraiser rows */}
-          {!isLoading && fundraisers.length > 0 && (
+          {/* Loaded - render coin rows */}
+          {!isLoading && coins.length > 0 && (
             <div>
               <AnimatePresence initial={false}>
-                {fundraisers.map((fundraiser, index) => (
+                {coins.map((coin) => (
                   <motion.div
-                    key={fundraiser.address}
+                    key={coin.address}
                     layout
                     transition={{ type: "spring", stiffness: 500, damping: 40 }}
                     initial={{ opacity: 0 }}
@@ -171,26 +171,26 @@ export default function ExplorePage() {
                     exit={{ opacity: 0 }}
                   >
                     <Link
-                      href={`/fundraiser/${fundraiser.address}`}
-                      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-moss-400/[0.04]"
+                      href={`/fundraiser/${coin.address}`}
+                      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
                     >
                       {/* Left side - Logo, Symbol, Name */}
                       <div className="flex items-center gap-3">
                         <TokenLogo
-                          name={fundraiser.tokenName}
-                          logoUrl={getLogoUrl(fundraiser.fundraiserUri)}
+                          name={coin.tokenName}
+                          logoUrl={getLogoUrl(coin.uri)}
                           size="md-lg"
                         />
                         <div>
                           <div className="font-semibold text-[15px]">
-                            {fundraiser.tokenSymbol.length > 6
-                              ? `${fundraiser.tokenSymbol.slice(0, 6)}...`
-                              : fundraiser.tokenSymbol}
+                            {coin.tokenSymbol.length > 6
+                              ? `${coin.tokenSymbol.slice(0, 6)}...`
+                              : coin.tokenSymbol}
                           </div>
                           <div className="text-[13px] text-muted-foreground">
-                            {fundraiser.tokenName.length > 12
-                              ? `${fundraiser.tokenName.slice(0, 12)}...`
-                              : fundraiser.tokenName}
+                            {coin.tokenName.length > 12
+                              ? `${coin.tokenName.slice(0, 12)}...`
+                              : coin.tokenName}
                           </div>
                         </div>
                       </div>
@@ -199,25 +199,25 @@ export default function ExplorePage() {
                       <div className="flex justify-center">
                         <Sparkline
                           data={(() => {
-                            const hourly = getSparkline(fundraiser.coinAddress, fundraiser.priceUsd);
+                            const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
                             if (hourly.length > 1) return hourly;
-                            if (fundraiser.sparklinePrices.length > 1) return fundraiser.sparklinePrices;
-                            return [fundraiser.priceUsd, fundraiser.priceUsd];
+                            if (coin.sparklinePrices.length > 1) return coin.sparklinePrices;
+                            return [coin.priceUsd, coin.priceUsd];
                           })()}
-                          isPositive={fundraiser.change24h >= 0}
+                          isPositive={coin.change24h >= 0}
                         />
                       </div>
 
                       {/* Right side - Market cap and 24h change */}
                       <div className="text-right">
                         <div className="font-medium text-[15px] tabular-nums">
-                          {fundraiser.marketCapUsd > 0
-                            ? formatMarketCap(fundraiser.marketCapUsd)
+                          {coin.marketCapUsd > 0
+                            ? formatMarketCap(coin.marketCapUsd)
                             : "--"}
                         </div>
-                        <div className={`text-[13px] tabular-nums ${fundraiser.change24h >= 0 ? "text-prism-400" : "text-red-400"}`}>
-                          {fundraiser.marketCapUsd > 0
-                            ? `${fundraiser.change24h >= 0 ? "+" : ""}${fundraiser.change24h.toFixed(2)}%`
+                        <div className="text-[13px] tabular-nums text-zinc-400">
+                          {coin.marketCapUsd > 0
+                            ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toFixed(2)}%`
                             : "--"}
                         </div>
                       </div>
@@ -231,27 +231,20 @@ export default function ExplorePage() {
           {/* Empty states */}
           {showEmpty && isSearching && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <img src="/botanicals/empty-garden.svg" className="w-24 h-24 mb-4 opacity-60" alt="" />
-              <p className="headline-brutal text-[15px]">No fundraisers found</p>
-              <p className="text-[13px] mt-1 text-muted-foreground">Try a different search term</p>
+              <Search className="w-10 h-10 mb-3 opacity-30" />
+              <p className="text-[15px] font-medium">No coins found</p>
+              <p className="text-[13px] mt-1 opacity-70">Try a different search term</p>
             </div>
           )}
 
           {showEmpty && !isSearching && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <img src="/botanicals/empty-garden.svg" className="w-24 h-24 mb-4 opacity-60" alt="" />
-              <p className="headline-brutal text-[15px]">No fundraisers yet</p>
-              <p className="text-[13px] mt-1 text-muted-foreground">Be the first to launch</p>
+              <Zap className="w-10 h-10 mb-3 opacity-30" />
+              <p className="text-[15px] font-medium">No coins launched yet</p>
+              <p className="text-[13px] mt-1 opacity-70">Be the first to launch a coin</p>
             </div>
           )}
         </div>
-
-        {/* Decorative fern frond */}
-        <img
-          src="/botanicals/fern-frond.svg"
-          className="absolute bottom-20 right-0 w-48 opacity-[0.08] pointer-events-none select-none"
-          aria-hidden="true"
-        />
       </div>
       <NavBar />
     </main>

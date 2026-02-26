@@ -1,11 +1,7 @@
 export const CONTRACT_ADDRESSES = {
-  // Core launchpad contract
-  core: "0x0000000000000000000000000000000000000000",
-  // Multicall helper contract
-  multicall: "0x0000000000000000000000000000000000000000",
-  // Token addresses (Mock tokens for staging)
-  usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e", // Mock USDC
-  // Uniswap V2 on Base
+  core: "0xA0d79A8D35B6aCBFCa41241A3aaaA00a71C9B139",
+  multicall: "0x438CA5F624a4e814c7d577972213DC2827f7CE1D",
+  usdc: "0xe90495BE187d434e23A9B1FeC0B6Ce039700870e",
   uniV2Router: "0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24",
   uniV2Factory: "0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6",
 } as const;
@@ -53,6 +49,13 @@ export const CORE_ABI = [
   {
     inputs: [{ internalType: "address", name: "", type: "address" }],
     name: "fundraiserToLP",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "fundraiserFactory",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -118,6 +121,7 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "accountUsdcBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCoinBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCurrentEpochDonation", type: "uint256" },
+          { internalType: "address", name: "recipient", type: "address" },
         ],
         internalType: "struct Multicall.FundraiserState",
         name: "state",
@@ -259,7 +263,7 @@ export const MULTICALL_ABI = [
           { internalType: "string", name: "tokenSymbol", type: "string" },
           { internalType: "string", name: "uri", type: "string" },
           { internalType: "uint256", name: "usdcAmount", type: "uint256" },
-          { internalType: "uint256", name: "coinAmount", type: "uint256" },
+          { internalType: "uint256", name: "unitAmount", type: "uint256" },
           { internalType: "uint256", name: "initialEmission", type: "uint256" },
           { internalType: "uint256", name: "minEmission", type: "uint256" },
           { internalType: "uint256", name: "halvingPeriod", type: "uint256" },
@@ -282,6 +286,46 @@ export const MULTICALL_ABI = [
       { internalType: "address", name: "lpToken", type: "address" },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  // getEmissionSchedule function - get projected emissions for upcoming epochs
+  {
+    inputs: [
+      { internalType: "address", name: "fundraiser", type: "address" },
+      { internalType: "uint256", name: "numEpochs", type: "uint256" },
+    ],
+    name: "getEmissionSchedule",
+    outputs: [
+      { internalType: "uint256[]", name: "emissions", type: "uint256[]" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // getRecipient function - get the recipient address for a fundraiser
+  {
+    inputs: [
+      { internalType: "address", name: "fundraiser", type: "address" },
+    ],
+    name: "getRecipient",
+    outputs: [
+      { internalType: "address", name: "", type: "address" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  // Core and token addresses
+  {
+    inputs: [],
+    name: "core",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "usdc",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
     type: "function",
   },
 ] as const;
@@ -345,18 +389,11 @@ export const ERC20_ABI = [
   },
 ] as const;
 
-// Fundraiser contract ABI - for direct fundraiser reads
+// Fundraiser contract ABI - for direct fundraiser reads if needed
 export const FUNDRAISER_ABI = [
   {
     inputs: [],
-    name: "uri",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "coin",
+    name: "unit",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
@@ -386,6 +423,27 @@ export const FUNDRAISER_ABI = [
     inputs: [],
     name: "startTime",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "uri",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalMinted",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -459,18 +517,6 @@ export const AUCTION_ABI = [
 ] as const;
 
 // TypeScript types for contract returns
-export type AuctionState = {
-  epochId: bigint;
-  initPrice: bigint;
-  startTime: bigint;
-  lpToken: `0x${string}`;
-  price: bigint;
-  lpTokenPrice: bigint;
-  quoteAccumulated: bigint;
-  accountQuoteBalance: bigint;
-  accountLpTokenBalance: bigint;
-};
-
 export type FundraiserState = {
   currentEpoch: bigint;
   currentEpochEmission: bigint;
@@ -484,6 +530,19 @@ export type FundraiserState = {
   accountUsdcBalance: bigint;
   accountCoinBalance: bigint;
   accountCurrentEpochDonation: bigint;
+  recipient: `0x${string}`;
+};
+
+export type AuctionState = {
+  epochId: bigint;
+  initPrice: bigint;
+  startTime: bigint;
+  lpToken: `0x${string}`;
+  price: bigint;
+  lpTokenPrice: bigint;
+  quoteAccumulated: bigint;
+  accountQuoteBalance: bigint;
+  accountLpTokenBalance: bigint;
 };
 
 export type ClaimableEpoch = {
@@ -492,6 +551,40 @@ export type ClaimableEpoch = {
   pendingReward: bigint;
   hasClaimed: boolean;
 };
+
+export type LaunchParams = {
+  launcher: `0x${string}`;
+  quoteToken: `0x${string}`;
+  recipient: `0x${string}`;
+  tokenName: string;
+  tokenSymbol: string;
+  uri: string;
+  usdcAmount: bigint;
+  unitAmount: bigint;
+  initialEmission: bigint;
+  minEmission: bigint;
+  halvingPeriod: bigint;
+  epochDuration: bigint;
+  auctionInitPrice: bigint;
+  auctionEpochPeriod: bigint;
+  auctionPriceMultiplier: bigint;
+  auctionMinInitPrice: bigint;
+};
+
+// Default launch parameters (using USDC as quote token)
+export const LAUNCH_DEFAULTS = {
+  quoteToken: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+  uri: "",
+  unitAmount: BigInt("10000000000000000000000"), // 10000 tokens
+  initialEmission: BigInt("100000000000000000000000"), // 100K tokens/epoch
+  minEmission: BigInt("1000000000000000000000"), // 1K tokens/epoch
+  halvingPeriod: BigInt(30 * 24 * 3600), // 30 days
+  epochDuration: BigInt(24 * 3600), // 1 day
+  auctionInitPrice: BigInt("1000000000000000000000"), // 1000 LP tokens
+  auctionEpochPeriod: BigInt(24 * 60 * 60), // 24 hours
+  auctionPriceMultiplier: BigInt("1200000000000000000"), // 1.2x
+  auctionMinInitPrice: BigInt("1000000000000000000000"), // 1000 LP
+} as const;
 
 // Mock USDC mint ABI (for staging/testing only)
 export const MOCK_MINT_ABI = [
@@ -612,8 +705,3 @@ export const UNIV2_PAIR_ABI = [
 
 // Quote token decimals (USDC = 6)
 export const QUOTE_TOKEN_DECIMALS = 6;
-
-// Helper to get the multicall address
-export function getMulticallAddress(): `0x${string}` {
-  return CONTRACT_ADDRESSES.multicall as `0x${string}`;
-}

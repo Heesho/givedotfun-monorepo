@@ -5,6 +5,7 @@ import {
   Fundraiser__TreasuryFee as FundTreasuryFeeEvent,
   Fundraiser__TeamFee as FundTeamFeeEvent,
   Fundraiser__ProtocolFee as ProtocolFeeEvent,
+  Fundraiser__RecipientFee as RecipientFeeEvent,
   Fundraiser__RecipientSet as RecipientSetEvent,
   Fundraiser__UriSet as UriSetEvent,
   Fundraiser__TreasurySet as TreasurySetEvent,
@@ -97,7 +98,10 @@ export function handleFunded(event: FundedEvent): void {
 
   let fundraiserContract = FundraiserContract.bind(event.address)
 
-  // Resolve dynamic fee toggles (team/protocol can be disabled by setting address(0))
+  // Resolve dynamic fee toggles (recipient/team/protocol can be disabled by setting address(0))
+  let recipientResult = fundraiserContract.try_recipient()
+  let hasRecipient = !recipientResult.reverted && !isZeroAddress(recipientResult.value)
+
   let teamResult = fundraiserContract.try_team()
   let hasTeam = !teamResult.reverted && !isZeroAddress(teamResult.value)
 
@@ -110,7 +114,8 @@ export function handleFunded(event: FundedEvent): void {
   }
 
   // Calculate fee splits to match contract logic.
-  let recipientAmount = calculateFee(amount, RECIPIENT_BPS)
+  // When recipient is address(0), the 50% goes to treasury instead.
+  let recipientAmount = hasRecipient ? calculateFee(amount, RECIPIENT_BPS) : ZERO_BD
   let teamAmount = hasTeam ? calculateFee(amount, TEAM_BPS) : ZERO_BD
   let protocolAmount = hasProtocol ? calculateFee(amount, PROTOCOL_BPS) : ZERO_BD
   let treasuryAmount = amount.minus(recipientAmount).minus(teamAmount).minus(protocolAmount)
@@ -120,7 +125,9 @@ export function handleFunded(event: FundedEvent): void {
   let donation = new Donation(donationId)
   donation.fundraiser = fundraiser.id
   donation.donor = donor.id
-  donation.recipient = event.params.recipient
+  if (hasRecipient) {
+    donation.recipient = recipientResult.value
+  }
   donation.day = day
   donation.amount = amount
   donation.uri = event.params.uri
@@ -272,6 +279,26 @@ export function handleFundProtocolFee(event: ProtocolFeeEvent): void {
   protocol.totalProtocolRevenue = protocol.totalProtocolRevenue.plus(amount)
   protocol.lastUpdated = event.block.timestamp
   protocol.save()
+}
+
+export function handleFundRecipientFee(event: RecipientFeeEvent): void {
+  // Event params: recipient (indexed), epoch (indexed), amount
+  let fundraiserAddress = event.address.toHexString()
+  let amount = convertTokenToDecimal(event.params.amount, BI_6)
+
+  let fundraiser = Fundraiser.load(fundraiserAddress)
+  if (fundraiser === null) return
+
+  fundraiser.recipientRevenue = fundraiser.recipientRevenue.plus(amount)
+  fundraiser.save()
+
+  // Update Recipient entity totalReceived
+  let recipientId = fundraiserAddress + '-' + event.params.recipient.toHexString()
+  let recipient = Recipient.load(recipientId)
+  if (recipient !== null) {
+    recipient.totalReceived = recipient.totalReceived.plus(amount)
+    recipient.save()
+  }
 }
 
 export function handleFundRecipientSet(event: RecipientSetEvent): void {

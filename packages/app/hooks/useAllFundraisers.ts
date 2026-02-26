@@ -8,13 +8,13 @@ import {
   type SubgraphCoinListItem,
 } from "@/lib/subgraph-launchpad";
 
-export type FundraiserListItem = {
+export type CoinListItem = {
   address: `0x${string}`;         // Fundraiser contract address
   coinAddress: `0x${string}`;     // Coin token address
   lpPairAddress: `0x${string}`;   // LP pair address
   tokenName: string;
   tokenSymbol: string;
-  fundraiserUri: string;
+  uri: string;
   launcher: `0x${string}`;
   // Market data (from subgraph)
   priceUsd: number;
@@ -33,7 +33,7 @@ export type FundraiserListItem = {
 export type SortOption = "bump" | "top" | "new";
 
 // Hook to get coin list from subgraph with sorting
-export function useFundraiserList(sortBy: SortOption = "top", first = 50) {
+export function useCoinList(sortBy: SortOption = "top", first = 50) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["coinList", sortBy, first],
     queryFn: async () => {
@@ -65,8 +65,8 @@ export function useSearchCoins(searchQuery: string) {
   return { coins: data ?? [], isLoading, error };
 }
 
-// Convert SubgraphCoinListItem to FundraiserListItem
-function coinToFundraiserListItem(u: SubgraphCoinListItem): FundraiserListItem {
+// Convert SubgraphCoinListItem to CoinListItem
+function coinToCoinListItem(u: SubgraphCoinListItem): CoinListItem {
   // Price: prefer priceUSD, fallback to price (which is in USDC ≈ USD)
   const priceUsd = parseFloat(u.priceUSD) || parseFloat(u.price) || 0;
   const totalSupply = parseFloat(u.totalSupply || "0");
@@ -112,7 +112,7 @@ function coinToFundraiserListItem(u: SubgraphCoinListItem): FundraiserListItem {
     lpPairAddress: (u.lpPair?.toLowerCase() ?? "0x0") as `0x${string}`,
     tokenName: u.name,
     tokenSymbol: u.symbol,
-    fundraiserUri: u.fundraiser.uri,
+    uri: u.fundraiser.uri,
     launcher: u.fundraiser.launcher.id.toLowerCase() as `0x${string}`,
     priceUsd,
     change24h,
@@ -133,21 +133,21 @@ export function useExploreFundraisers(
   _account: `0x${string}` | undefined // keep param for compat, not used
 ) {
   const { coins: searchResults, isLoading: isSearchLoading } = useSearchCoins(searchQuery);
-  const { coins: listCoins, isLoading: isListLoading } = useFundraiserList(sortBy);
+  const { coins: listCoins, isLoading: isListLoading } = useCoinList(sortBy);
 
   const isSearching = searchQuery.length >= 2;
   const coins = isSearching ? searchResults : listCoins;
   const isLoadingCoins = isSearching ? isSearchLoading : isListLoading;
 
-  // Convert subgraph data to FundraiserListItem[]
-  const fundraisers: FundraiserListItem[] = useMemo(() => {
+  // Convert subgraph data to CoinListItem[]
+  const items: CoinListItem[] = useMemo(() => {
     return coins
       .filter(u => !!u.fundraiser)
-      .map(coinToFundraiserListItem);
+      .map(coinToCoinListItem);
   }, [coins]);
 
   return {
-    fundraisers,
+    coins: items,
     isLoading: isLoadingCoins,
     isUsingFallback: false,
   };

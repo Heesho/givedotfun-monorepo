@@ -178,7 +178,7 @@ function fillChartData(
 }
 
 // ---------------------------------------------------------------------------
-// Fetch price history from LP candle data (works for all fundraiser types)
+// Fetch price history from LP candle data
 // ---------------------------------------------------------------------------
 
 async function fetchCandlePriceHistory(

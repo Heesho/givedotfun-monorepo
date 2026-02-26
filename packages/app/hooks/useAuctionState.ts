@@ -10,10 +10,9 @@ import {
 export function useAuctionState(
   fundraiserAddress: `0x${string}` | undefined,
   account: `0x${string}` | undefined,
-  multicallAddress?: `0x${string}`,
 ) {
   const { data: rawAuctionState, refetch, isLoading, error } = useReadContract({
-    address: multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`,
+    address: CONTRACT_ADDRESSES.multicall as `0x${string}`,
     abi: MULTICALL_ABI,
     functionName: "getAuction",
     args: fundraiserAddress ? [fundraiserAddress, account ?? zeroAddress] : undefined,
@@ -45,11 +44,10 @@ export type AuctionListItem = {
 export function useAllAuctionStates(
   fundraiserAddresses: `0x${string}`[],
   account: `0x${string}` | undefined,
-  multicallAddress?: `0x${string}`,
 ) {
-  const resolvedMulticall = multicallAddress ?? CONTRACT_ADDRESSES.multicall as `0x${string}`;
+  const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
   const contracts = fundraiserAddresses.map((address) => ({
-    address: resolvedMulticall,
+    address: multicallAddr,
     abi: MULTICALL_ABI,
     functionName: "getAuction" as const,
     args: [address, account ?? zeroAddress] as const,
@@ -70,14 +68,8 @@ export function useAllAuctionStates(
       const state = result.result as AuctionState | undefined;
       if (!state) return null;
 
-      // Calculate profit/loss
-      // LP cost = price * lpTokenPrice (LP token value in underlying)
-      // Quote value = quoteAccumulated (in USDC, 6 decimals)
-      // For simplicity, compare quote accumulated vs LP price * LP value
       const lpCostInQuote =
         (state.price * state.lpTokenPrice) / BigInt(1e18);
-      // Convert LP cost to same decimals as quote (6 decimals)
-      // LP price is in 18 decimals, quote is in 6 decimals
       const lpCostScaled = lpCostInQuote / BigInt(1e12);
       const profitLoss = state.quoteAccumulated - lpCostScaled;
       const isProfitable = profitLoss > 0n;
