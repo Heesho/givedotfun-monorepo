@@ -171,6 +171,12 @@ contract Multicall {
         IERC20(lpToken).safeApprove(auction, 0);
         IERC20(lpToken).safeApprove(auction, price);
         IAuction(auction).buy(assets, msg.sender, epochId, deadline, maxPaymentTokenAmount);
+
+        // Refund any excess LP tokens (price may have decayed between read and execution)
+        uint256 remaining = IERC20(lpToken).balanceOf(address(this));
+        if (remaining > 0) {
+            IERC20(lpToken).safeTransfer(msg.sender, remaining);
+        }
     }
 
     /**
@@ -311,26 +317,24 @@ contract Multicall {
             return (0, new uint256[](0));
         }
 
-        // First pass: count unclaimed epochs
-        uint256 unclaimedCount = 0;
+        // Single pass: collect unclaimed epochs into oversized array
+        uint256[] memory temp = new uint256[](endEpoch - startEpoch);
+        uint256 count = 0;
         for (uint256 epoch = startEpoch; epoch < endEpoch;) {
             uint256 pending = IFundraiser(fundraiser).getPendingReward(epoch, account);
             if (pending > 0) {
                 totalPending += pending;
-                unclaimedCount++;
+                temp[count] = epoch;
+                unchecked { ++count; }
             }
             unchecked { ++epoch; }
         }
 
-        // Second pass: collect unclaimed epoch numbers
-        unclaimedEpochs = new uint256[](unclaimedCount);
-        uint256 index = 0;
-        for (uint256 epoch = startEpoch; epoch < endEpoch;) {
-            if (IFundraiser(fundraiser).getPendingReward(epoch, account) > 0) {
-                unclaimedEpochs[index] = epoch;
-                unchecked { ++index; }
-            }
-            unchecked { ++epoch; }
+        // Copy to correctly-sized array
+        unclaimedEpochs = new uint256[](count);
+        for (uint256 i = 0; i < count;) {
+            unclaimedEpochs[i] = temp[i];
+            unchecked { ++i; }
         }
 
         return (totalPending, unclaimedEpochs);

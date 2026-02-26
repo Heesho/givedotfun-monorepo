@@ -12,6 +12,7 @@ import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Vo
  * @dev Only the minter address can mint new tokens. Includes governance voting functionality.
  *      The minter address can be transferred once by calling setMinter(). Once transferred to a
  *      Fundraiser contract (which has no setMinter function), the minter address becomes effectively immutable.
+ *      There is no max supply cap — emissions continue perpetually at the minEmission floor rate.
  */
 contract Coin is ERC20, ERC20Permit, ERC20Votes {
     address public minter;

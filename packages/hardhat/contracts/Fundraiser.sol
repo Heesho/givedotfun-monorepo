@@ -22,8 +22,8 @@ import {ICore} from "./interfaces/ICore.sol";
  *      - Floor: configurable minimum emission per day
  *
  *      Fund Split:
- *      - 50% to Recipient (single address set by owner)
- *      - 45% to Treasury (remainder)
+ *      - 50% to Recipient (single address set by owner, or treasury if address(0))
+ *      - 45% to Treasury (remainder, or 95% if recipient is address(0))
  *      - 4% to Team
  *      - 1% to Protocol
  */
@@ -90,7 +90,6 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     error Fundraiser__EpochNotEnded();
     error Fundraiser__AlreadyClaimed();
     error Fundraiser__NoDonation();
-    error Fundraiser__RecipientNotSet();
     error Fundraiser__EmissionOutOfRange();
     error Fundraiser__BelowMinDonation();
     error Fundraiser__HalvingPeriodOutOfRange();
@@ -103,6 +102,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     event Fundraiser__RecipientSet(address indexed recipient);
     event Fundraiser__TreasurySet(address indexed treasury);
     event Fundraiser__TeamSet(address indexed team);
+    event Fundraiser__RecipientFee(address indexed recipient, uint256 indexed epoch, uint256 amount);
     event Fundraiser__TreasuryFee(address indexed treasury, uint256 indexed epoch, uint256 amount);
     event Fundraiser__TeamFee(address indexed team, uint256 indexed epoch, uint256 amount);
     event Fundraiser__ProtocolFee(address indexed protocol, uint256 indexed epoch, uint256 amount);
@@ -116,8 +116,8 @@ contract Fundraiser is ReentrancyGuard, Ownable {
      * @param _quote Payment token address (e.g., USDC)
      * @param _core Core contract address
      * @param _treasury Treasury address for fee collection
-     * @param _team Team address for fee collection
-     * @param _recipient Address to receive 50% of donations (required)
+     * @param _team Team address for fee collection (or address(0) to redirect team fees to treasury)
+     * @param _recipient Address to receive 50% of donations (or address(0) to redirect to treasury)
      * @param _config Configuration struct with emission parameters
      */
     constructor(
@@ -134,7 +134,6 @@ contract Fundraiser is ReentrancyGuard, Ownable {
         if (_quote == address(0)) revert Fundraiser__ZeroAddress();
         if (_core == address(0)) revert Fundraiser__ZeroAddress();
         if (_treasury == address(0)) revert Fundraiser__ZeroAddress();
-        if (_recipient == address(0)) revert Fundraiser__ZeroAddress();
         if (_config.initialEmission < MIN_INITIAL_EMISSION || _config.initialEmission > MAX_INITIAL_EMISSION) {
             revert Fundraiser__EmissionOutOfRange();
         }
@@ -174,32 +173,34 @@ contract Fundraiser is ReentrancyGuard, Ownable {
     function fund(address account, uint256 amount, string calldata _uri) external nonReentrant {
         if (account == address(0)) revert Fundraiser__ZeroAddress();
         if (amount < MIN_DONATION) revert Fundraiser__BelowMinDonation();
-        if (recipient == address(0)) revert Fundraiser__RecipientNotSet();
 
         uint256 epoch = currentEpoch();
 
         // Transfer tokens from msg.sender (payer)
         IERC20(quote).safeTransferFrom(msg.sender, address(this), amount);
 
-        // Calculate splits
+        // Calculate splits (address(0) redirects that share to treasury)
         address protocol = ICore(core).protocolFeeAddress();
-        uint256 recipientAmount = amount * RECIPIENT_BPS / DIVISOR;
-        uint256 teamFee = team != address(0) ? amount * TEAM_BPS / DIVISOR : 0;
-        uint256 protocolFee = protocol != address(0) ? amount * PROTOCOL_BPS / DIVISOR : 0;
-        uint256 treasuryFee = amount - recipientAmount - teamFee - protocolFee;
+        uint256 recipientAmount = recipient != address(0) ? amount * RECIPIENT_BPS / DIVISOR : 0;
+        uint256 teamAmount = team != address(0) ? amount * TEAM_BPS / DIVISOR : 0;
+        uint256 protocolAmount = protocol != address(0) ? amount * PROTOCOL_BPS / DIVISOR : 0;
+        uint256 treasuryAmount = amount - recipientAmount - teamAmount - protocolAmount;
 
-        // Transfer recipient share
-        IERC20(quote).safeTransfer(recipient, recipientAmount);
-        IERC20(quote).safeTransfer(treasury, treasuryFee);
-        emit Fundraiser__TreasuryFee(treasury, epoch, treasuryFee);
-        if (teamFee > 0) {
-            IERC20(quote).safeTransfer(team, teamFee);
-            emit Fundraiser__TeamFee(team, epoch, teamFee);
+        // Distribute funds
+        if (recipientAmount > 0) {
+            IERC20(quote).safeTransfer(recipient, recipientAmount);
+            emit Fundraiser__RecipientFee(recipient, epoch, recipientAmount);
         }
-        if (protocolFee > 0) {
-            IERC20(quote).safeTransfer(protocol, protocolFee);
-            emit Fundraiser__ProtocolFee(protocol, epoch, protocolFee);
+        if (teamAmount > 0) {
+            IERC20(quote).safeTransfer(team, teamAmount);
+            emit Fundraiser__TeamFee(team, epoch, teamAmount);
         }
+        if (protocolAmount > 0) {
+            IERC20(quote).safeTransfer(protocol, protocolAmount);
+            emit Fundraiser__ProtocolFee(protocol, epoch, protocolAmount);
+        }
+        IERC20(quote).safeTransfer(treasury, treasuryAmount);
+        emit Fundraiser__TreasuryFee(treasury, epoch, treasuryAmount);
 
         // Update state - credit the account, not msg.sender
         epochToTotalDonated[epoch] += amount;
@@ -227,6 +228,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
         uint256 epochEmission = getEpochEmission(epoch);
 
         // Calculate user's share: (userDonation / epochTotal) * epochEmission
+        // Note: integer division truncation means sum of all rewards <= epochEmission (rounding dust is never minted)
         uint256 userReward = (userDonation * epochEmission) / epochTotal;
 
         // Mark as claimed before minting (CEI pattern)
@@ -245,7 +247,7 @@ contract Fundraiser is ReentrancyGuard, Ownable {
      * @param _recipient Address to receive donations
      */
     function setRecipient(address _recipient) external onlyOwner {
-        if (_recipient == address(0)) revert Fundraiser__ZeroAddress();
+        // address(0) is valid — redirects recipient share to treasury
         recipient = _recipient;
         emit Fundraiser__RecipientSet(_recipient);
     }

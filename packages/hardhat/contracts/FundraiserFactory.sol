@@ -8,8 +8,7 @@ import {Fundraiser} from "./Fundraiser.sol";
  * @author heesho
  * @notice Factory contract for deploying new Fundraiser instances.
  * @dev Called by Core during the launch process to create new Fundraiser contracts.
- *      The caller (Core) becomes the initial owner and can later transfer ownership
- *      to the launcher.
+ *      Ownership is transferred directly to the specified owner.
  */
 contract FundraiserFactory {
     /**
@@ -22,6 +21,7 @@ contract FundraiserFactory {
      * @param _recipient Address to receive 50% of donations
      * @param _config Configuration struct with emission parameters
      * @param _uri Metadata URI for the fundraiser
+     * @param _owner Address to receive ownership of the Fundraiser
      * @return Address of the newly deployed Fundraiser
      */
     function deploy(
@@ -32,10 +32,11 @@ contract FundraiserFactory {
         address _team,
         address _recipient,
         Fundraiser.Config memory _config,
-        string memory _uri
+        string memory _uri,
+        address _owner
     ) external returns (address) {
         Fundraiser fundraiser = new Fundraiser(_coin, _quote, _core, _treasury, _team, _recipient, _config, _uri);
-        fundraiser.transferOwnership(msg.sender);
+        fundraiser.transferOwnership(_owner);
         return address(fundraiser);
     }
 }

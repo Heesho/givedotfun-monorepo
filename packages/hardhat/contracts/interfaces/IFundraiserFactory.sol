@@ -17,6 +17,7 @@ interface IFundraiserFactory {
         address _team,
         address _recipient,
         Fundraiser.Config memory _config,
-        string memory _uri
+        string memory _uri,
+        address _owner
     ) external returns (address);
 }

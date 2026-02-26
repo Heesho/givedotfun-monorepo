@@ -206,10 +206,11 @@ describe("Fundraiser Tests", function () {
       await fundraiser.connect(owner).setTeam(team.address);
     });
 
-    it("Should prevent setting zero address as recipient", async function () {
-      await expect(
-        fundraiser.connect(owner).setRecipient(AddressZero)
-      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
+    it("Should allow setting recipient to zero address (redirects to treasury)", async function () {
+      await fundraiser.connect(owner).setRecipient(AddressZero);
+      expect(await fundraiser.recipient()).to.equal(AddressZero);
+      // Reset for other tests
+      await fundraiser.connect(owner).setRecipient(recipient.address);
     });
   });
 
@@ -224,21 +225,19 @@ describe("Fundraiser Tests", function () {
       console.log("- Donation without approval correctly reverted");
     });
 
-    it("Should revert deployment with zero recipient address", async function () {
-      // Deploying with zero address recipient should revert
+    it("Should allow deployment with zero recipient address", async function () {
       const fundraiserArtifact = await ethers.getContractFactory("Fundraiser");
-      await expect(
-        fundraiserArtifact.deploy(
-          coinToken.address,
-          paymentToken.address,
-          mockCore.address,
-          treasury.address,
-          team.address,
-          AddressZero, // zero recipient should fail
-          [INITIAL_EMISSION, MIN_EMISSION, 30, ONE_DAY], // Config
-          "" // uri
-        )
-      ).to.be.revertedWith("Fundraiser__ZeroAddress()");
+      const zeroRecipientFundraiser = await fundraiserArtifact.deploy(
+        coinToken.address,
+        paymentToken.address,
+        mockCore.address,
+        treasury.address,
+        team.address,
+        AddressZero, // zero recipient — donations go to treasury
+        [INITIAL_EMISSION, MIN_EMISSION, 30, ONE_DAY], // Config
+        "" // uri
+      );
+      expect(await zeroRecipientFundraiser.recipient()).to.equal(AddressZero);
     });
 
     it("Should revert deployment with halving period too low", async function () {
@@ -377,6 +376,38 @@ describe("Fundraiser Tests", function () {
 
       // Reset team address for other tests
       await fundraiser.connect(owner).setTeam(team.address);
+    });
+
+    it("Should redirect recipient fees to treasury when recipient is zero address", async function () {
+      // Set recipient to zero address
+      await fundraiser.connect(owner).setRecipient(AddressZero);
+
+      // Record initial balances
+      const treasuryBefore = await paymentToken.balanceOf(treasury.address);
+      const teamBefore = await paymentToken.balanceOf(team.address);
+      const protocolBefore = await paymentToken.balanceOf(protocol.address);
+
+      // Donate 1000 tokens
+      const donationAmount = convert("1000", 6);
+      await paymentToken.connect(user0).approve(fundraiser.address, donationAmount);
+      await fundraiser.connect(user0).fund(user0.address, donationAmount, "");
+
+      // Check balances after
+      const treasuryAfter = await paymentToken.balanceOf(treasury.address);
+      const teamAfter = await paymentToken.balanceOf(team.address);
+      const protocolAfter = await paymentToken.balanceOf(protocol.address);
+
+      const treasuryReceived = treasuryAfter.sub(treasuryBefore);
+      const teamReceived = teamAfter.sub(teamBefore);
+      const protocolReceived = protocolAfter.sub(protocolBefore);
+
+      // Treasury gets 50% (recipient share) + 45% = 95%, team 4%, protocol 1%
+      expect(protocolReceived).to.equal(convert("10", 6)); // 1%
+      expect(teamReceived).to.equal(convert("40", 6)); // 4%
+      expect(treasuryReceived).to.equal(convert("950", 6)); // 95%
+
+      // Reset recipient for other tests
+      await fundraiser.connect(owner).setRecipient(recipient.address);
     });
 
     it("Should allow anyone to donate on behalf of another account", async function () {

@@ -142,6 +142,7 @@ contract Core is Ownable, ReentrancyGuard {
             _usdcToken == address(0) || _uniswapV2Factory == address(0)
                 || _uniswapV2Router == address(0) || _coinFactory == address(0)
                 || _auctionFactory == address(0) || _fundraiserFactory == address(0)
+                || _protocolFeeAddress == address(0)
         ) {
             revert Core__ZeroAddress();
         }
@@ -234,14 +235,12 @@ contract Core is Ownable, ReentrancyGuard {
             params.launcher, // team (4%)
             params.recipient, // recipient (50%)
             fundraiserConfig,
-            params.uri
+            params.uri,
+            params.launcher // owner
         );
 
         // Transfer Coin minting rights to Fundraiser (permanently locked)
         ICoin(coin).setMinter(fundraiser);
-
-        // Transfer Fundraiser ownership to launcher
-        Ownable(fundraiser).transferOwnership(params.launcher);
 
         // Update registry
         isFundraiser[fundraiser] = true;
@@ -307,7 +306,7 @@ contract Core is Ownable, ReentrancyGuard {
     function _validateLaunchParams(LaunchParams calldata params) internal view {
         if (params.launcher == address(0)) revert Core__ZeroAddress();
         if (params.quoteToken == address(0)) revert Core__ZeroAddress();
-        if (params.recipient == address(0)) revert Core__ZeroAddress();
+        // recipient can be address(0) — donations go to treasury instead
         if (params.usdcAmount < minUsdcForLaunch) revert Core__InsufficientUsdc();
         if (bytes(params.tokenName).length == 0) revert Core__EmptyTokenName();
         if (bytes(params.tokenSymbol).length == 0) revert Core__EmptyTokenSymbol();

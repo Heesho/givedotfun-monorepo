@@ -313,6 +313,8 @@ async function verifyFundraiserByAddress(fundraiserAddress) {
   const initialEmission = await fundraiser.initialEmission();
   const minEmission = await fundraiser.minEmission();
   const halvingPeriod = await fundraiser.halvingPeriod();
+  const epochDuration = await fundraiser.epochDuration();
+  const uri = await fundraiser.uri();
 
   console.log("Starting Fundraiser Verification for:", fundraiserAddress);
   console.log("  Coin:", coinAddress);
@@ -324,6 +326,8 @@ async function verifyFundraiserByAddress(fundraiserAddress) {
   console.log("  Initial Emission:", initialEmission.toString());
   console.log("  Min Emission:", minEmission.toString());
   console.log("  Halving Period:", halvingPeriod.toString());
+  console.log("  Epoch Duration:", epochDuration.toString());
+  console.log("  URI:", uri);
 
   await hre.run("verify:verify", {
     address: fundraiserAddress,
@@ -339,7 +343,9 @@ async function verifyFundraiserByAddress(fundraiserAddress) {
         initialEmission: initialEmission,
         minEmission: minEmission,
         halvingPeriod: halvingPeriod,
+        epochDuration: epochDuration,
       },
+      uri,
     ],
   });
   console.log("Fundraiser Verified:", fundraiserAddress);
