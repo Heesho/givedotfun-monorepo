@@ -1,0 +1,5 @@
+Command: npx semgrep --config=auto --disable-version-check packages/hardhat/contracts
+Status: failed
+Reason: command not found in PATH (`semgrep` binary unavailable in current environment).
+
+Recommendation: install Semgrep and rerun with repository-local configuration/rules; if unavailable, run in an environment with npm/pip tooling access.

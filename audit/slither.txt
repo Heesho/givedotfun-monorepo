@@ -1,0 +1,6 @@
+Command: npx slither .
+Status: failed
+Reason: command not found in PATH (`slither` binary unavailable in current environment).
+
+Recommendation: install via `pip install slither-analyzer` (or project tooling that vendors it) and rerun with:
+  npx slither . --json audit/slither.json
