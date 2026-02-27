@@ -21,8 +21,7 @@ type Tab = "holdings" | "launched";
 
 function formatUsd(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  if (value >= 0.01) return `$${value.toFixed(2)}`;
+  if (value >= 0.01) return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   if (value > 0) return `<$0.01`;
   return "$0.00";
 }

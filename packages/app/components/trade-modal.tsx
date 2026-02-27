@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { X, Delete, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useReadContract } from "wagmi";
 import { formatUnits, formatEther, parseUnits } from "viem";
@@ -111,6 +111,14 @@ export function TradeModal({
       reset();
     }
   }, [isOpen, mode, reset]);
+
+  // Auto-reset on error (fast for user rejection, slower for real errors)
+  useEffect(() => {
+    if (status !== "error") return;
+    const isRejection = txError?.message?.includes("User rejected") || txError?.message?.includes("User denied");
+    const timer = setTimeout(() => reset(), isRejection ? 2000 : 5000);
+    return () => clearTimeout(timer);
+  }, [status, txError, reset]);
 
   // ---- Derived amounts ----------------------------------------------------
   const sellDecimals = isBuy ? QUOTE_TOKEN_DECIMALS : 18;
@@ -328,12 +336,14 @@ export function TradeModal({
   }, [buyAmountWei, amountOutMin, taker, sellToken, buyToken, parsedInput, execute, currentAllowance, routerAddress]);
 
   // Auto-close on success after a short delay
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     if (status === "success") {
-      const id = setTimeout(() => onClose(), 2000);
+      const id = setTimeout(() => onCloseRef.current(), 2000);
       return () => clearTimeout(id);
     }
-  }, [status, onClose]);
+  }, [status]);
 
   // ---- Button state -------------------------------------------------------
   const buttonDisabled =

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { X, Delete, Loader2, CheckCircle } from "lucide-react";
 import { parseUnits, parseEther, formatEther, formatUnits } from "viem";
 import { useReadContract } from "wagmi";
@@ -72,6 +72,14 @@ export function LiquidityModal({
       resetTx();
     }
   }, [isOpen, resetTx]);
+
+  // Auto-reset on error (fast for user rejection, slower for real errors)
+  useEffect(() => {
+    if (txStatus !== "error") return;
+    const isRejection = txError?.message?.includes("User rejected") || txError?.message?.includes("User denied");
+    const timer = setTimeout(() => resetTx(), isRejection ? 2000 : 5000);
+    return () => clearTimeout(timer);
+  }, [txStatus, txError, resetTx]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   // Handle number pad input
@@ -119,6 +127,16 @@ export function LiquidityModal({
   const isPending = txStatus === "pending" || txStatus === "confirming";
   const isSuccess = txStatus === "success";
   const isError = txStatus === "error";
+
+  // Auto-close on success after short delay
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  useEffect(() => {
+    if (txStatus === "success") {
+      const id = setTimeout(() => onCloseRef.current(), 2000);
+      return () => clearTimeout(id);
+    }
+  }, [txStatus]);
 
   // Pre-compute amounts for allowance checks
   const routerAddress = CONTRACT_ADDRESSES.uniV2Router as `0x${string}`;

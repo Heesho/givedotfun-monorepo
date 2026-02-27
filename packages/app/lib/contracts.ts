@@ -113,6 +113,7 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "currentEpochEmission", type: "uint256" },
           { internalType: "uint256", name: "currentEpochTotalDonated", type: "uint256" },
           { internalType: "uint256", name: "startTime", type: "uint256" },
+          { internalType: "address", name: "recipient", type: "address" },
           { internalType: "address", name: "treasury", type: "address" },
           { internalType: "address", name: "team", type: "address" },
           { internalType: "uint256", name: "coinPrice", type: "uint256" },
@@ -121,7 +122,6 @@ export const MULTICALL_ABI = [
           { internalType: "uint256", name: "accountUsdcBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCoinBalance", type: "uint256" },
           { internalType: "uint256", name: "accountCurrentEpochDonation", type: "uint256" },
-          { internalType: "address", name: "recipient", type: "address" },
         ],
         internalType: "struct Multicall.FundraiserState",
         name: "state",
@@ -136,7 +136,6 @@ export const MULTICALL_ABI = [
     inputs: [
       { internalType: "address", name: "fundraiser", type: "address" },
       { internalType: "address", name: "account", type: "address" },
-      { internalType: "address", name: "recipient", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
       { internalType: "string", name: "_uri", type: "string" },
     ],
@@ -522,6 +521,7 @@ export type FundraiserState = {
   currentEpochEmission: bigint;
   currentEpochTotalDonated: bigint;
   startTime: bigint;
+  recipient: `0x${string}`;
   treasury: `0x${string}`;
   team: `0x${string}`;
   coinPrice: bigint;
@@ -530,7 +530,6 @@ export type FundraiserState = {
   accountUsdcBalance: bigint;
   accountCoinBalance: bigint;
   accountCurrentEpochDonation: bigint;
-  recipient: `0x${string}`;
 };
 
 export type AuctionState = {

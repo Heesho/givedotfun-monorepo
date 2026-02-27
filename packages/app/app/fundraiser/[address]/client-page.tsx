@@ -3,26 +3,36 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Share2 } from "lucide-react";
+import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatEther, formatUnits } from "viem";
 import { NavBar } from "@/components/nav-bar";
-import { DonateModal } from "@/components/donate-modal";
+import { MineModal } from "@/components/mine-modal";
 import { TradeModal } from "@/components/trade-modal";
 import { AuctionModal } from "@/components/auction-modal";
 import { LiquidityModal } from "@/components/liquidity-modal";
 import { AdminModal } from "@/components/admin-modal";
+import { DonationHistoryItem } from "@/components/donation-history-item";
+import { Leaderboard } from "@/components/leaderboard";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useFarcaster, composeCast } from "@/hooks/useFarcaster";
 import { useDexScreener } from "@/hooks/useDexScreener";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
+import { useFundHistory } from "@/hooks/useFundHistory";
+import { useRigLeaderboard } from "@/hooks/useRigLeaderboard";
+import {
+  useBatchedTransaction,
+  encodeContractCall,
+  type Call,
+} from "@/hooks/useBatchedTransaction";
 import {
   CONTRACT_ADDRESSES,
+  MULTICALL_ABI,
   QUOTE_TOKEN_DECIMALS,
 } from "@/lib/contracts";
-import { getFundraiser } from "@/lib/subgraph-launchpad";
-import { truncateAddress, formatPrice, formatNumber, formatMarketCap } from "@/lib/format";
+import { getFundraiser, getUserFundraiserTotals } from "@/lib/subgraph-launchpad";
+import { truncateAddress, formatPrice, formatNumber, formatMarketCap, timeAgo } from "@/lib/format";
 import { PriceChart, type HoverData } from "@/components/price-chart";
 import { TokenLogo } from "@/components/token-logo";
 
@@ -70,6 +80,15 @@ function formatPeriod(seconds: string | undefined): string {
   if (secs >= 3600) return formatUnit(Math.round(secs / 3600), "hour", "hours");
   if (secs >= 60) return formatUnit(Math.round(secs / 60), "min", "min");
   return `${secs}s`;
+}
+
+function formatCountdown(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
 // Loading skeleton for the page
@@ -168,10 +187,13 @@ export default function FundraiserDetailPage() {
   });
 
   // Fetch on-chain fundraiser state via multicall
-  const { fundraiserState, isLoading: isFundraiserStateLoading } = useFundraiserState(
-    fundraiserAddress,
-    account,
-  );
+  const {
+    fundraiserState,
+    claimableEpochs,
+    totalPending,
+    refetch: refetchFund,
+    isLoading: isFundraiserStateLoading,
+  } = useFundraiserState(fundraiserAddress, account);
 
   // Normalize fields
   const coinPrice = fundraiserState?.coinPrice;
@@ -191,6 +213,30 @@ export default function FundraiserDetailPage() {
     fundraiserAddress,
     coinAddress,
   );
+
+  // Donation history and leaderboard
+  const { donations, isLoading: isHistoryLoading } = useFundHistory(address, 10);
+
+  // User totals for this fundraiser (total funded + total mined)
+  const { data: userTotals } = useQuery({
+    queryKey: ["userFundraiserTotals", fundraiserAddress, account],
+    queryFn: () => getUserFundraiserTotals(fundraiserAddress!, account!),
+    enabled: !!fundraiserAddress && !!account,
+    staleTime: 30_000,
+  });
+  const {
+    entries: leaderboardEntries,
+    userRank,
+    isLoading: isLeaderboardLoading,
+  } = useRigLeaderboard(address, account, 10);
+
+  // Claim transaction
+  const {
+    execute: executeClaim,
+    status: claimStatus,
+    error: claimError,
+    reset: resetClaim,
+  } = useBatchedTransaction();
 
   // Derived values
   const tokenName = subgraphFundraiser?.coin?.name || "Loading...";
@@ -218,7 +264,6 @@ export default function FundraiserDetailPage() {
     ? Number(formatEther(accountCoinBalance))
     : 0;
   const positionBalanceUsd = userCoinBalance * priceUsd;
-  const hasPosition = userCoinBalance > 0;
 
   // User quote balance (USDC, 6 decimals)
   const userQuoteBalance = accountQuoteBalance
@@ -296,7 +341,7 @@ export default function FundraiserDetailPage() {
 
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showHeaderPrice, setShowHeaderPrice] = useState(false);
-  const [showDonateModal, setShowDonateModal] = useState(false);
+  const [showMineModal, setShowMineModal] = useState(false);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradeMode, setTradeMode] = useState<"buy" | "sell">("buy");
   const [showAuctionModal, setShowAuctionModal] = useState(false);
@@ -304,6 +349,43 @@ export default function FundraiserDetailPage() {
   const [showAdminModal, setShowAdminModal] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tokenInfoRef = useRef<HTMLDivElement>(null);
+
+  // Epoch countdown
+  const [now, setNow] = useState(Math.floor(Date.now() / 1000));
+  const epochDuration = subgraphFundraiser?.epochDuration
+    ? parseInt(subgraphFundraiser.epochDuration)
+    : 86400;
+  const startTime = fundraiserState ? Number(fundraiserState.startTime) : 0;
+  const currentEpoch = fundraiserState ? Number(fundraiserState.currentEpoch) : 0;
+  const epochEndTime = startTime > 0 ? startTime + (currentEpoch + 1) * epochDuration : 0;
+  const epochEndsIn = Math.max(0, epochEndTime - now);
+
+  // Mining pool stats
+  const currentEpochTotalDonated = fundraiserState
+    ? Number(formatUnits(fundraiserState.currentEpochTotalDonated, QUOTE_TOKEN_DECIMALS))
+    : 0;
+  const currentEpochEmission = fundraiserState
+    ? Number(formatEther(fundraiserState.currentEpochEmission))
+    : 0;
+  const costPerToken = currentEpochTotalDonated > 0
+    ? currentEpochTotalDonated / currentEpochEmission
+    : 0;
+
+  // Pending claims
+  const pendingTokens = Number(formatEther(totalPending));
+  const unclaimedEpochCount = claimableEpochs.length;
+
+  // User's current epoch donation
+  const userCurrentEpochDonation = fundraiserState
+    ? Number(formatUnits(fundraiserState.accountCurrentEpochDonation, QUOTE_TOKEN_DECIMALS))
+    : 0;
+  const estimatedTokensFromEpoch =
+    userCurrentEpochDonation > 0 && currentEpochTotalDonated > 0 && currentEpochEmission > 0
+      ? (userCurrentEpochDonation / currentEpochTotalDonated) * currentEpochEmission
+      : 0;
+
+  // Show position section if user has any balance, pending, or epoch donation
+  const hasPosition = userCoinBalance > 0 || pendingTokens > 0 || userCurrentEpochDonation > 0;
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -320,6 +402,46 @@ export default function FundraiserDetailPage() {
     scrollContainer.addEventListener("scroll", handleScroll);
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Epoch countdown timer
+  useEffect(() => {
+    if (!fundraiserState) return;
+    const interval = setInterval(() => {
+      setNow(Math.floor(Date.now() / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [fundraiserState]);
+
+  // Auto-refetch after claim success, auto-reset after error
+  useEffect(() => {
+    if (claimStatus === "success") {
+      const timer = setTimeout(() => {
+        refetchFund();
+        resetClaim();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+    if (claimStatus === "error") {
+      const timer = setTimeout(() => resetClaim(), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [claimStatus, refetchFund, resetClaim]);
+
+  // Claim handler
+  const handleClaim = useCallback(async () => {
+    if (!account || claimableEpochs.length === 0 || claimStatus === "pending") return;
+    const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
+    const epochIds = claimableEpochs.map((d) => d.epoch);
+    const calls: Call[] = [
+      encodeContractCall(
+        multicallAddr,
+        MULTICALL_ABI,
+        "claimMultiple",
+        [fundraiserAddress, account, epochIds]
+      ),
+    ];
+    await executeClaim(calls);
+  }, [account, claimableEpochs, fundraiserAddress, executeClaim, claimStatus]);
 
   // Show loading skeleton while critical data loads
   const isLoading = isSubgraphLoading || (!!address && isFundraiserStateLoading);
@@ -418,10 +540,136 @@ export default function FundraiserDetailPage() {
             ))}
           </div>
 
-          {/* User Position Section */}
+          {/* Mining Pool Section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="font-semibold text-[18px]">Today's Mining Pool</div>
+              <div className="text-[14px] tabular-nums text-muted-foreground">
+                {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-[11px] text-muted-foreground mb-1">Funded</div>
+                <div className="text-[22px] font-bold tabular-nums">
+                  ${currentEpochTotalDonated.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                </div>
+                <div className="text-[13px] text-muted-foreground tabular-nums mt-0.5">
+                  {costPerToken > 0 ? `$${costPerToken.toFixed(4)}/token` : ""}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[11px] text-muted-foreground mb-1">Emission</div>
+                <div className="text-[22px] font-bold tabular-nums flex items-center justify-end gap-1.5">
+                  <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" />
+                  {currentEpochEmission >= 1_000_000 ? `${(currentEpochEmission / 1_000_000).toFixed(2)}M`
+                    : currentEpochEmission >= 1_000 ? `${(currentEpochEmission / 1_000).toFixed(0)}K`
+                    : currentEpochEmission.toFixed(0)}
+                </div>
+                <div className="text-[13px] text-muted-foreground tabular-nums mt-0.5">
+                  {priceUsd > 0 ? `~$${formatNumber(currentEpochEmission * priceUsd)} value` : `${tokenSymbol}`}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Your Position Section */}
           {hasPosition && (
             <div className="mb-6">
               <div className="font-semibold text-[18px] mb-3">Your position</div>
+
+              {/* Mining epochs */}
+              {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
+                <div className="mb-4">
+                  {/* Current epoch - active */}
+                  {userCurrentEpochDonation > 0 && (
+                    <div className="flex items-center gap-3 py-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Epoch #{currentEpoch}</span>
+                          <span className="text-xs text-zinc-500">active</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                        <div>
+                          <div className="text-[12px] text-muted-foreground">Funded</div>
+                          <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        </div>
+                        <div>
+                          <div className="text-[12px] text-muted-foreground">Mining</div>
+                          <div className="text-[13px] font-medium text-zinc-400 flex items-center justify-end gap-1">
+                            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" />
+                            {estimatedTokensFromEpoch >= 1000
+                              ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
+                              : formatNumber(estimatedTokensFromEpoch, 0)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Past unclaimed epochs */}
+                  {claimableEpochs.map((ep) => {
+                    const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
+                    const epReward = Number(formatEther(ep.pendingReward));
+                    return (
+                      <div key={ep.epoch.toString()} className="flex items-center gap-3 py-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">Epoch #{ep.epoch.toString()}</span>
+                            <span className="text-xs text-zinc-500">claimable</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                          <div>
+                            <div className="text-[12px] text-muted-foreground">Funded</div>
+                            <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                          </div>
+                          <div>
+                            <div className="text-[12px] text-muted-foreground">Mined</div>
+                            <div className="text-[13px] font-medium text-zinc-400 flex items-center justify-end gap-1">
+                              <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" />
+                              {epReward >= 1000
+                                ? `${(epReward / 1000).toFixed(1)}K`
+                                : formatNumber(epReward, 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Claim all button */}
+                  {unclaimedEpochCount > 0 && (
+                    <button
+                      onClick={handleClaim}
+                      disabled={claimStatus === "pending" || claimStatus === "success"}
+                      className={`w-full mt-1 py-2.5 text-[13px] font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                        claimStatus === "success"
+                          ? "bg-zinc-300 text-black"
+                          : claimStatus === "error"
+                          ? "bg-zinc-600 text-white"
+                          : claimStatus === "pending"
+                          ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                          : "bg-white text-black hover:bg-zinc-200"
+                      }`}
+                    >
+                      {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      {claimStatus === "success" && <CheckCircle className="w-3.5 h-3.5" />}
+                      {claimStatus === "pending"
+                        ? "Claiming..."
+                        : claimStatus === "success"
+                        ? "Claimed!"
+                        : claimStatus === "error"
+                        ? claimError?.message?.includes("cancelled") ? "Rejected" : "Failed"
+                        : `Claim all · ${unclaimedEpochCount} epoch${unclaimedEpochCount !== 1 ? "s" : ""}`}
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
@@ -433,55 +681,29 @@ export default function FundraiserDetailPage() {
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Value</div>
                   <div className="font-semibold text-[15px] tabular-nums text-white">
-                    ${positionBalanceUsd.toFixed(2)}
+                    ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
+                {userTotals && userTotals.totalFunded > 0 && (
+                  <>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
+                      <div className="font-semibold text-[15px] tabular-nums">
+                        ${formatNumber(userTotals.totalFunded)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
+                      <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
+                        <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
+                        <span>{formatNumber(userTotals.totalMined)}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
-
-          {/* Global Stats Grid */}
-          <div className="mb-6">
-            <div className="font-semibold text-[18px] mb-3">Stats</div>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  {formatMarketCap(marketCapUsd)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  {formatNumber(totalSupply)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${formatNumber(liquidityUsd)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${formatNumber(volume24h)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${treasuryRevenue.toFixed(2)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${teamRevenue.toFixed(2)}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* About Section */}
           <div className="mb-6">
@@ -489,8 +711,6 @@ export default function FundraiserDetailPage() {
 
             {/* Deployed by row */}
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-              <span className="text-zinc-400">Fundraiser</span>
-              <span className="text-muted-foreground/60">·</span>
               <span>Deployed by</span>
               {launcherAddress ? (
                 <span className="text-foreground font-medium font-mono">
@@ -563,22 +783,62 @@ export default function FundraiserDetailPage() {
                 );
               })}
             </div>
+          </div>
 
-            {/* Fundraiser Parameters */}
-            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-              {subgraphFundraiser ? (
+          {/* Global Stats Grid */}
+          <div className="mb-6">
+            <div className="font-semibold text-[18px] mb-3">Stats</div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  {formatMarketCap(marketCapUsd)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  {formatNumber(totalSupply)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  ${formatNumber(liquidityUsd)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  ${formatNumber(volume24h)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                <div className="font-semibold text-[15px] tabular-nums">
+                  ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              {/* Fundraiser Parameters */}
+              {subgraphFundraiser && (
                 <>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Initial emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.initialEmission)}</div>
+                    <div className="font-semibold text-[15px] tabular-nums">{formatEmission(subgraphFundraiser.initialEmission)}</div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Min emission</div>
-                    <div className="font-semibold text-[14px]">{formatEmission(subgraphFundraiser.minEmission)}</div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Tail emission</div>
+                    <div className="font-semibold text-[15px] tabular-nums">{formatEmission(subgraphFundraiser.minEmission)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
-                    <div className="font-semibold text-[14px]">
+                    <div className="font-semibold text-[15px] tabular-nums">
                       {formatPeriod(
                         String(
                           parseInt(subgraphFundraiser.halvingPeriod) *
@@ -589,26 +849,26 @@ export default function FundraiserDetailPage() {
                   </div>
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
-                    <div className="font-semibold text-[14px]">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
+                    <div className="font-semibold text-[15px] tabular-nums">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
                   </div>
                   {metadata?.recipientName && (
                     <div>
                       <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
-                      <div className="font-semibold text-[14px]">{metadata.recipientName}</div>
+                      <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
                     </div>
                   )}
                   <div>
                     <div className="text-muted-foreground text-[12px] mb-0.5">
                       {metadata?.recipientName ? "Recipient address" : "Recipient"}
                     </div>
-                    <div className="font-semibold text-[14px] font-mono">
-                      <AddressLink address={subgraphFundraiser.recipient ?? fundraiserState?.recipient ?? null} />
+                    <div className="font-semibold text-[15px] font-mono">
+                      <AddressLink address={fundraiserState?.recipient ?? null} />
                     </div>
                   </div>
                   {fundraiserState?.treasury && (
                     <div>
                       <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                      <div className="font-semibold text-[14px] font-mono">
+                      <div className="font-semibold text-[15px] font-mono">
                         <AddressLink address={fundraiserState.treasury} />
                       </div>
                     </div>
@@ -616,24 +876,60 @@ export default function FundraiserDetailPage() {
                   {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
                     <div>
                       <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                      <div className="font-semibold text-[14px] font-mono">
+                      <div className="font-semibold text-[15px] font-mono">
                         <AddressLink address={fundraiserState.team} />
                       </div>
                     </div>
                   )}
                 </>
-              ) : (
-                <>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i}>
-                      <div className="w-20 h-3 bg-secondary rounded animate-pulse mb-1" />
-                      <div className="w-16 h-5 bg-secondary rounded animate-pulse" />
-                    </div>
-                  ))}
-                </>
               )}
             </div>
           </div>
+
+          {/* Recent Donations */}
+          <div className="mb-6">
+            <h2 className="text-[18px] font-semibold mb-3">Recent Funding</h2>
+            {isHistoryLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : donations.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground text-[13px]">
+                No funding yet
+              </div>
+            ) : (
+              <div>
+                {donations.map((donation, index) => (
+                  <DonationHistoryItem
+                    key={`${donation.donor}-${donation.timestamp}-${index}`}
+                    donation={{
+                      id: `${donation.donor}-${donation.timestamp}-${index}`,
+                      donor: donation.donor,
+                      uri: donation.uri,
+                      amount: donation.amount,
+                      estimatedTokens: currentEpochEmission > 0
+                        ? BigInt(Math.floor((Number(formatUnits(donation.amount, QUOTE_TOKEN_DECIMALS)) / (currentEpochTotalDonated || 1)) * currentEpochEmission * 1e18))
+                        : 0n,
+                      timestamp: Number(donation.timestamp),
+                    }}
+                    timeAgo={timeAgo}
+                    tokenSymbol={tokenSymbol}
+                    logoUrl={logoUrl ?? undefined}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Leaderboard */}
+          <Leaderboard
+            entries={leaderboardEntries ?? []}
+            userRank={userRank ?? null}
+            tokenSymbol={tokenSymbol}
+            tokenName={tokenName}
+            fundraiserUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${fundraiserAddress}` : ""}
+            isLoading={isLeaderboardLoading}
+          />
 
         </div>
 
@@ -686,11 +982,11 @@ export default function FundraiserDetailPage() {
                       <button
                         onClick={() => {
                           setShowActionMenu(false);
-                          setShowDonateModal(true);
+                          setShowMineModal(true);
                         }}
                         className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
                       >
-                        Donate
+                        Mine
                       </button>
                       <button
                         onClick={() => {
@@ -749,17 +1045,13 @@ export default function FundraiserDetailPage() {
       </div>
       <NavBar />
 
-      {/* Donate Modal */}
-      <DonateModal
-        isOpen={showDonateModal}
-        onClose={() => setShowDonateModal(false)}
+      {/* Mine Modal */}
+      <MineModal
+        isOpen={showMineModal}
+        onClose={() => setShowMineModal(false)}
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
-        tokenName={tokenName}
-        tokenLogoUrl={logoUrl}
-        recipientName={metadata?.recipientName}
-        recipientAddress={subgraphFundraiser?.recipient ?? fundraiserState?.recipient ?? undefined}
-        epochDuration={subgraphFundraiser?.epochDuration ? parseInt(subgraphFundraiser.epochDuration) : undefined}
+        onSuccess={() => refetchFund()}
       />
 
       {/* Trade Modal (Buy/Sell) */}
@@ -797,19 +1089,21 @@ export default function FundraiserDetailPage() {
       />
 
       {/* Admin Modal */}
-      <AdminModal
-        isOpen={showAdminModal}
-        onClose={() => setShowAdminModal(false)}
-        fundraiserAddress={fundraiserAddress}
-        tokenSymbol={tokenSymbol}
-        tokenName={tokenName}
-        currentConfig={{
-          treasury: fundraiserState?.treasury ?? "",
-          team: fundraiserState?.team ?? null,
-          uri: fundraiserUri ?? "",
-          recipient: subgraphFundraiser?.recipient ?? fundraiserState?.recipient ?? null,
-        }}
-      />
+      {showAdminModal && (
+        <AdminModal
+          isOpen={showAdminModal}
+          onClose={() => setShowAdminModal(false)}
+          fundraiserAddress={fundraiserAddress}
+          tokenSymbol={tokenSymbol}
+          tokenName={tokenName}
+          initialTreasury={fundraiserState?.treasury ?? ""}
+          initialTeam={fundraiserState?.team ?? ""}
+          initialRecipient={fundraiserState?.recipient ?? ""}
+          initialUri={fundraiserUri ?? ""}
+          initialMetadata={metadata ?? undefined}
+          initialLogoUrl={logoUrl ?? undefined}
+        />
+      )}
 
     </main>
   );

@@ -64,10 +64,10 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
         </div>
       </div>
 
-      {/* Donated amount */}
+      {/* Funded amount */}
       <div className="text-right flex-shrink-0">
-        <div className="text-sm font-medium">{entry.donatedFormatted}</div>
-        <div className="text-[10px] text-zinc-500">donated</div>
+        <div className="text-[12px] text-muted-foreground">Funded</div>
+        <div className="text-[13px] font-medium">{entry.donatedFormatted}</div>
       </div>
     </div>
   );
@@ -110,7 +110,7 @@ export function Leaderboard({
       <div className="mt-6">
         <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
-          No donors yet
+          No funders yet
         </div>
       </div>
     );

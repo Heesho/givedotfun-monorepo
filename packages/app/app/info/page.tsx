@@ -6,33 +6,45 @@ const INFO_SECTIONS = [
   {
     title: "What is give.fun?",
     content:
-      "A crypto GoFundMe on Base. Create perpetual fundraisers for creators, charities, projects, or causes. Donors contribute USDC and earn proportional token emissions in return.",
+      "A perpetual funding platform on Base. Create fundraisers for creators, public goods, agents, charities, or anything at all. Donors fund with USDC and mine proportional token emissions — like Bitcoin mining, but for things you care about.",
     bullets: [
+      "50% of every donation goes directly to the recipient",
       "Liquidity is locked forever — LP tokens are burned on launch",
       "All contracts are immutable — nobody can change the rules",
-      "50% of every donation goes directly to the recipient",
     ],
   },
   {
-    title: "How It Works",
+    title: "Mining",
     content:
-      "Donate USDC into daily epoch pools. Your share of that epoch's token emission matches your share of total donations. Emissions halve on a schedule but never drop below a set floor.",
+      "Fund USDC into daily mining pools. Each day has a fixed token emission. Your share of the pool determines your share of tokens mined.",
     bullets: [
-      "Each epoch (day) has a fixed token emission to distribute",
-      "Your proportional share of donations = your share of tokens",
-      "Claim your earned tokens after each epoch ends",
-      "Emissions halve over time, creating decreasing supply inflation",
+      "Each epoch (1 day) has a fixed token emission to distribute",
+      "Fund more = mine more tokens proportionally",
+      "Claim your mined tokens after each epoch ends",
+      "Early epochs have the highest emissions — early miners get the most",
     ],
   },
   {
-    title: "Fee Structure",
+    title: "Bitcoin-Style Emissions",
     content:
-      "Every donation is split transparently. The majority goes directly to the designated recipient.",
+      "Token emissions follow a Bitcoin-inspired halving schedule compressed from 4-year halvings to monthly halvings, with perpetual tail emissions.",
+    bullets: [
+      "~50% of total supply is mined in the first month",
+      "Emissions halve every 30 days",
+      "Tail emissions kick in after ~7 months — tokens are mined forever",
+      "~21M tokens from halvings, then slow perpetual inflation",
+    ],
+  },
+  {
+    title: "Funding Split",
+    content:
+      "Every donation is split transparently on-chain. The majority goes directly to whoever is being funded.",
     bullets: [
       "50% — Recipient (the person or cause being funded)",
       "45% — Treasury (grows liquidity via auctions)",
       "4% — Team (the launcher who created the fundraiser)",
       "1% — Protocol fee",
+      "If no recipient is set, their 50% goes to the treasury instead",
     ],
   },
   {
@@ -40,7 +52,7 @@ const INFO_SECTIONS = [
     content:
       "Treasury fees accumulate as USDC and are auctioned off to LP token holders. This permanently deepens liquidity for the token.",
     bullets: [
-      "Auction price decays over time (Dutch auction)",
+      "Dutch auction — price decays over time",
       "Buy when the price makes it profitable",
       "LP tokens used in auctions get burned — liquidity only grows",
     ],
@@ -48,12 +60,12 @@ const INFO_SECTIONS = [
   {
     title: "For Launchers",
     content:
-      "Launch a fundraiser with your own emission schedule and halving parameters. Everything is configured at launch and locked forever.",
+      "Launch a fundraiser in one click. Everything is configured at launch and locked forever — fully immutable.",
     bullets: [
-      "Set initial and floor emission rates",
-      "Configure halving period and epoch duration",
+      "Bitcoin-style emission schedule by default",
       "Earn 4% of all donations as the team fee",
-      "Treasury accumulates fees that get auctioned to grow liquidity",
+      "Treasury grows liquidity automatically via auctions",
+      "Set a recipient — 50% of all funding goes directly to them",
     ],
   },
 ];

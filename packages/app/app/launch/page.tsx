@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Upload, X } from "lucide-react";
 import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import { useReadContract, useWaitForTransactionReceipt } from "wagmi";
+import { NavBar } from "@/components/nav-bar";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import {
   useBatchedTransaction,
@@ -23,9 +24,9 @@ import {
 const DEFAULTS = {
   usdcAmount: 1,
   unitAmount: 1000,
-  initialEmission: 50000, // 50,000 tokens/day
-  minEmission: 5000, // 5,000 tokens/day floor
-  halvingPeriod: 30 * 24 * 3600, // 30 days
+  initialEmission: 345600, // 345,600 tokens/day (4/sec, Bitcoin-style)
+  minEmission: 3456, // 3,456 tokens/day tail (1% of initial, perpetual)
+  halvingPeriod: 30 * 24 * 3600, // 30 days (monthly halving)
   epochDuration: 86400, // 1 day
   auctionEpochPeriod: 86400, // 1 day
   auctionPriceMultiplier: 1.2, // 1.2x
@@ -127,12 +128,14 @@ export default function LaunchPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  // Recipient fields
+  // Recipient fields (optional)
+  const [showRecipient, setShowRecipient] = useState(false);
   const [recipientName, setRecipientName] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
 
   // Links (websites, socials)
-  const [links, setLinks] = useState<string[]>([]);
+  const [showLinks, setShowLinks] = useState(false);
+  const [links, setLinks] = useState<string[]>([""]);
 
   // Fundraiser parameters (using defaults)
   const usdcAmount = DEFAULTS.usdcAmount;
@@ -145,17 +148,19 @@ export default function LaunchPage() {
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Auto-reset error state after 10 seconds so button reverts to normal
+  // Auto-reset error state so button reverts to normal
+  const isUserRejection = txError?.message?.includes("User rejected") || txError?.message?.includes("User denied");
   useEffect(() => {
     if (txStatus !== "error" && !launchError) return;
     if (launchError) console.error("[Launch Error]", launchError);
-    if (txStatus === "error") console.error("[Tx Error]", txStatus);
+    if (txStatus === "error") console.error("[Tx Error]", txError);
+    const delay = isUserRejection ? 2000 : 10000;
     const timer = setTimeout(() => {
       resetTx();
       setLaunchError(null);
-    }, 10000);
+    }, delay);
     return () => clearTimeout(timer);
-  }, [txStatus, launchError, resetTx]);
+  }, [txStatus, launchError, resetTx, txError, isUserRejection]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -174,13 +179,13 @@ export default function LaunchPage() {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
 
-  // Form validation
+  // Form validation (recipient is optional)
   const isFormValid = (() => {
     if (!logoFile) return false;
     if (!tokenName.trim().length || !tokenSymbol.trim().length) return false;
     if (!tokenDescription.trim().length || !donationMessage.trim().length) return false;
-    if (!recipientName.trim().length) return false;
-    if (!isValidAddress(recipientAddress)) return false;
+    // If recipient address is provided, it must be valid
+    if (recipientAddress.trim().length > 0 && !isValidAddress(recipientAddress)) return false;
     return true;
   })();
 
@@ -213,7 +218,7 @@ export default function LaunchPage() {
         image: imageUrl,
         description: tokenDescription,
         defaultMessage: donationMessage || "gm",
-        ...(recipientName ? { recipientName } : {}),
+        recipientName: recipientName.trim() || "No recipient set",
         links: links.filter((l) => l.trim() !== ""),
       }),
     });
@@ -272,7 +277,7 @@ export default function LaunchPage() {
       const launchParams = {
         launcher,
         quoteToken,
-        recipient: recipientAddress as `0x${string}`,
+        recipient: (recipientAddress.trim() && isValidAddress(recipientAddress) ? recipientAddress : "0x0000000000000000000000000000000000000000") as `0x${string}`,
         tokenName,
         tokenSymbol,
         uri,
@@ -307,77 +312,65 @@ export default function LaunchPage() {
     return n.toString();
   };
 
-  // Main form layout — no type selection needed
+  // Main form layout
   return (
-    <main className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="flex h-screen w-screen justify-center bg-zinc-800">
       <div
         className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 120px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)",
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
-          <Link
-            href="/explore"
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </Link>
-          <span className="text-base font-semibold">
-            Launch Fundraiser
-          </span>
-          <div className="w-9" />
+        <div className="px-4 pb-2">
+          <h1 className="text-2xl font-semibold tracking-tight">Launch</h1>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2">
-          <div className="space-y-4">
-            {/* Logo + Name + Symbol Row */}
-            <div className="flex items-start gap-4">
-              {/* Logo Upload */}
-              <label className="cursor-pointer flex-shrink-0">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className="hidden"
-                />
-                <div className="w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden hover:ring-zinc-500 transition-colors">
-                  {logoPreview ? (
-                    <img
-                      src={logoPreview}
-                      alt="Coin logo"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Upload className="w-6 h-6 text-zinc-500" />
-                  )}
-                </div>
-              </label>
-
-              {/* Name + Symbol */}
-              <div className="flex-1 min-w-0 space-y-2">
-                <input
-                  type="text"
-                  placeholder="Coin name"
-                  value={tokenName}
-                  onChange={(e) => setTokenName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="SYMBOL"
-                  value={tokenSymbol}
-                  onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
-                  maxLength={10}
-                  className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                />
+          {/* Logo + Name + Symbol Row */}
+          <div className="flex items-start gap-3 mb-3">
+            <label className="cursor-pointer flex-shrink-0">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="hidden"
+              />
+              <div className="w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden hover:ring-zinc-500 transition-colors">
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt="Coin logo"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Upload className="w-6 h-6 text-zinc-500" />
+                )}
               </div>
+            </label>
+            <div className="flex-1 min-w-0 space-y-2">
+              <input
+                type="text"
+                placeholder="Coin name"
+                value={tokenName}
+                onChange={(e) => setTokenName(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+              />
+              <input
+                type="text"
+                placeholder="SYMBOL"
+                value={tokenSymbol}
+                onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
+                maxLength={10}
+                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+              />
             </div>
+          </div>
 
-            {/* Description */}
+          {/* Text fields — tight stack */}
+          <div className="space-y-2">
             <textarea
               placeholder="Description"
               value={tokenDescription}
@@ -385,94 +378,115 @@ export default function LaunchPage() {
               rows={2}
               className="w-full px-3 py-2 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 resize-none text-sm"
             />
-
-            {/* Donation Message */}
             <input
               type="text"
-              placeholder="Donation message"
+              placeholder="Default message"
               value={donationMessage}
               onChange={(e) => setDonationMessage(e.target.value)}
               className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
             />
+          </div>
 
-            {/* Recipient */}
-            <div className="space-y-2 pt-2">
-              <div className="space-y-1 mb-2">
-                <div className="text-[13px] font-semibold text-foreground">Recipient</div>
-                <p className="text-[11px] text-muted-foreground">
-                  The wallet that receives 50% of every donation.
-                </p>
+          {/* Recipient toggle */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowRecipient(!showRecipient)}
+              className="flex items-center justify-between w-full py-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] text-foreground">Add recipient</span>
+                <span className="text-[11px] text-muted-foreground">receives 50% of donations</span>
               </div>
-              <input
-                type="text"
-                placeholder="Recipient name"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-              />
-              <input
-                type="text"
-                placeholder="Recipient wallet address (0x...)"
-                value={recipientAddress}
-                onChange={(e) => setRecipientAddress(e.target.value)}
-                className={`w-full h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm ${
-                  recipientAddress.length > 0 && !isValidAddress(recipientAddress)
-                    ? "ring-zinc-500/50 focus:ring-zinc-500"
-                    : "ring-zinc-700 focus:ring-zinc-500"
-                }`}
-              />
-              {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
-                <p className="text-[11px] text-zinc-400">Enter a valid Ethereum address</p>
-              )}
-            </div>
+              <div className={`w-9 h-5 rounded-full transition-colors relative ${showRecipient ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showRecipient ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              </div>
+            </button>
 
-            {/* Links */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] text-zinc-400">Links</span>
+            {showRecipient && (
+              <div className="space-y-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Recipient name"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                />
+                <input
+                  type="text"
+                  placeholder="Wallet address (0x...)"
+                  value={recipientAddress}
+                  onChange={(e) => setRecipientAddress(e.target.value)}
+                  className={`w-full h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm ${
+                    recipientAddress.length > 0 && !isValidAddress(recipientAddress)
+                      ? "ring-zinc-500/50 focus:ring-zinc-500"
+                      : "ring-zinc-700 focus:ring-zinc-500"
+                  }`}
+                />
+                {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
+                  <p className="text-[11px] text-zinc-400">Enter a valid Ethereum address</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Links toggle */}
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setShowLinks(!showLinks)}
+              className="flex items-center justify-between w-full py-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] text-foreground">Add links</span>
+                <span className="text-[11px] text-muted-foreground">websites, socials</span>
+              </div>
+              <div className={`w-9 h-5 rounded-full transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              </div>
+            </button>
+
+            {showLinks && (
+              <div className="space-y-2 mt-2">
+                {links.map((link, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={link}
+                      onChange={(e) => {
+                        const updated = [...links];
+                        updated[i] = e.target.value;
+                        setLinks(updated);
+                      }}
+                      className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                      className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
                 {links.length < 5 && (
                   <button
                     type="button"
                     onClick={() => setLinks([...links, ""])}
                     className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
                   >
-                    + Add link
+                    + Add another
                   </button>
                 )}
               </div>
-              {links.map((link, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={link}
-                    onChange={(e) => {
-                      const updated = [...links];
-                      updated[i] = e.target.value;
-                      setLinks(updated);
-                    }}
-                    className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                    className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
+            )}
           </div>
         </div>
 
         {/* Bottom Action Bar */}
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 bg-background flex justify-center"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
-        >
-          <div className="flex items-center justify-between w-full max-w-[520px] px-4 py-3 bg-background">
+        <div className="mt-auto px-4 py-1 bg-background">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-5">
               <div>
                 <div className="text-muted-foreground text-[12px]">Pay</div>
@@ -520,14 +534,16 @@ export default function LaunchPage() {
         </div>
       </div>
 
+      {/* Nav Bar */}
+      <NavBar />
+
       {/* Success */}
       {txStatus === "success" && txHash && (
-        <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+        <div className="fixed inset-0 bottom-[70px] z-[50] flex w-screen justify-center bg-zinc-800">
           <div
             className="relative flex h-full w-full max-w-[520px] flex-col bg-background items-center justify-center px-6"
             style={{
               paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
             }}
           >
             <div className="text-center space-y-6 max-w-xs">

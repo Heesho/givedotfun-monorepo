@@ -23,7 +23,7 @@ export function useFundraiserState(
     chainId: base.id,
     query: {
       enabled: !!fundraiserAddress && enabled,
-      refetchInterval: 15_000,
+      refetchInterval: 5_000,
     },
   });
 
@@ -41,7 +41,7 @@ export function useFundraiserState(
     chainId: base.id,
     query: {
       enabled: !!fundraiserAddress && !!account && currentEpoch > 0n && enabled,
-      refetchInterval: 30_000,
+      refetchInterval: 10_000,
     },
   });
 
@@ -56,7 +56,7 @@ export function useFundraiserState(
     chainId: base.id,
     query: {
       enabled: !!fundraiserAddress && !!account && currentEpoch > 0n && enabled,
-      refetchInterval: 30_000,
+      refetchInterval: 10_000,
     },
   });
 

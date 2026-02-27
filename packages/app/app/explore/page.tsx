@@ -217,7 +217,7 @@ export default function ExplorePage() {
                         </div>
                         <div className="text-[13px] tabular-nums text-zinc-400">
                           {coin.marketCapUsd > 0
-                            ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toFixed(2)}%`
+                            ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
                             : "--"}
                         </div>
                       </div>

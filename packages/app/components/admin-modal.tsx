@@ -3,22 +3,22 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Camera, Loader2 } from "lucide-react";
 import { encodeFunctionData } from "viem";
-import { useTokenMetadata } from "@/hooks/useMetadata";
+import type { TokenMetadata } from "@/hooks/useMetadata";
 import { useBatchedTransaction, type Call } from "@/hooks/useBatchedTransaction";
-import { ipfsToHttp } from "@/lib/constants";
 
 type AdminModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  fundraiserAddress?: `0x${string}`;
+  fundraiserAddress: `0x${string}`;
   tokenSymbol?: string;
   tokenName?: string;
-  currentConfig: {
-    treasury: string;
-    team: string | null;
-    uri: string;
-    recipient?: string | null;
-  };
+  // Pre-loaded data from the parent (already fetched)
+  initialTreasury: string;
+  initialTeam: string;
+  initialRecipient: string;
+  initialUri: string;
+  initialMetadata?: TokenMetadata;
+  initialLogoUrl?: string;
 };
 
 function isValidAddress(address: string): boolean {
@@ -72,68 +72,33 @@ export function AdminModal({
   fundraiserAddress,
   tokenSymbol = "TOKEN",
   tokenName = "Token",
-  currentConfig,
+  initialTreasury,
+  initialTeam,
+  initialRecipient,
+  initialUri,
+  initialMetadata,
+  initialLogoUrl,
 }: AdminModalProps) {
-  // Fetch existing metadata from IPFS
-  const { metadata: existingMetadata, logoUrl: existingLogoUrl } = useTokenMetadata(currentConfig.uri);
-
-  // Metadata state
+  // Metadata fields — initialized from parent's already-loaded IPFS data
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
-  const [defaultMessage, setDefaultMessage] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [links, setLinks] = useState<string[]>([]);
+  const [description, setDescription] = useState(initialMetadata?.description || "");
+  const [defaultMessage, setDefaultMessage] = useState(initialMetadata?.defaultMessage || "");
+  const [recipientName, setRecipientName] = useState(initialMetadata?.recipientName || "");
+  const existingLinks = initialMetadata?.links || [];
+  const [showLinks, setShowLinks] = useState(existingLinks.length > 0);
+  const [links, setLinks] = useState<string[]>(existingLinks.length > 0 ? existingLinks : [""]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Common state
-  const [treasury, setTreasury] = useState(currentConfig.treasury);
-  const [team, setTeam] = useState(currentConfig.team || "");
-
-  // Recipient state
-  const [recipient, setRecipient] = useState(currentConfig.recipient || "");
+  // Contract config — initialized from parent's already-loaded on-chain data
+  const [treasury, setTreasury] = useState(initialTreasury);
+  const [team, setTeam] = useState(initialTeam);
+  const [recipient, setRecipient] = useState(initialRecipient);
 
   // Transaction state
   const { execute, status: txStatus, reset: resetTx } = useBatchedTransaction();
   const [pendingField, setPendingField] = useState<string | null>(null);
   const [isUploadingMetadata, setIsUploadingMetadata] = useState(false);
-
-  // Track whether we've initialized from props to avoid resetting on every render
-  const wasOpenRef = useRef(false);
-  const metadataLoadedRef = useRef(false);
-
-  // Reset state only when modal first opens
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (isOpen && !wasOpenRef.current) {
-      wasOpenRef.current = true;
-      metadataLoadedRef.current = false;
-      setTreasury(currentConfig.treasury);
-      setTeam(currentConfig.team || "");
-      setRecipient(currentConfig.recipient || "");
-      setLogoFile(null);
-      setLogoPreview(null);
-      setDescription(existingMetadata?.description || "");
-      setDefaultMessage(existingMetadata?.defaultMessage || "");
-      setRecipientName(existingMetadata?.recipientName || "");
-      setLinks(existingMetadata?.links || []);
-    }
-    if (!isOpen) {
-      wasOpenRef.current = false;
-    }
-  }, [isOpen, currentConfig, existingMetadata]);
-
-  // Pre-populate metadata fields once they load (async from IPFS)
-  useEffect(() => {
-    if (isOpen && existingMetadata && !metadataLoadedRef.current) {
-      metadataLoadedRef.current = true;
-      setDescription(existingMetadata.description || "");
-      setDefaultMessage(existingMetadata.defaultMessage || "");
-      setRecipientName(existingMetadata.recipientName || "");
-      setLinks(existingMetadata.links || []);
-    }
-  }, [isOpen, existingMetadata]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Track which field just succeeded
   const [successField, setSuccessField] = useState<string | null>(null);
@@ -158,20 +123,21 @@ export function AdminModal({
   const isTreasuryValid = isValidAddress(treasury);
   const isTeamValid = team === "" || isValidAddress(team);
   const isRecipientValid = isValidAddress(recipient);
-  // Check if metadata changed
+
+  // Check if metadata changed from what was loaded
   const metadataChanged =
-    description !== (existingMetadata?.description || "") ||
-    defaultMessage !== (existingMetadata?.defaultMessage || "") ||
-    recipientName !== (existingMetadata?.recipientName || "") ||
+    description !== (initialMetadata?.description || "") ||
+    defaultMessage !== (initialMetadata?.defaultMessage || "") ||
+    recipientName !== (initialMetadata?.recipientName || "") ||
     logoFile !== null ||
-    JSON.stringify(links) !== JSON.stringify(existingMetadata?.links || []);
+    JSON.stringify(links.filter(l => l.trim() !== "")) !== JSON.stringify(initialMetadata?.links || []);
 
   // Handle logo file selection
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
-    if (file.size > 5 * 1024 * 1024) return; // 5MB limit
+    if (file.size > 5 * 1024 * 1024) return;
 
     setLogoFile(file);
     const reader = new FileReader();
@@ -186,9 +152,8 @@ export function AdminModal({
     setIsUploadingMetadata(true);
 
     try {
-      let imageIpfsUrl = existingMetadata?.image || "";
+      let imageIpfsUrl = initialMetadata?.image || "";
 
-      // Upload new logo if changed
       if (logoFile) {
         const formData = new FormData();
         formData.append("file", logoFile);
@@ -204,7 +169,6 @@ export function AdminModal({
         imageIpfsUrl = uploadData.ipfsUrl;
       }
 
-      // Upload metadata JSON
       const metadataRes = await fetch("/api/pinata/metadata", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -225,7 +189,6 @@ export function AdminModal({
 
       setIsUploadingMetadata(false);
 
-      // Call setUri on-chain
       const data = encodeFunctionData({
         abi: SET_URI_ABI,
         functionName: "setUri",
@@ -288,10 +251,17 @@ export function AdminModal({
   if (!isOpen) return null;
 
   const isSaving = txStatus === "pending" || txStatus === "confirming" || isUploadingMetadata;
-  const currentLogoUrl = logoPreview || existingLogoUrl;
+  const currentLogoUrl = logoPreview || initialLogoUrl;
+
+  const addressInputClass = (valid: boolean, value: string) =>
+    `flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm font-mono min-w-0 ${
+      value.length > 0 && !valid
+        ? "ring-zinc-500/50 focus:ring-zinc-500"
+        : "ring-zinc-700 focus:ring-zinc-500"
+    }`;
 
   const saveBtnClass = (field: string, enabled: boolean) =>
-    `px-4 py-2 rounded-xl text-[13px] font-semibold transition-all ${
+    `h-10 px-4 rounded-lg text-[13px] font-semibold transition-all flex-shrink-0 ${
       successField === field
         ? "bg-zinc-300 text-black"
         : isSaving && pendingField === field
@@ -300,11 +270,6 @@ export function AdminModal({
         ? "bg-white text-black hover:bg-zinc-200"
         : "bg-zinc-800 text-zinc-600"
     }`;
-
-  const inputClass =
-    "flex-1 bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] font-mono outline-none placeholder:text-zinc-600 min-w-0";
-
-  const labelClass = "text-muted-foreground text-[12px] mb-1.5 block";
 
   return (
     <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
@@ -328,18 +293,18 @@ export function AdminModal({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-2">
 
           {/* Logo + Name */}
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-start gap-3 mb-3">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="relative w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0 hover:bg-zinc-700 transition-colors"
+              className="relative w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden flex-shrink-0 hover:ring-zinc-500 transition-colors"
             >
               {currentLogoUrl ? (
                 <img src={currentLogoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Camera className="w-5 h-5 text-zinc-500" />
+                <Camera className="w-6 h-6 text-zinc-500" />
               )}
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4 text-white" />
@@ -352,94 +317,96 @@ export function AdminModal({
               onChange={handleLogoSelect}
               className="hidden"
             />
-            <div className="flex-1 min-w-0">
-              <div className="text-[14px] font-medium">{tokenName}</div>
-              <div className="text-[12px] text-muted-foreground">${tokenSymbol}</div>
+            <div className="flex-1 min-w-0 pt-2">
+              <div className="text-[16px] font-semibold">{tokenName}</div>
+              <div className="text-[13px] text-muted-foreground">${tokenSymbol}</div>
             </div>
           </div>
 
-          {/* Description */}
-          <div className="mb-4">
-            <label className={labelClass}>Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your coin..."
-              rows={3}
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600 resize-none"
-            />
-          </div>
+          {/* Text fields */}
+          <span className="text-[12px] text-muted-foreground block mb-1">Description</span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe your coin..."
+            rows={2}
+            className="w-full px-3 py-2.5 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 resize-none text-sm"
+          />
+          <span className="text-[12px] text-muted-foreground block mt-2 mb-1">Default message</span>
+          <input
+            type="text"
+            value={defaultMessage}
+            onChange={(e) => setDefaultMessage(e.target.value)}
+            placeholder="gm"
+            className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+          />
+          <span className="text-[12px] text-muted-foreground block mt-2 mb-1">Recipient name</span>
+          <input
+            type="text"
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
+            placeholder="Who receives donations"
+            className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+          />
 
-          {/* Default Message */}
-          <div className="mb-4">
-            <label className={labelClass}>Default Message</label>
-            <input
-              type="text"
-              value={defaultMessage}
-              onChange={(e) => setDefaultMessage(e.target.value)}
-              placeholder="gm"
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
-            />
-          </div>
-
-          {/* Recipient Name (stored in metadata) */}
-          <div className="mb-4">
-            <label className={labelClass}>Recipient Name</label>
-            <input
-              type="text"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              placeholder="Who receives donations"
-              className="w-full bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
-            />
-          </div>
-
-          {/* Links */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-1.5">
-              <label className={labelClass}>Links</label>
-              {links.length < 5 && (
-                <button
-                  type="button"
-                  onClick={() => setLinks([...links, ""])}
-                  className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  + Add link
-                </button>
-              )}
-            </div>
-            {links.map((link, i) => (
-              <div key={i} className="flex gap-2 mb-2">
-                <input
-                  type="url"
-                  value={link}
-                  onChange={(e) => {
-                    const updated = [...links];
-                    updated[i] = e.target.value;
-                    setLinks(updated);
-                  }}
-                  placeholder="https://..."
-                  className="flex-1 bg-zinc-800 rounded-xl px-3 py-2.5 text-[14px] outline-none placeholder:text-zinc-600"
-                />
-                <button
-                  type="button"
-                  onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                  className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+          {/* Links toggle */}
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setShowLinks(!showLinks)}
+              className="flex items-center justify-between w-full py-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] text-foreground">Add links</span>
+                <span className="text-[11px] text-muted-foreground">websites, socials</span>
               </div>
-            ))}
-            {links.length === 0 && (
-              <p className="text-[12px] text-zinc-600">No links added</p>
+              <div className={`w-9 h-5 rounded-full transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              </div>
+            </button>
+
+            {showLinks && (
+              <div className="space-y-2 mt-2">
+                {links.map((link, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      type="url"
+                      value={link}
+                      onChange={(e) => {
+                        const updated = [...links];
+                        updated[i] = e.target.value;
+                        setLinks(updated);
+                      }}
+                      placeholder="https://..."
+                      className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                      className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {links.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={() => setLinks([...links, ""])}
+                    className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                  >
+                    + Add another
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
-          {/* Save Profile */}
+          {/* Save Metadata */}
           <button
             onClick={handleSaveMetadata}
             disabled={isSaving || !metadataChanged}
-            className={`w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all mb-6 ${
+            className={`w-full h-10 rounded-lg text-[14px] font-semibold transition-all mt-4 ${
               successField === "metadata"
                 ? "bg-zinc-300 text-black"
                 : isSaving && pendingField === "metadata"
@@ -456,79 +423,80 @@ export function AdminModal({
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 {isUploadingMetadata ? "Uploading..." : "Confirming..."}
               </span>
-            ) : metadataChanged ? (
-              "Save"
             ) : (
-              "Save"
+              "Save Profile"
             )}
           </button>
 
-          {/* Recipient */}
-          <div className="mb-4">
-            <label className={labelClass}>Recipient</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                placeholder="0x..."
-                className={inputClass}
-              />
-              <button
-                onClick={() => handleSave("recipient")}
-                disabled={isSaving || !isRecipientValid || recipient === currentConfig.recipient}
-                className={saveBtnClass("recipient", isRecipientValid && recipient !== currentConfig.recipient)}
-              >
-                {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : "Save"}
-              </button>
+          <div className="text-[13px] font-semibold text-foreground mt-5 mb-3">Contract Settings</div>
+          <div className="space-y-3">
+            {/* Recipient */}
+            <div className="space-y-1">
+              <span className="text-[12px] text-muted-foreground">Recipient</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                  placeholder="0x..."
+                  className={addressInputClass(isRecipientValid, recipient)}
+                />
+                <button
+                  onClick={() => handleSave("recipient")}
+                  disabled={isSaving || !isRecipientValid || recipient === initialRecipient}
+                  className={saveBtnClass("recipient", isRecipientValid && recipient !== initialRecipient)}
+                >
+                  {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : "Save"}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Treasury */}
-          <div className="mb-4">
-            <label className={labelClass}>Treasury</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={treasury}
-                onChange={(e) => setTreasury(e.target.value)}
-                placeholder="0x..."
-                className={inputClass}
-              />
-              <button
-                onClick={() => handleSave("treasury")}
-                disabled={isSaving || !isTreasuryValid || treasury === currentConfig.treasury}
-                className={saveBtnClass("treasury", isTreasuryValid && treasury !== currentConfig.treasury)}
-              >
-                {successField === "treasury" ? "Saved" : isSaving && pendingField === "treasury" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : "Save"}
-              </button>
+            {/* Treasury */}
+            <div className="space-y-1">
+              <span className="text-[12px] text-muted-foreground">Treasury</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={treasury}
+                  onChange={(e) => setTreasury(e.target.value)}
+                  placeholder="0x..."
+                  className={addressInputClass(isTreasuryValid, treasury)}
+                />
+                <button
+                  onClick={() => handleSave("treasury")}
+                  disabled={isSaving || !isTreasuryValid || treasury === initialTreasury}
+                  className={saveBtnClass("treasury", isTreasuryValid && treasury !== initialTreasury)}
+                >
+                  {successField === "treasury" ? "Saved" : isSaving && pendingField === "treasury" ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : "Save"}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Team */}
-          <div className="mb-4">
-            <label className={labelClass}>Team</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={team}
-                onChange={(e) => setTeam(e.target.value)}
-                placeholder="0x..."
-                className={inputClass}
-              />
-              <button
-                onClick={() => handleSave("team")}
-                disabled={isSaving || !isTeamValid || team === (currentConfig.team || "")}
-                className={saveBtnClass("team", isTeamValid && team !== (currentConfig.team || ""))}
-              >
-                {successField === "team" ? "Saved" : isSaving && pendingField === "team" ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : "Save"}
-              </button>
+            {/* Team */}
+            <div className="space-y-1">
+              <span className="text-[12px] text-muted-foreground">Team</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={team}
+                  onChange={(e) => setTeam(e.target.value)}
+                  placeholder="0x..."
+                  className={addressInputClass(isTeamValid, team)}
+                />
+                <button
+                  onClick={() => handleSave("team")}
+                  disabled={isSaving || !isTeamValid || team === initialTeam}
+                  className={saveBtnClass("team", isTeamValid && team !== initialTeam)}
+                >
+                  {successField === "team" ? "Saved" : isSaving && pendingField === "team" ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : "Save"}
+                </button>
+              </div>
             </div>
           </div>
 

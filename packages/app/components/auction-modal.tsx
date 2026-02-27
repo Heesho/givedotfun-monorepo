@@ -65,6 +65,14 @@ export function AuctionModal({
     }
   }, [isOpen, reset]);
 
+  // Auto-reset on error (fast for user rejection, slower for real errors)
+  useEffect(() => {
+    if (status !== "error") return;
+    const isRejection = error?.message?.includes("User rejected") || error?.message?.includes("User denied");
+    const timer = setTimeout(() => reset(), isRejection ? 2000 : 5000);
+    return () => clearTimeout(timer);
+  }, [status, error, reset]);
+
   // Auto-refetch after successful tx
   useEffect(() => {
     if (status === "success") {
@@ -174,7 +182,7 @@ export function AuctionModal({
                   Buy USDC
                 </h1>
                 <p className="text-[13px] text-muted-foreground mt-1">
-                  {Number(userLpBalance).toFixed(3)} {tokenSymbol}-USDC LP available
+                  {Number(userLpBalance).toFixed(8)} {tokenSymbol}-USDC LP available
                 </p>
               </div>
 

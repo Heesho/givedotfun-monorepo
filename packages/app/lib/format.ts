@@ -39,15 +39,15 @@ export function formatNumber(num: number, decimals: number = 2): string {
 }
 
 export function formatMarketCap(mcap: number): string {
-  if (mcap >= 1_000_000) return `$${(mcap / 1_000_000).toFixed(2)}M`;
-  if (mcap >= 1_000) return `$${(mcap / 1_000).toFixed(1)}K`;
-  if (mcap >= 1) return `$${mcap.toFixed(2)}`;
+  if (mcap >= 1_000_000) return `$${(mcap / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`;
+  if (mcap >= 1_000) return `$${(mcap / 1_000).toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}K`;
+  if (mcap >= 1) return `$${mcap.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   return `$${mcap.toFixed(4)}`;
 }
 
 export function formatPrice(price: number): string {
   if (price === 0) return "$0.00";
-  if (price >= 1) return `$${price.toFixed(2)}`;
+  if (price >= 1) return `$${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   if (price >= 0.01) return `$${price.toFixed(4)}`;
   if (price >= 0.0001) return `$${price.toFixed(6)}`;
   if (price >= 0.000001) return `$${price.toFixed(8)}`;

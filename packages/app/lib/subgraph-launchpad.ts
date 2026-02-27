@@ -56,7 +56,6 @@ export type SubgraphFundraiser = {
   halvingPeriod: string;
   minDonation: string;
   epochDuration: string;
-  recipient: string | null; // Bytes, nullable
 };
 
 export type SubgraphCoinListItem = {
@@ -154,7 +153,6 @@ const FUNDRAISER_FIELDS = `
   halvingPeriod
   minDonation
   epochDuration
-  recipient
 `;
 
 const COIN_LIST_FIELDS = `
@@ -280,6 +278,28 @@ export const GET_ACCOUNT_QUERY = gql`
       totalSwapVolume
       totalFundraiserSpend
       lastActivityAt
+    }
+  }
+`;
+
+// Get user totals for a specific fundraiser (donations + claims)
+export const GET_USER_FUNDRAISER_TOTALS_QUERY = gql`
+  query GetUserFundraiserTotals($fundraiserAddress: String!, $donorAddress: String!) {
+    donations(
+      where: { fundraiser: $fundraiserAddress, donor: $donorAddress }
+      first: 1000
+      orderBy: timestamp
+      orderDirection: desc
+    ) {
+      amount
+    }
+    claims(
+      where: { fundraiser: $fundraiserAddress, claimer: $donorAddress }
+      first: 1000
+      orderBy: timestamp
+      orderDirection: desc
+    ) {
+      amount
     }
   }
 `;
@@ -640,6 +660,36 @@ export async function getAllCoins(
 // Helper to format subgraph address
 export function formatSubgraphAddress(address: string): `0x${string}` {
   return address.toLowerCase() as `0x${string}`;
+}
+
+// Get user total funded + total mined for a specific fundraiser
+export async function getUserFundraiserTotals(
+  fundraiserAddress: string,
+  donorAddress: string
+): Promise<{ totalFunded: number; totalMined: number }> {
+  try {
+    const data = await client.request<{
+      donations: { amount: string }[];
+      claims: { amount: string }[];
+    }>(GET_USER_FUNDRAISER_TOTALS_QUERY, {
+      fundraiserAddress: fundraiserAddress.toLowerCase(),
+      donorAddress: donorAddress.toLowerCase(),
+    });
+
+    const totalFunded = (data.donations ?? []).reduce(
+      (sum, d) => sum + parseFloat(d.amount),
+      0
+    );
+    const totalMined = (data.claims ?? []).reduce(
+      (sum, c) => sum + parseFloat(c.amount),
+      0
+    );
+
+    return { totalFunded, totalMined };
+  } catch (error) {
+    console.error("[getUserFundraiserTotals] Error:", error);
+    return { totalFunded: 0, totalMined: 0 };
+  }
 }
 
 // Get donations for a Fundraiser
