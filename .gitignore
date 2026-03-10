@@ -27,6 +27,9 @@ packages/subgraph/generated/
 # Claude Code (personal settings)
 .claude/settings.local.json
 
+# MCP config (contains API keys)
+.mcp.json
+
 # OS
 .DS_Store
 Thumbs.db
