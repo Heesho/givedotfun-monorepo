@@ -97,11 +97,11 @@ export function AuctionModal({
     : "0";
 
   const hasEnoughLp = auctionState
-    ? auctionState.accountLpTokenBalance >= auctionState.price
+    ? auctionState.price === 0n || auctionState.accountLpTokenBalance >= auctionState.price
     : false;
 
   const isAuctionActive = auctionState
-    ? auctionState.price > 0n && auctionState.startTime > 0n
+    ? auctionState.startTime > 0n
     : false;
 
   // Buy handler -- approve LP token then call buy on multicall
@@ -113,8 +113,8 @@ export function AuctionModal({
       Math.floor(Date.now() / 1000) + DEADLINE_BUFFER_SECONDS
     );
 
-    // Approve LP token spending (skip if allowance is sufficient)
-    const needsApproval = currentAllowance === undefined || currentAllowance < auctionState.price;
+    // Approve LP token spending (skip if price is 0 or allowance is sufficient)
+    const needsApproval = auctionState.price > 0n && (currentAllowance === undefined || currentAllowance < auctionState.price);
     if (needsApproval) {
       calls.push(
         encodeApproveCall(
@@ -157,11 +157,11 @@ export function AuctionModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">Auction</span>
+          <span className="text-base font-semibold font-display">Auction</span>
           <div className="w-9" />
         </div>
 
@@ -178,10 +178,10 @@ export function AuctionModal({
             <>
               {/* Title */}
               <div className="mt-4 mb-6">
-                <h1 className="text-2xl font-semibold tracking-tight">
+                <h1 className="text-2xl font-semibold font-display tracking-tight">
                   Buy USDC
                 </h1>
-                <p className="text-[13px] text-muted-foreground mt-1">
+                <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
                   {Number(userLpBalance).toFixed(8)} {tokenSymbol}-USDC LP available
                 </p>
               </div>
@@ -189,15 +189,15 @@ export function AuctionModal({
               {/* You Pay */}
               <div className="py-4 border-b border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-muted-foreground">You pay</span>
-                  <span className="text-lg font-semibold tabular-nums">
+                  <span className="text-[13px] text-muted-foreground font-display">You pay</span>
+                  <span className="text-lg font-semibold font-mono tabular-nums">
                     {isAuctionActive ? `${Number(lpPriceFormatted).toFixed(3)} LP` : "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[11px] text-muted-foreground">{tokenSymbol}-USDC LP</span>
                   {isAuctionActive && auctionState && (
-                    <span className="text-[11px] text-muted-foreground tabular-nums">
+                    <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
                       ~${(Number(lpPriceFormatted) * Number(formatUnits(auctionState.lpTokenPrice, 18))).toFixed(2)}
                     </span>
                   )}
@@ -207,8 +207,8 @@ export function AuctionModal({
               {/* You Receive */}
               <div className="py-4 border-b border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-muted-foreground">You receive</span>
-                  <span className="text-lg font-semibold tabular-nums">
+                  <span className="text-[13px] text-muted-foreground font-display">You receive</span>
+                  <span className="text-lg font-semibold font-mono tabular-nums">
                     {isAuctionActive ? `$${Number(treasuryUsdc).toFixed(2)}` : "—"}
                   </span>
                 </div>
@@ -219,8 +219,8 @@ export function AuctionModal({
 
               {/* Profit indicator */}
               {isAuctionActive && auctionState && (
-                <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground">
-                  <span className="tabular-nums">
+                <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums">
+                  <span>
                     {(() => {
                       const lpCost = Number(lpPriceFormatted) * Number(formatUnits(auctionState.lpTokenPrice, 18));
                       const usdcReceive = Number(treasuryUsdc);
@@ -247,7 +247,7 @@ export function AuctionModal({
                 <button
                   onClick={handleBuy}
                   disabled={!account || !isAuctionActive || !hasEnoughLp || isPending || isSuccess}
-                  className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all flex items-center justify-center gap-2 ${
                     isSuccess
                       ? "bg-zinc-300 text-black"
                       : isError

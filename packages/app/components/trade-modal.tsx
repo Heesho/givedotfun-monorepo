@@ -21,6 +21,7 @@ import {
   UNIV2_PAIR_ABI,
 } from "@/lib/contracts";
 import { formatCoin } from "@/lib/format";
+import { TokenLogo } from "@/components/token-logo";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,6 +37,7 @@ type TradeModalProps = {
   marketPrice: number;
   userQuoteBalance: bigint;
   userUnitBalance: bigint;
+  logoUrl?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -73,7 +75,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -94,6 +96,7 @@ export function TradeModal({
   marketPrice,
   userQuoteBalance,
   userUnitBalance,
+  logoUrl,
 }: TradeModalProps) {
   // ---- Local state --------------------------------------------------------
   const [amount, setAmount] = useState("0");
@@ -390,11 +393,11 @@ export function TradeModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">{isBuy ? "Buy" : "Sell"}</span>
+          <span className="text-base font-semibold font-display">{isBuy ? "Buy" : "Sell"}</span>
           <div className="w-9" />
         </div>
 
@@ -402,10 +405,10 @@ export function TradeModal({
         <div className="flex-1 flex flex-col px-4">
           {/* Title */}
           <div className="mt-4 mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold font-display tracking-tight">
               {isBuy ? "Buy" : "Sell"} {tokenSymbol}
             </h1>
-            <p className="text-[13px] text-muted-foreground mt-1">
+            <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
               {availableDisplay}
             </p>
           </div>
@@ -413,9 +416,14 @@ export function TradeModal({
           {/* Amount input display */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Pay</span>
-              <span className="text-lg font-semibold tabular-nums">
-                {isBuy ? `$${addCommas(amount)}` : addCommas(amount)}
+              <span className="text-[13px] text-muted-foreground font-display">Pay</span>
+              <span className="text-lg font-semibold font-mono tabular-nums flex items-center gap-1.5">
+                {isBuy ? `$${addCommas(amount)}` : (
+                  <>
+                    <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                    {addCommas(amount)}
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -423,8 +431,8 @@ export function TradeModal({
           {/* Market price */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Market price</span>
-              <span className="text-[13px] font-medium tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Market price</span>
+              <span className="text-[13px] font-medium font-mono tabular-nums">
                 ${pricePerToken.toFixed(6)}
               </span>
             </div>
@@ -433,8 +441,8 @@ export function TradeModal({
           {/* Estimated output */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Est. received</span>
-              <span className="text-[13px] font-medium tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Est. received</span>
+              <span className="text-[13px] font-medium font-mono tabular-nums">
                 {isQuoteLoading && parsedInput > 0n ? (
                   <Loader2 className="w-4 h-4 animate-spin inline" />
                 ) : estimatedOutput ? (
@@ -449,7 +457,7 @@ export function TradeModal({
           </div>
 
           {/* Price impact and minimum received */}
-          <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums">
             <span>
               {priceImpactDisplay !== null
                 ? `~${priceImpactDisplay}% price impact`
@@ -468,7 +476,7 @@ export function TradeModal({
 
           {/* Error messages */}
           {(quoteError || txError) && (
-            <div className="px-3 py-2 rounded-lg bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
+            <div className="px-3 py-2 rounded-none bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
               <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
               <span className="text-[12px] text-zinc-400">
                 {(() => {
@@ -489,7 +497,7 @@ export function TradeModal({
           <button
             disabled={buttonDisabled}
             onClick={handleConfirm}
-            className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
                 ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                 : isSuccess

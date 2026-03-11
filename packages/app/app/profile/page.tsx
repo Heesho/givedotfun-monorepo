@@ -10,8 +10,10 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
+import { Wallet, Rocket } from "lucide-react";
 import { formatNumber } from "@/lib/format";
 import { TokenLogo } from "@/components/token-logo";
+import { useSparklineData } from "@/hooks/useSparklineData";
 
 type Tab = "holdings" | "launched";
 
@@ -26,36 +28,83 @@ function formatUsd(value: number): string {
   return "$0.00";
 }
 
+/** Mini sparkline chart */
+function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min;
+  const pad = 4;
+
+  const divisor = data.length > 1 ? data.length - 1 : 1;
+  const points = data
+    .map((value, i) => {
+      const x = pad + (i / divisor) * (300 - pad * 2);
+      const y = range === 0 ? 50 : pad + (1 - (value - min) / range) * (100 - pad * 2);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      viewBox="0 0 300 100"
+      className={`w-24 h-8 ${isPositive ? "text-[#93C84B]" : "text-[#CF6458]"}`}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <polyline
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // HoldingRow
 // ---------------------------------------------------------------------------
 
-function HoldingRow({ holding }: { holding: UserHolding }) {
+function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklineData: number[] }) {
   const { logoUrl } = useTokenMetadata(holding.uri);
+  const isPositive = holding.change24h >= 0;
 
   return (
-    <Link href={`/fundraiser/${holding.address}`} className="block">
-      <div className="flex items-center justify-between py-3 hover:bg-secondary/30 -mx-4 px-4 transition-colors rounded-lg">
-        <div className="flex items-center gap-3 min-w-0">
-          <TokenLogo name={holding.tokenName} logoUrl={logoUrl} size="md-lg" />
-          <div className="min-w-0">
-            <div className="text-[15px] font-medium truncate">
-              {holding.tokenName}
-            </div>
-            <div className="text-[12px] text-muted-foreground">
-              {formatNumber(holding.balanceNum)} {holding.tokenSymbol}
-            </div>
+    <Link
+      href={`/fundraiser/${holding.address}`}
+      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
+    >
+      <div className="flex items-center gap-3">
+        <TokenLogo name={holding.tokenName} logoUrl={logoUrl} size="md-lg" />
+        <div>
+          <div className="font-semibold text-[15px] font-display">
+            {holding.tokenSymbol.length > 6
+              ? `${holding.tokenSymbol.slice(0, 6)}...`
+              : holding.tokenSymbol}
+          </div>
+          <div className="text-[13px] text-muted-foreground">
+            {holding.tokenName.length > 12
+              ? `${holding.tokenName.slice(0, 12)}...`
+              : holding.tokenName}
           </div>
         </div>
-        <div className="text-right shrink-0 ml-3">
-          <div className="text-[15px] font-semibold tabular-nums">
-            {holding.valueUsd > 0 ? formatUsd(holding.valueUsd) : "--"}
-          </div>
-          <div className="text-[12px] text-muted-foreground tabular-nums">
-            {holding.priceUsd > 0
-              ? `$${holding.priceUsd >= 0.01 ? holding.priceUsd.toFixed(4) : holding.priceUsd.toFixed(6)}`
-              : "--"}
-          </div>
+      </div>
+      <div className="flex justify-end">
+        <Sparkline data={sparklineData} isPositive={isPositive} />
+      </div>
+      <div className="text-right">
+        <div className="font-medium text-[15px] tabular-nums font-mono">
+          {holding.valueUsd > 0 ? formatUsd(holding.valueUsd) : "--"}
+        </div>
+        <div className={`text-[13px] tabular-nums font-mono ${
+          holding.priceUsd > 0
+            ? isPositive ? "text-[#93C84B]" : "text-[#CF6458]"
+            : "text-zinc-400"
+        }`}>
+          {holding.priceUsd > 0
+            ? `${isPositive ? "+" : ""}${holding.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+            : "--"}
         </div>
       </div>
     </Link>
@@ -66,30 +115,45 @@ function HoldingRow({ holding }: { holding: UserHolding }) {
 // LaunchedRow
 // ---------------------------------------------------------------------------
 
-function LaunchedRow({ fundraiser }: { fundraiser: UserLaunchedFundraiser }) {
+function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFundraiser; sparklineData: number[] }) {
   const { logoUrl } = useTokenMetadata(fundraiser.uri);
+  const isPositive = fundraiser.change24h >= 0;
 
   return (
-    <Link href={`/fundraiser/${fundraiser.address}`} className="block">
-      <div className="flex items-center justify-between py-3 hover:bg-secondary/30 -mx-4 px-4 transition-colors rounded-lg">
-        <div className="flex items-center gap-3 min-w-0">
-          <TokenLogo name={fundraiser.tokenName} logoUrl={logoUrl} size="md-lg" />
-          <div className="min-w-0">
-            <div className="text-[15px] font-medium truncate">
-              {fundraiser.tokenName}
-            </div>
-            <div className="text-[12px] text-muted-foreground">
-              {fundraiser.tokenSymbol}
-            </div>
+    <Link
+      href={`/fundraiser/${fundraiser.address}`}
+      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
+    >
+      <div className="flex items-center gap-3">
+        <TokenLogo name={fundraiser.tokenName} logoUrl={logoUrl} size="md-lg" />
+        <div>
+          <div className="font-semibold text-[15px] font-display">
+            {fundraiser.tokenSymbol.length > 6
+              ? `${fundraiser.tokenSymbol.slice(0, 6)}...`
+              : fundraiser.tokenSymbol}
+          </div>
+          <div className="text-[13px] text-muted-foreground">
+            {fundraiser.tokenName.length > 12
+              ? `${fundraiser.tokenName.slice(0, 12)}...`
+              : fundraiser.tokenName}
           </div>
         </div>
-        <div className="text-right shrink-0 ml-3">
-          <div className="text-[15px] font-semibold tabular-nums">
-            {fundraiser.marketCapUsd > 0 ? formatUsd(fundraiser.marketCapUsd) : "--"}
-          </div>
-          <div className="text-[12px] text-muted-foreground tabular-nums">
-            Mcap
-          </div>
+      </div>
+      <div className="flex justify-end">
+        <Sparkline data={sparklineData} isPositive={isPositive} />
+      </div>
+      <div className="text-right">
+        <div className="font-medium text-[15px] tabular-nums font-mono">
+          {fundraiser.marketCapUsd > 0 ? formatUsd(fundraiser.marketCapUsd) : "--"}
+        </div>
+        <div className={`text-[13px] tabular-nums font-mono ${
+          fundraiser.coinPrice > 0
+            ? isPositive ? "text-[#93C84B]" : "text-[#CF6458]"
+            : "text-zinc-400"
+        }`}>
+          {fundraiser.coinPrice > 0
+            ? `${isPositive ? "+" : ""}${fundraiser.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+            : "--"}
         </div>
       </div>
     </Link>
@@ -114,26 +178,26 @@ function ProfileSkeleton() {
           <div className="flex items-center gap-3 py-4">
             <div className="w-12 h-12 rounded-full bg-secondary animate-pulse" />
             <div>
-              <div className="w-28 h-5 bg-secondary rounded animate-pulse mb-1" />
-              <div className="w-20 h-4 bg-secondary rounded animate-pulse" />
+              <div className="w-28 h-5 bg-secondary rounded-none animate-pulse mb-1" />
+              <div className="w-20 h-4 bg-secondary rounded-none animate-pulse" />
             </div>
           </div>
         </div>
         <div className="flex border-b border-secondary mx-4 mb-4">
-          <div className="w-24 h-8 bg-secondary rounded animate-pulse mr-4" />
-          <div className="w-24 h-8 bg-secondary rounded animate-pulse" />
+          <div className="w-24 h-8 bg-secondary rounded-none animate-pulse mr-4" />
+          <div className="w-24 h-8 bg-secondary rounded-none animate-pulse" />
         </div>
         <div className="flex-1 px-4 space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3 py-3">
-              <div className="w-10 h-10 rounded-full bg-secondary animate-pulse" />
+              <div className="w-10 h-10 rounded-none bg-secondary animate-pulse" />
               <div className="flex-1">
-                <div className="w-24 h-4 bg-secondary rounded animate-pulse mb-1" />
-                <div className="w-16 h-3 bg-secondary rounded animate-pulse" />
+                <div className="w-24 h-4 bg-secondary rounded-none animate-pulse mb-1" />
+                <div className="w-16 h-3 bg-secondary rounded-none animate-pulse" />
               </div>
               <div className="text-right">
-                <div className="w-16 h-4 bg-secondary rounded animate-pulse mb-1" />
-                <div className="w-12 h-3 bg-secondary rounded animate-pulse" />
+                <div className="w-16 h-4 bg-secondary rounded-none animate-pulse mb-1" />
+                <div className="w-12 h-3 bg-secondary rounded-none animate-pulse" />
               </div>
             </div>
           ))}
@@ -161,7 +225,7 @@ function NotConnected() {
         }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-none bg-secondary flex items-center justify-center mb-4">
             <svg
               className="w-8 h-8 text-muted-foreground"
               fill="none"
@@ -178,7 +242,7 @@ function NotConnected() {
           </div>
           {isInFrame ? (
             <>
-              <div className="text-[17px] font-semibold mb-1">
+              <div className="text-[17px] font-semibold mb-1 font-display">
                 Connecting...
               </div>
               <div className="text-[14px] text-muted-foreground">
@@ -187,7 +251,7 @@ function NotConnected() {
             </>
           ) : (
             <>
-              <div className="text-[17px] font-semibold mb-1">
+              <div className="text-[17px] font-semibold mb-1 font-display">
                 Connect your wallet
               </div>
               <div className="text-[14px] text-muted-foreground mb-4">
@@ -196,7 +260,7 @@ function NotConnected() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting}
-                className="px-6 py-2.5 rounded-xl bg-white text-black text-[14px] font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 rounded-none bg-white text-black text-[14px] font-semibold font-display hover:bg-zinc-200 transition-colors disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -219,6 +283,13 @@ export default function ProfilePage() {
   // Data hooks
   const { user, address } = useFarcaster();
   const { holdings, launchedFundraisers, totalHoldingsValueUsd, isLoading } = useUserProfile(address);
+
+  // Sparkline data for holdings + launched
+  const allCoinAddresses = [
+    ...holdings.map((h) => h.coinAddress),
+    ...launchedFundraisers.map((f) => f.coinAddress),
+  ];
+  const { getSparkline } = useSparklineData(allCoinAddresses);
 
   // USDC balance
   const { data: usdcBalance, refetch: refetchUsdc } = useReadContract({
@@ -285,7 +356,8 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="px-4 pb-2">
           <div className="mb-3">
-            <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
+            <h1 className="text-2xl font-bold tracking-tight font-display">Profile</h1>
+            <p className="text-[13px] text-muted-foreground mt-1">Your portfolio, holdings, and launched fundraisers</p>
           </div>
           <div className="flex items-center gap-3 py-3">
             {pfpUrl ? (
@@ -296,7 +368,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${
+                className={`w-12 h-12 rounded-none flex items-center justify-center text-white ${
                   isAddressFallbackAvatar
                     ? "font-mono text-[15px] tracking-wide bg-gradient-to-br from-zinc-600 to-zinc-800"
                     : "font-semibold text-lg bg-gradient-to-br from-zinc-500 to-zinc-700"
@@ -306,7 +378,7 @@ export default function ProfilePage() {
               </div>
             )}
             <div>
-              <div className="text-[17px] font-semibold">{displayName}</div>
+              <div className="text-[17px] font-semibold font-display">{displayName}</div>
               {username && (
                 <div className="text-[13px] text-muted-foreground">
                   {username}
@@ -320,7 +392,7 @@ export default function ProfilePage() {
             <div className="text-[12px] text-muted-foreground mb-0.5">
               Portfolio value
             </div>
-            <div className="text-[28px] font-bold tabular-nums">
+            <div className="text-[28px] font-bold tabular-nums font-mono">
               {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
             </div>
           </div>
@@ -331,7 +403,7 @@ export default function ProfilePage() {
               Cash Balance
             </div>
             <div className="flex items-center justify-between">
-              <div className="text-[18px] font-semibold tabular-nums">
+              <div className="text-[18px] font-semibold tabular-nums font-mono">
                 ${formattedUsdc}
               </div>
               <button
@@ -353,36 +425,28 @@ export default function ProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-secondary px-4">
+        <div className="flex px-4 pb-3">
           <button
             onClick={() => setActiveTab("holdings")}
-            className={`pb-2.5 px-1 mr-6 text-[14px] font-medium border-b-2 transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 h-12 rounded-none text-[13px] font-medium font-display transition-all ${
               activeTab === "holdings"
-                ? "border-white text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-white text-black"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
-            Holdings
-            {holdings.length > 0 && (
-              <span className="ml-1.5 text-[12px] text-muted-foreground">
-                {holdings.length}
-              </span>
-            )}
+            <Wallet className="w-3.5 h-3.5" />
+            Coins
           </button>
           <button
             onClick={() => setActiveTab("launched")}
-            className={`pb-2.5 px-1 text-[14px] font-medium border-b-2 transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 h-12 rounded-none text-[13px] font-medium font-display transition-all ${
               activeTab === "launched"
-                ? "border-white text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-white text-black"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
             }`}
           >
-            Launched
-            {launchedFundraisers.length > 0 && (
-              <span className="ml-1.5 text-[12px] text-muted-foreground">
-                {launchedFundraisers.length}
-              </span>
-            )}
+            <Rocket className="w-3.5 h-3.5" />
+            Fundraisers
           </button>
         </div>
 
@@ -392,7 +456,7 @@ export default function ProfilePage() {
             <>
               {holdings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-none bg-secondary flex items-center justify-center mb-3">
                     <svg
                       className="w-6 h-6 text-muted-foreground"
                       fill="none"
@@ -407,27 +471,34 @@ export default function ProfilePage() {
                       />
                     </svg>
                   </div>
-                  <div className="text-[15px] font-medium mb-1">
+                  <div className="text-[15px] font-medium mb-1 font-display">
                     No holdings yet
                   </div>
                   <div className="text-[13px] text-muted-foreground mb-4">
-                    Donate or trade to earn coins
+                    Fund a cause or trade to earn coins
                   </div>
                   <Link
                     href="/explore"
-                    className="px-4 py-2 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 rounded-none bg-white text-black text-[13px] font-semibold font-display hover:bg-zinc-200 transition-colors"
                   >
                     Explore coins
                   </Link>
                 </div>
               ) : (
                 <div className="py-1">
-                  {holdings.map((holding) => (
-                    <HoldingRow
-                      key={holding.coinAddress}
-                      holding={holding}
-                    />
-                  ))}
+                  {holdings.map((holding) => {
+                    const hourly = getSparkline(holding.coinAddress, holding.priceUsd);
+                    const sparklineData = hourly.length > 1 ? hourly
+                      : holding.sparklinePrices.length > 1 ? holding.sparklinePrices
+                      : [holding.priceUsd, holding.priceUsd];
+                    return (
+                      <HoldingRow
+                        key={holding.coinAddress}
+                        holding={holding}
+                        sparklineData={sparklineData}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </>
@@ -437,7 +508,7 @@ export default function ProfilePage() {
             <>
               {launchedFundraisers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-none bg-secondary flex items-center justify-center mb-3">
                     <svg
                       className="w-6 h-6 text-muted-foreground"
                       fill="none"
@@ -452,7 +523,7 @@ export default function ProfilePage() {
                       />
                     </svg>
                   </div>
-                  <div className="text-[15px] font-medium mb-1">
+                  <div className="text-[15px] font-medium mb-1 font-display">
                     No launches yet
                   </div>
                   <div className="text-[13px] text-muted-foreground mb-4">
@@ -460,19 +531,26 @@ export default function ProfilePage() {
                   </div>
                   <Link
                     href="/launch"
-                    className="px-4 py-2 rounded-xl bg-white text-black text-[13px] font-semibold hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 rounded-none bg-white text-black text-[13px] font-semibold font-display hover:bg-zinc-200 transition-colors"
                   >
                     Launch a fundraiser
                   </Link>
                 </div>
               ) : (
                 <div className="py-1">
-                  {launchedFundraisers.map((fundraiser) => (
-                    <LaunchedRow
-                      key={fundraiser.address}
-                      fundraiser={fundraiser}
-                    />
-                  ))}
+                  {launchedFundraisers.map((fundraiser) => {
+                    const hourly = getSparkline(fundraiser.coinAddress, fundraiser.coinPrice);
+                    const sparklineData = hourly.length > 1 ? hourly
+                      : fundraiser.sparklinePrices.length > 1 ? fundraiser.sparklinePrices
+                      : [fundraiser.coinPrice, fundraiser.coinPrice];
+                    return (
+                      <LaunchedRow
+                        key={fundraiser.address}
+                        fundraiser={fundraiser}
+                        sparklineData={sparklineData}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </>

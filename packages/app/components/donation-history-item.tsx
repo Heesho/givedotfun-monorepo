@@ -41,7 +41,7 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
 
   return (
     <div
-      className={`flex items-center gap-3 py-3 rounded-lg transition-colors duration-1000 ${
+      className={`flex items-center gap-3 py-3 rounded-none transition-colors duration-1000 ${
         isNew ? "bg-zinc-700/50 px-2 -mx-2" : ""
       }`}
     >
@@ -77,12 +77,12 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
       <div className="flex items-center gap-4 flex-shrink-0 text-right">
         <div>
           <div className="text-[12px] text-muted-foreground">Funded</div>
-          <div className="text-[13px] font-medium">${amount.toFixed(2)}</div>
+          <div className="text-[13px] font-medium font-mono tabular-nums">${amount.toFixed(2)}</div>
         </div>
         <div>
           <div className="text-[12px] text-muted-foreground">Mining</div>
-          <div className="text-[13px] font-medium text-zinc-400 flex items-center justify-end gap-1">
-            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" />
+          <div className="text-[13px] font-medium font-mono tabular-nums flex items-center justify-end gap-1">
+            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
             {formatNumber(tokens, 0)}
           </div>
         </div>

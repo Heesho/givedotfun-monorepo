@@ -43,7 +43,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -227,11 +227,11 @@ export function LiquidityModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">Liquidity</span>
+          <span className="text-base font-semibold font-display">Liquidity</span>
           <div className="w-9" />
         </div>
 
@@ -239,7 +239,7 @@ export function LiquidityModal({
         <div className="flex-1 flex flex-col px-4">
           {/* Title */}
           <div className="mt-4 mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">Add Liquidity</h1>
+            <h1 className="text-2xl font-semibold font-display tracking-tight">Add Liquidity</h1>
             <p className="text-[13px] text-muted-foreground mt-1">
               Provide {tokenSymbol} and USDC to get LP tokens
             </p>
@@ -248,8 +248,8 @@ export function LiquidityModal({
           {/* Token Input */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">You provide</span>
-              <span className="text-lg font-semibold tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">You provide</span>
+              <span className="text-lg font-semibold font-mono tabular-nums">
                 {tokenAmount} {tokenSymbol}
               </span>
             </div>
@@ -257,7 +257,7 @@ export function LiquidityModal({
               <span className="text-[11px] text-muted-foreground">{tokenSymbol}</span>
               <button
                 onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors"
+                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors font-mono tabular-nums"
               >
                 Balance: {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -267,8 +267,8 @@ export function LiquidityModal({
           {/* Required USDC */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Required USDC</span>
-              <span className="text-lg font-semibold tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Required USDC</span>
+              <span className="text-lg font-semibold font-mono tabular-nums">
                 {requiredUsdc.toFixed(2)} USDC
               </span>
             </div>
@@ -280,7 +280,7 @@ export function LiquidityModal({
                   const maxTokenFromUsdc = usdcBalance / tokenPrice;
                   setTokenAmount(Math.min(tokenBalance, maxTokenFromUsdc).toFixed(2));
                 }}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors"
+                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors font-mono tabular-nums"
               >
                 Balance: {usdcBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -289,8 +289,8 @@ export function LiquidityModal({
 
           {/* LP Output */}
           {tokenInputAmount > 0 && (
-            <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground">
-              <span className="tabular-nums">
+            <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums">
+              <span>
                 You receive ~ {lpTokensReceived.toFixed(2)} LP tokens
               </span>
             </div>
@@ -303,7 +303,7 @@ export function LiquidityModal({
           <button
             onClick={handleAddLiquidity}
             disabled={!canCreate || isPending || isSuccess}
-            className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               isSuccess
                 ? "bg-zinc-300 text-black"
                 : isError

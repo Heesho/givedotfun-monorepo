@@ -20,17 +20,49 @@ export type UserHolding = {
   balanceNum: number;           // Formatted balance
   priceUsd: number;             // Price per token in USD
   valueUsd: number;             // balance * price
+  change24h: number;
+  sparklinePrices: number[];
 };
 
 export type UserLaunchedFundraiser = {
   address: `0x${string}`;
+  coinAddress: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
   uri: string;
   totalMinted: number;
   coinPrice: number;
   marketCapUsd: number;
+  change24h: number;
+  sparklinePrices: number[];
 };
+
+/** Compute 24h change + sparkline from subgraph dayData (same logic as explore page) */
+function computePriceData(coin: SubgraphCoinListItem, priceUsd: number) {
+  let change24h = 0;
+  if (coin.dayData && coin.dayData.length >= 2) {
+    const yesterdayClose = parseFloat(coin.dayData[1].close);
+    if (yesterdayClose > 0 && priceUsd > 0) {
+      change24h = ((priceUsd - yesterdayClose) / yesterdayClose) * 100;
+    }
+  } else if (coin.dayData && coin.dayData.length === 1) {
+    const todayOpen = parseFloat(coin.dayData[0].open);
+    if (todayOpen > 0 && priceUsd > 0) {
+      change24h = ((priceUsd - todayOpen) / todayOpen) * 100;
+    }
+  }
+
+  const sparklinePrices: number[] = [];
+  if (coin.dayData && coin.dayData.length > 0) {
+    const reversed = [...coin.dayData].reverse();
+    for (const d of reversed) {
+      sparklinePrices.push(parseFloat(d.close));
+    }
+    sparklinePrices.push(priceUsd);
+  }
+
+  return { change24h, sparklinePrices };
+}
 
 export function useUserProfile(accountAddress: `0x${string}` | undefined) {
   // Fetch user account data from subgraph
@@ -94,6 +126,7 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
       const balanceNum = Number(formatEther(balance));
       const priceUsd = parseFloat(coin.priceUSD) || parseFloat(coin.price) || 0;
       const valueUsd = balanceNum * priceUsd;
+      const { change24h, sparklinePrices } = computePriceData(coin, priceUsd);
 
       items.push({
         address: (coin.fundraiser?.id?.toLowerCase() ?? "0x0") as `0x${string}`,
@@ -105,6 +138,8 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
         balanceNum,
         priceUsd,
         valueUsd,
+        change24h,
+        sparklinePrices,
       });
     }
 
@@ -128,14 +163,18 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
         if (marketCapUsd === 0 && coinPrice > 0 && totalSupply > 0) {
           marketCapUsd = coinPrice * totalSupply;
         }
+        const { change24h, sparklinePrices } = computePriceData(u, coinPrice);
         return {
           address: (u.fundraiser?.id?.toLowerCase() ?? "0x0") as `0x${string}`,
+          coinAddress: (u.id?.toLowerCase() ?? "0x0") as `0x${string}`,
           tokenName: u.name,
           tokenSymbol: u.symbol,
           uri: u.fundraiser?.uri ?? "",
           totalMinted,
           coinPrice,
           marketCapUsd,
+          change24h,
+          sparklinePrices,
         };
       })
       .sort((a, b) => b.marketCapUsd - a.marketCapUsd);

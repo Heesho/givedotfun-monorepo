@@ -12,14 +12,21 @@ const config: Config = {
   	extend: {
   		fontFamily: {
   			sans: [
+  				'var(--font-sans)',
   				'Inter',
   				'-apple-system',
   				'BlinkMacSystemFont',
-  				'Segoe UI',
-  				'Roboto',
-  				'Helvetica Neue',
-  				'Arial',
   				'sans-serif'
+  			],
+  			display: [
+  				'var(--font-display)',
+  				'Archivo',
+  				'sans-serif'
+  			],
+  			mono: [
+  				'var(--font-mono)',
+  				'IBM Plex Mono',
+  				'monospace'
   			]
   		},
   		colors: {

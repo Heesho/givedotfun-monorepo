@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Zap, Clock, Star, X } from "lucide-react";
+import { Search, Flame, Clock, TrendingUp, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
 import { useExploreFundraisers, type CoinListItem, type SortOption } from "@/hooks/useAllFundraisers";
@@ -23,7 +23,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   const divisor = data.length > 1 ? data.length - 1 : 1;
   const points = data
     .map((value, i) => {
-      const x = pad + (i / divisor) * (100 - pad * 2);
+      const x = pad + (i / divisor) * (300 - pad * 2);
       const y = range === 0 ? 50 : pad + (1 - (value - min) / range) * (100 - pad * 2);
       return `${x},${y}`;
     })
@@ -31,9 +31,9 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
 
   return (
     <svg
-      viewBox="0 0 100 100"
-      className="w-16 h-8 text-zinc-400"
-      preserveAspectRatio="none"
+      viewBox="0 0 300 100"
+      className={`w-24 h-8 ${isPositive ? "text-[#93C84B]" : "text-[#CF6458]"}`}
+      preserveAspectRatio="xMidYMid meet"
     >
       <polyline
         fill="none"
@@ -100,49 +100,50 @@ export default function ExplorePage() {
         {/* Header */}
         <div className="px-4 pb-2">
           <div className="mb-4">
-            <h1 className="text-2xl font-semibold tracking-tight">Explore</h1>
+            <h1 className="text-2xl font-bold tracking-tight font-display">Explore</h1>
+            <p className="text-[13px] text-muted-foreground mt-1">Discover fundraisers and mine coins by funding causes you care about</p>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search coins..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-10 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
-              >
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-
-          {/* Sort Tabs */}
-          <div className="flex gap-2 mt-3">
-            {[
-              { key: "bump" as const, label: "Bump", icon: Zap },
-              { key: "new" as const, label: "New", icon: Clock },
-              { key: "top" as const, label: "Top", icon: Star },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setSortBy(tab.key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition-all ${
-                  sortBy === tab.key
-                    ? "bg-white text-black"
-                    : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
-                }`}
-              >
-                <tab.icon className="w-3.5 h-3.5" />
-                {tab.label}
-              </button>
-            ))}
+          {/* Search + Sort */}
+          <div className="flex items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-10 pr-10 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            <div className="flex">
+              {[
+                { key: "bump" as const, label: "Bump", icon: Flame },
+                { key: "new" as const, label: "New", icon: Clock },
+                { key: "top" as const, label: "Top", icon: TrendingUp },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setSortBy(tab.key)}
+                  className={`flex items-center gap-1 px-2.5 h-12 rounded-none text-[12px] font-medium transition-all ${
+                    sortBy === tab.key
+                      ? "bg-white text-black"
+                      : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  <tab.icon className="w-3 h-3" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -182,7 +183,7 @@ export default function ExplorePage() {
                           size="md-lg"
                         />
                         <div>
-                          <div className="font-semibold text-[15px]">
+                          <div className="font-semibold text-[15px] font-display">
                             {coin.tokenSymbol.length > 6
                               ? `${coin.tokenSymbol.slice(0, 6)}...`
                               : coin.tokenSymbol}
@@ -196,7 +197,7 @@ export default function ExplorePage() {
                       </div>
 
                       {/* Middle - Sparkline */}
-                      <div className="flex justify-center">
+                      <div className="flex justify-end">
                         <Sparkline
                           data={(() => {
                             const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
@@ -210,12 +211,16 @@ export default function ExplorePage() {
 
                       {/* Right side - Market cap and 24h change */}
                       <div className="text-right">
-                        <div className="font-medium text-[15px] tabular-nums">
+                        <div className="font-medium text-[15px] tabular-nums font-mono">
                           {coin.marketCapUsd > 0
                             ? formatMarketCap(coin.marketCapUsd)
                             : "--"}
                         </div>
-                        <div className="text-[13px] tabular-nums text-zinc-400">
+                        <div className={`text-[13px] tabular-nums font-mono ${
+                          coin.marketCapUsd > 0
+                            ? coin.change24h >= 0 ? "text-[#93C84B]" : "text-[#CF6458]"
+                            : "text-zinc-400"
+                        }`}>
                           {coin.marketCapUsd > 0
                             ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
                             : "--"}
@@ -239,9 +244,9 @@ export default function ExplorePage() {
 
           {showEmpty && !isSearching && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Zap className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-[15px] font-medium">No coins launched yet</p>
-              <p className="text-[13px] mt-1 opacity-70">Be the first to launch a coin</p>
+              <Flame className="w-10 h-10 mb-3 opacity-30" />
+              <p className="text-[15px] font-medium">No fundraisers yet</p>
+              <p className="text-[13px] mt-1 opacity-70">Be the first to launch a fundraiser</p>
             </div>
           )}
         </div>

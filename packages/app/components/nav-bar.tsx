@@ -3,24 +3,50 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Compass, PlusCircle, HelpCircle, UserCircle } from "lucide-react";
+import { LayoutGrid, Plus, Info } from "lucide-react";
+import { useFarcaster } from "@/hooks/useFarcaster";
+
+function ProfileIcon({ isActive }: { isActive: boolean }) {
+  const { user, address } = useFarcaster();
+  const pfpUrl = user?.pfpUrl;
+  const fallback = address ? address.slice(-2).toUpperCase() : "??";
+
+  return (
+    <div
+      className={cn(
+        "w-7 h-7 rounded-full overflow-hidden flex items-center justify-center transition-all",
+        pfpUrl
+          ? isActive ? "ring-2 ring-white" : "opacity-60 hover:opacity-90"
+          : isActive
+            ? "bg-white text-black"
+            : "bg-zinc-600 text-zinc-300 hover:bg-zinc-500"
+      )}
+    >
+      {pfpUrl ? (
+        <img src={pfpUrl} alt="Profile" className="w-full h-full object-cover" />
+      ) : (
+        <span className="text-[10px] font-mono font-semibold">{fallback}</span>
+      )}
+    </div>
+  );
+}
 
 export function NavBar() {
   const pathname = usePathname();
 
-  // Check if we're on a fundraiser detail page
   const isFundraiserPage = pathname.startsWith("/fundraiser/");
 
-  const navItems: Array<{
-    href: "/explore" | "/launch" | "/info" | "/profile";
-    icon: typeof Compass;
+  const iconItems: Array<{
+    href: "/explore" | "/launch" | "/info";
+    icon: typeof LayoutGrid;
     isActive: boolean;
   }> = [
-    { href: "/explore", icon: Compass, isActive: pathname === "/explore" || pathname === "/" || isFundraiserPage },
-    { href: "/launch", icon: PlusCircle, isActive: pathname === "/launch" },
-    { href: "/info", icon: HelpCircle, isActive: pathname === "/info" },
-    { href: "/profile", icon: UserCircle, isActive: pathname === "/profile" },
+    { href: "/explore", icon: LayoutGrid, isActive: pathname === "/explore" || pathname === "/" || isFundraiserPage },
+    { href: "/launch", icon: Plus, isActive: pathname === "/launch" },
+    { href: "/info", icon: Info, isActive: pathname === "/info" },
   ];
+
+  const isProfileActive = pathname === "/profile";
 
   return (
     <nav
@@ -33,11 +59,11 @@ export function NavBar() {
           paddingTop: "12px",
         }}
       >
-        {navItems.map((item) => (
+        {iconItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center justify-center p-2 transition-colors"
+            className="flex-1 flex items-center justify-center min-h-[48px] transition-colors"
           >
             <item.icon
               className={cn(
@@ -50,6 +76,12 @@ export function NavBar() {
             />
           </Link>
         ))}
+        <Link
+          href="/profile"
+          className="flex-1 flex items-center justify-center min-h-[48px] transition-colors"
+        >
+          <ProfileIcon isActive={isProfileActive} />
+        </Link>
       </div>
     </nav>
   );

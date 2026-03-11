@@ -254,14 +254,14 @@ export function AdminModal({
   const currentLogoUrl = logoPreview || initialLogoUrl;
 
   const addressInputClass = (valid: boolean, value: string) =>
-    `flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm font-mono min-w-0 ${
+    `flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm font-mono min-w-0 ${
       value.length > 0 && !valid
-        ? "ring-zinc-500/50 focus:ring-zinc-500"
-        : "ring-zinc-700 focus:ring-zinc-500"
+        ? "ring-1 ring-zinc-500/50 focus:ring-zinc-500"
+        : ""
     }`;
 
   const saveBtnClass = (field: string, enabled: boolean) =>
-    `h-10 px-4 rounded-lg text-[13px] font-semibold transition-all flex-shrink-0 ${
+    `h-10 px-4 rounded-none text-[13px] font-semibold font-display transition-all flex-shrink-0 ${
       successField === field
         ? "bg-zinc-300 text-black"
         : isSaving && pendingField === field
@@ -284,11 +284,11 @@ export function AdminModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">Admin</span>
+          <span className="text-base font-semibold font-display">Admin</span>
           <div className="w-9" />
         </div>
 
@@ -299,7 +299,7 @@ export function AdminModal({
           <div className="flex items-start gap-3 mb-3">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="relative w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden flex-shrink-0 hover:ring-zinc-500 transition-colors"
+              className="relative w-[88px] h-[88px] rounded-none bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0 hover:bg-secondary/80 transition-colors"
             >
               {currentLogoUrl ? (
                 <img src={currentLogoUrl} alt="Logo" className="w-full h-full object-cover" />
@@ -318,35 +318,35 @@ export function AdminModal({
               className="hidden"
             />
             <div className="flex-1 min-w-0 pt-2">
-              <div className="text-[16px] font-semibold">{tokenName}</div>
+              <div className="text-[16px] font-semibold font-display">{tokenName}</div>
               <div className="text-[13px] text-muted-foreground">${tokenSymbol}</div>
             </div>
           </div>
 
           {/* Text fields */}
-          <span className="text-[12px] text-muted-foreground block mb-1">Description</span>
+          <span className="text-[12px] text-muted-foreground block mb-1 font-display">Description</span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe your coin..."
             rows={2}
-            className="w-full px-3 py-2.5 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 resize-none text-sm"
+            className="w-full px-3 py-2.5 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 resize-none text-sm"
           />
-          <span className="text-[12px] text-muted-foreground block mt-2 mb-1">Default message</span>
+          <span className="text-[12px] text-muted-foreground block mt-2 mb-1 font-display">Default message</span>
           <input
             type="text"
             value={defaultMessage}
             onChange={(e) => setDefaultMessage(e.target.value)}
             placeholder="gm"
-            className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+            className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
           />
-          <span className="text-[12px] text-muted-foreground block mt-2 mb-1">Recipient name</span>
+          <span className="text-[12px] text-muted-foreground block mt-2 mb-1 font-display">Recipient name</span>
           <input
             type="text"
             value={recipientName}
             onChange={(e) => setRecipientName(e.target.value)}
             placeholder="Who receives donations"
-            className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+            className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
           />
 
           {/* Links toggle */}
@@ -357,11 +357,11 @@ export function AdminModal({
               className="flex items-center justify-between w-full py-2"
             >
               <div className="flex items-center gap-2.5">
-                <span className="text-[13px] text-foreground">Add links</span>
+                <span className="text-[13px] text-foreground font-display font-medium">Add links</span>
                 <span className="text-[11px] text-muted-foreground">websites, socials</span>
               </div>
-              <div className={`w-9 h-5 rounded-full transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
               </div>
             </button>
 
@@ -378,7 +378,7 @@ export function AdminModal({
                         setLinks(updated);
                       }}
                       placeholder="https://..."
-                      className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                      className="flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
                     />
                     <button
                       type="button"
@@ -406,7 +406,7 @@ export function AdminModal({
           <button
             onClick={handleSaveMetadata}
             disabled={isSaving || !metadataChanged}
-            className={`w-full h-10 rounded-lg text-[14px] font-semibold transition-all mt-4 ${
+            className={`w-full h-12 rounded-none text-[14px] font-semibold font-display transition-all mt-4 ${
               successField === "metadata"
                 ? "bg-zinc-300 text-black"
                 : isSaving && pendingField === "metadata"
@@ -428,11 +428,11 @@ export function AdminModal({
             )}
           </button>
 
-          <div className="text-[13px] font-semibold text-foreground mt-5 mb-3">Contract Settings</div>
+          <div className="text-[13px] font-semibold font-display text-foreground mt-5 mb-3">Contract Settings</div>
           <div className="space-y-3">
             {/* Recipient */}
             <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground">Recipient</span>
+              <span className="text-[12px] text-muted-foreground font-display">Recipient</span>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -455,7 +455,7 @@ export function AdminModal({
 
             {/* Treasury */}
             <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground">Treasury</span>
+              <span className="text-[12px] text-muted-foreground font-display">Treasury</span>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -478,7 +478,7 @@ export function AdminModal({
 
             {/* Team */}
             <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground">Team</span>
+              <span className="text-[12px] text-muted-foreground font-display">Team</span>
               <div className="flex gap-2">
                 <input
                   type="text"

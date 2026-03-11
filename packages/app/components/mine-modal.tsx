@@ -54,7 +54,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-xl transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -250,11 +250,11 @@ export function MineModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="text-base font-semibold">Mine</span>
+          <span className="text-base font-semibold font-display">Mine</span>
           <div className="w-9" />
         </div>
 
@@ -262,10 +262,10 @@ export function MineModal({
         <div className="flex-1 flex flex-col px-4">
           {/* Balance */}
           <div className="mt-4 mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold font-display tracking-tight">
               Mine {tokenSymbol}
             </h1>
-            <p className="text-[13px] text-muted-foreground mt-1">
+            <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
               ${displayBalance.toFixed(2)} available
             </p>
           </div>
@@ -273,28 +273,28 @@ export function MineModal({
           {/* Amount input display */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Pay</span>
-              <span className="text-lg font-semibold tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Pay</span>
+              <span className="text-lg font-semibold font-mono tabular-nums">
                 ${addCommas(amount)}
               </span>
             </div>
           </div>
 
-          {/* Cost per token */}
+          {/* Cost per coin */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Cost per token</span>
-              <span className="text-[13px] font-medium tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Cost per coin</span>
+              <span className="text-[13px] font-medium font-mono tabular-nums">
                 {costPerToken > 0 ? `$${costPerToken.toFixed(6)}` : "\u2014"}
               </span>
             </div>
           </div>
 
-          {/* Estimated tokens */}
+          {/* Estimated coins */}
           <div className="py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">Est. tokens</span>
-              <span className="text-[13px] font-medium tabular-nums">
+              <span className="text-[13px] text-muted-foreground font-display">Est. coins</span>
+              <span className="text-[13px] font-medium font-mono tabular-nums">
                 {estimatedTokens > 0
                   ? `${estimatedTokens.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${tokenSymbol}`
                   : "\u2014"}
@@ -304,7 +304,7 @@ export function MineModal({
 
           {/* Error messages */}
           {txError && (
-            <div className="px-3 py-2 rounded-lg bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
+            <div className="px-3 py-2 rounded-none bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
               <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
               <span className="text-[12px] text-zinc-400">
                 {(() => {
@@ -327,14 +327,14 @@ export function MineModal({
             onChange={(e) => setMessage(e.target.value)}
             placeholder={defaultMessage}
             maxLength={100}
-            className="w-full bg-zinc-800 rounded-xl px-4 py-2.5 text-[14px] outline-none placeholder:text-zinc-500 mb-3"
+            className="w-full bg-zinc-800 rounded-none px-4 py-2.5 text-[14px] outline-none placeholder:text-zinc-500 mb-3"
           />
 
           {/* Action button */}
           <button
             disabled={buttonDisabled}
             onClick={handleConfirm}
-            className={`w-full h-11 rounded-xl font-semibold text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`w-full h-11 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
                 ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                 : isSuccess

@@ -324,66 +324,66 @@ export default function LaunchPage() {
       >
         {/* Header */}
         <div className="px-4 pb-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Launch</h1>
+          <h1 className="text-2xl font-bold tracking-tight font-display">Launch</h1>
+          <p className="text-[13px] text-muted-foreground mt-1">Create a fundraiser and start accepting funding</p>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2">
-          {/* Logo + Name + Symbol Row */}
-          <div className="flex items-start gap-3 mb-3">
-            <label className="cursor-pointer flex-shrink-0">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoChange}
-                className="hidden"
-              />
-              <div className="w-[88px] h-[88px] rounded-xl ring-1 ring-zinc-700 flex items-center justify-center overflow-hidden hover:ring-zinc-500 transition-colors">
-                {logoPreview ? (
-                  <img
-                    src={logoPreview}
-                    alt="Coin logo"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Upload className="w-6 h-6 text-zinc-500" />
-                )}
-              </div>
-            </label>
-            <div className="flex-1 min-w-0 space-y-2">
-              <input
-                type="text"
-                placeholder="Coin name"
-                value={tokenName}
-                onChange={(e) => setTokenName(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-              />
-              <input
-                type="text"
-                placeholder="SYMBOL"
-                value={tokenSymbol}
-                onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
-                maxLength={10}
-                className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Text fields — tight stack */}
+          {/* All form fields — uniform 8px gap */}
           <div className="space-y-2">
-            <textarea
+            {/* Logo + Name + Symbol Row */}
+            <div className="flex items-start gap-2">
+              <label className="cursor-pointer flex-shrink-0">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <div className="w-[88px] h-[88px] rounded-none bg-secondary flex items-center justify-center overflow-hidden hover:bg-secondary/80 transition-colors">
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt="Coin logo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Upload className="w-6 h-6 text-zinc-500" />
+                  )}
+                </div>
+              </label>
+              <div className="flex-1 min-w-0 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Coin name"
+                  value={tokenName}
+                  onChange={(e) => setTokenName(e.target.value)}
+                  className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
+                />
+                <input
+                  type="text"
+                  placeholder="SYMBOL"
+                  value={tokenSymbol}
+                  onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
+                  maxLength={10}
+                  className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
+                />
+              </div>
+            </div>
+            <input
+              type="text"
               placeholder="Description"
               value={tokenDescription}
               onChange={(e) => setTokenDescription(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 resize-none text-sm"
+              className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
             />
             <input
               type="text"
               placeholder="Default message"
               value={donationMessage}
               onChange={(e) => setDonationMessage(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+              className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
             />
           </div>
 
@@ -395,11 +395,11 @@ export default function LaunchPage() {
               className="flex items-center justify-between w-full py-2"
             >
               <div className="flex items-center gap-2.5">
-                <span className="text-[13px] text-foreground">Add recipient</span>
-                <span className="text-[11px] text-muted-foreground">receives 50% of donations</span>
+                <span className="text-[13px] text-foreground font-display font-medium">Add recipient</span>
+                <span className="text-[11px] text-muted-foreground">receives 50% of all funding</span>
               </div>
-              <div className={`w-9 h-5 rounded-full transition-colors relative ${showRecipient ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showRecipient ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showRecipient ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showRecipient ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
               </div>
             </button>
 
@@ -410,18 +410,14 @@ export default function LaunchPage() {
                   placeholder="Recipient name"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                  className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
                 />
                 <input
                   type="text"
                   placeholder="Wallet address (0x...)"
                   value={recipientAddress}
                   onChange={(e) => setRecipientAddress(e.target.value)}
-                  className={`w-full h-10 px-3 rounded-lg bg-transparent ring-1 text-white placeholder:text-zinc-500 focus:outline-none text-sm ${
-                    recipientAddress.length > 0 && !isValidAddress(recipientAddress)
-                      ? "ring-zinc-500/50 focus:ring-zinc-500"
-                      : "ring-zinc-700 focus:ring-zinc-500"
-                  }`}
+                  className={`w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm font-mono`}
                 />
                 {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
                   <p className="text-[11px] text-zinc-400">Enter a valid Ethereum address</p>
@@ -434,15 +430,19 @@ export default function LaunchPage() {
           <div className="mt-2">
             <button
               type="button"
-              onClick={() => setShowLinks(!showLinks)}
+              onClick={() => {
+                const next = !showLinks;
+                setShowLinks(next);
+                if (next && links.length === 0) setLinks([""]);
+              }}
               className="flex items-center justify-between w-full py-2"
             >
               <div className="flex items-center gap-2.5">
-                <span className="text-[13px] text-foreground">Add links</span>
+                <span className="text-[13px] text-foreground font-display font-medium">Add links</span>
                 <span className="text-[11px] text-muted-foreground">websites, socials</span>
               </div>
-              <div className={`w-9 h-5 rounded-full transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
               </div>
             </button>
 
@@ -459,11 +459,17 @@ export default function LaunchPage() {
                         updated[i] = e.target.value;
                         setLinks(updated);
                       }}
-                      className="flex-1 h-10 px-3 rounded-lg bg-transparent ring-1 ring-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-zinc-500 text-sm"
+                      className="flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
                     />
                     <button
                       type="button"
-                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                      onClick={() => {
+                        if (links.length <= 1) {
+                          setLinks([""]);
+                          return;
+                        }
+                        setLinks(links.filter((_, j) => j !== i));
+                      }}
                       className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
                       <X className="w-4 h-4" />
@@ -485,18 +491,18 @@ export default function LaunchPage() {
         </div>
 
         {/* Bottom Action Bar */}
-        <div className="mt-auto px-4 py-1 bg-background">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-5">
+        <div className="mt-auto px-4 py-3 bg-background">
+          <div className="flex items-center gap-4 w-full">
+            <div className="flex items-center gap-5 shrink-0">
               <div>
                 <div className="text-muted-foreground text-[12px]">Pay</div>
-                <div className="font-semibold text-[17px] tabular-nums">
+                <div className="font-semibold text-[17px] tabular-nums font-mono">
                   ${formatNumber(usdcAmount)}
                 </div>
               </div>
               <div>
                 <div className="text-muted-foreground text-[12px]">Balance</div>
-                <div className="font-semibold text-[17px] tabular-nums">
+                <div className="font-semibold text-[17px] tabular-nums font-mono">
                   ${formatNumber(usdcBalance ? Number(formatUnits(usdcBalance, QUOTE_TOKEN_DECIMALS)) : 0)}
                 </div>
               </div>
@@ -505,7 +511,7 @@ export default function LaunchPage() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting}
-                className="w-40 h-10 text-[14px] font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="w-40 h-10 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -513,7 +519,7 @@ export default function LaunchPage() {
               <button
                 onClick={handleLaunch}
                 disabled={!isFormValid || isLaunching || isUploading}
-                className={`w-32 h-10 text-[14px] font-semibold rounded-xl transition-all ${
+                className={`flex-1 h-12 text-[15px] font-semibold font-display rounded-none transition-all ${
                   launchError || txStatus === "error"
                     ? "bg-zinc-700 text-zinc-300"
                     : !isFormValid || isLaunching || isUploading
@@ -539,7 +545,7 @@ export default function LaunchPage() {
 
       {/* Success */}
       {txStatus === "success" && txHash && (
-        <div className="fixed inset-0 bottom-[70px] z-[50] flex w-screen justify-center bg-zinc-800">
+        <div className="fixed inset-0 bottom-[70px] z-[50] flex w-screen justify-center bg-background">
           <div
             className="relative flex h-full w-full max-w-[520px] flex-col bg-background items-center justify-center px-6"
             style={{
@@ -550,15 +556,15 @@ export default function LaunchPage() {
               {/* Token preview */}
               {logoPreview && (
                 <div className="flex justify-center">
-                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-full object-cover ring-2 ring-zinc-700" />
+                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-none object-cover ring-2 ring-zinc-700" />
                 </div>
               )}
 
               {/* Message */}
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Fundraiser Launched!</h2>
+                <h2 className="text-2xl font-bold text-white mb-2 font-display">Fundraiser Launched!</h2>
                 <p className="text-zinc-400 text-[15px]">
-                  <span className="font-semibold text-white">{tokenName}</span>
+                  <span className="font-semibold text-white font-display">{tokenName}</span>
                   {" "}({tokenSymbol}) is now live
                 </p>
               </div>
@@ -567,7 +573,7 @@ export default function LaunchPage() {
               <div className="space-y-3 pt-2 w-full">
                 <Link
                   href={launchedFundraiserAddress ? `/fundraiser/${launchedFundraiserAddress}` : "/explore"}
-                  className="block w-full py-3.5 px-4 bg-white text-black font-semibold text-[15px] rounded-xl hover:bg-zinc-200 transition-colors"
+                  className="block w-full py-3.5 px-4 bg-white text-black font-semibold font-display text-[15px] rounded-none hover:bg-zinc-200 transition-colors"
                 >
                   View Fundraiser
                 </Link>
@@ -575,7 +581,7 @@ export default function LaunchPage() {
                   href={`https://basescan.org/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full py-3.5 px-4 bg-zinc-800 text-white font-semibold text-[15px] rounded-xl hover:bg-zinc-700 transition-colors"
+                  className="block w-full py-3.5 px-4 bg-zinc-800 text-white font-semibold font-display text-[15px] rounded-none hover:bg-zinc-700 transition-colors"
                 >
                   View on Basescan
                 </a>

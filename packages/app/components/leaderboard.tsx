@@ -67,7 +67,7 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
       {/* Funded amount */}
       <div className="text-right flex-shrink-0">
         <div className="text-[12px] text-muted-foreground">Funded</div>
-        <div className="text-[13px] font-medium">{entry.donatedFormatted}</div>
+        <div className="text-[13px] font-medium font-mono tabular-nums">{entry.donatedFormatted}</div>
       </div>
     </div>
   );
@@ -95,10 +95,13 @@ export function Leaderboard({
   if (isLoading) {
     return (
       <div className="mt-6">
-        <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
+        <div className="mb-3">
+          <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
+          <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
+        </div>
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 bg-zinc-900/30 rounded-lg animate-pulse" />
+            <div key={i} className="h-12 bg-zinc-900/30 rounded-none animate-pulse" />
           ))}
         </div>
       </div>
@@ -108,9 +111,12 @@ export function Leaderboard({
   if (entries.length === 0) {
     return (
       <div className="mt-6">
-        <h2 className="text-[18px] font-semibold mb-3">Leaderboard</h2>
+        <div className="mb-3">
+          <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
+          <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
+        </div>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
-          No funders yet
+          No supporters yet
         </div>
       </div>
     );
@@ -118,13 +124,14 @@ export function Leaderboard({
 
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[18px] font-semibold">Leaderboard</h2>
+      <div className="mb-3">
+        <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
+        <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
       </div>
 
       {/* User rank summary if not in top entries */}
       {userRank && userRank > entries.length && (
-        <div className="mb-3 p-2.5 rounded-lg bg-zinc-800 border border-zinc-700">
+        <div className="mb-3 p-2.5 rounded-none bg-zinc-800 border border-zinc-700">
           <div className="flex items-center justify-between">
             <span className="text-sm text-zinc-400">Your rank</span>
             <span className="text-sm font-semibold text-white">#{userRank}</span>

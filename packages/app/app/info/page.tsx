@@ -6,39 +6,39 @@ const INFO_SECTIONS = [
   {
     title: "What is give.fun?",
     content:
-      "A perpetual funding platform on Base. Create fundraisers for creators, public goods, agents, charities, or anything at all. Donors fund with USDC and mine proportional token emissions — like Bitcoin mining, but for things you care about.",
+      "A perpetual funding platform on Base. Create fundraisers for creators, public goods, agents, charities, or anything at all. Supporters fund with USDC and mine Karma Coins — like Bitcoin mining, but for things you care about.",
     bullets: [
-      "50% of every donation goes directly to the recipient",
-      "Liquidity is locked forever — LP tokens are burned on launch",
+      "50% of every contribution goes directly to the recipient",
+      "Liquidity is locked forever — LP is burned on launch",
       "All contracts are immutable — nobody can change the rules",
     ],
   },
   {
     title: "Mining",
     content:
-      "Fund USDC into daily mining pools. Each day has a fixed token emission. Your share of the pool determines your share of tokens mined.",
+      "Fund USDC into daily mining pools. Each day has a fixed number of coins to distribute. Your share of the pool determines your share of coins mined.",
     bullets: [
-      "Each epoch (1 day) has a fixed token emission to distribute",
-      "Fund more = mine more tokens proportionally",
-      "Claim your mined tokens after each epoch ends",
-      "Early epochs have the highest emissions — early miners get the most",
+      "Each day has a fixed number of coins to distribute",
+      "Fund more = mine more coins proportionally",
+      "Claim your mined coins after each day ends",
+      "Early days have the highest rewards — early supporters get the most",
     ],
   },
   {
-    title: "Bitcoin-Style Emissions",
+    title: "Bitcoin-Style Rewards",
     content:
-      "Token emissions follow a Bitcoin-inspired halving schedule compressed from 4-year halvings to monthly halvings, with perpetual tail emissions.",
+      "Coin rewards follow a Bitcoin-inspired halving schedule compressed from 4-year halvings to monthly halvings, with perpetual tail rewards.",
     bullets: [
       "~50% of total supply is mined in the first month",
-      "Emissions halve every 30 days",
-      "Tail emissions kick in after ~7 months — tokens are mined forever",
-      "~21M tokens from halvings, then slow perpetual inflation",
+      "Rewards halve every 30 days",
+      "Tail rewards kick in after ~7 months — coins are mined forever",
+      "~21M coins from halvings, then slow perpetual growth",
     ],
   },
   {
     title: "Funding Split",
     content:
-      "Every donation is split transparently on-chain. The majority goes directly to whoever is being funded.",
+      "Every contribution is split transparently on-chain. The majority goes directly to whoever is being funded.",
     bullets: [
       "50% — Recipient (the person or cause being funded)",
       "45% — Treasury (grows liquidity via auctions)",
@@ -50,11 +50,11 @@ const INFO_SECTIONS = [
   {
     title: "Treasury Auctions",
     content:
-      "Treasury fees accumulate as USDC and are auctioned off to LP token holders. This permanently deepens liquidity for the token.",
+      "Treasury fees accumulate as USDC and are auctioned off to LP holders. This permanently deepens liquidity for the coin.",
     bullets: [
       "Dutch auction — price decays over time",
       "Buy when the price makes it profitable",
-      "LP tokens used in auctions get burned — liquidity only grows",
+      "LP used in auctions gets burned — liquidity only grows",
     ],
   },
   {
@@ -62,8 +62,8 @@ const INFO_SECTIONS = [
     content:
       "Launch a fundraiser in one click. Everything is configured at launch and locked forever — fully immutable.",
     bullets: [
-      "Bitcoin-style emission schedule by default",
-      "Earn 4% of all donations as the team fee",
+      "Bitcoin-style coin rewards by default",
+      "Earn 4% of all funding as the team fee",
       "Treasury grows liquidity automatically via auctions",
       "Set a recipient — 50% of all funding goes directly to them",
     ],
@@ -81,31 +81,32 @@ export default function InfoPage() {
         }}
       >
         {/* Header */}
-        <div className="px-4 pb-4">
-          <h1 className="text-2xl font-semibold tracking-tight">About</h1>
+        <div className="px-5 pb-4">
+          <h1 className="text-2xl font-bold tracking-tight font-display">About</h1>
+          <p className="text-[13px] text-muted-foreground mt-1">How give.fun works and why it matters</p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
-          <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5">
+          <div className="space-y-0">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
-                className=""
+                className={`py-6 ${index > 0 ? "border-t border-border" : ""}`}
               >
-                <h2 className="font-semibold text-foreground mb-2">
+                <h2 className="text-[17px] font-semibold text-foreground mb-3 font-display">
                   {section.title}
                 </h2>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className="text-[15px] text-muted-foreground leading-relaxed mb-4">
                   {section.content}
                 </p>
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {section.bullets.map((bullet, i) => (
                     <li
                       key={i}
-                      className="text-sm text-muted-foreground flex items-start gap-2"
+                      className="text-[14px] text-muted-foreground flex items-start gap-3 leading-snug"
                     >
-                      <span className="text-zinc-500 mt-0.5">&bull;</span>
+                      <span className="text-zinc-500 mt-0.5 font-mono text-[12px]">—</span>
                       {bullet}
                     </li>
                   ))}

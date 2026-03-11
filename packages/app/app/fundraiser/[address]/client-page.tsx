@@ -106,7 +106,7 @@ function LoadingSkeleton() {
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -121,7 +121,7 @@ function LoadingSkeleton() {
           {/* Token info skeleton */}
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-secondary animate-pulse" />
+              <div className="w-12 h-12 rounded-none bg-secondary animate-pulse" />
               <div>
                 <div className="w-16 h-4 bg-secondary rounded animate-pulse mb-1" />
                 <div className="w-24 h-5 bg-secondary rounded animate-pulse" />
@@ -139,7 +139,7 @@ function LoadingSkeleton() {
           {/* Timeframe selector skeleton */}
           <div className="flex justify-between mb-5 px-2">
             {["1H", "1D", "1W", "1M", "ALL"].map((tf) => (
-              <div key={tf} className="px-3.5 py-1.5 rounded-lg bg-secondary/50 text-[13px] text-muted-foreground">
+              <div key={tf} className="px-3.5 py-1.5 rounded-none bg-secondary/50 text-[13px] text-muted-foreground">
                 {tf}
               </div>
             ))}
@@ -339,7 +339,6 @@ export default function FundraiserDetailPage() {
   const [hoverData, setHoverData] = useState<HoverData>(null);
   const handleChartHover = useCallback((data: HoverData) => setHoverData(data), []);
 
-  const [showActionMenu, setShowActionMenu] = useState(false);
   const [showHeaderPrice, setShowHeaderPrice] = useState(false);
   const [showMineModal, setShowMineModal] = useState(false);
   const [showTradeModal, setShowTradeModal] = useState(false);
@@ -463,21 +462,21 @@ export default function FundraiserDetailPage() {
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           {/* Center - Price appears on scroll */}
           <div className={`text-center transition-opacity duration-200 ${showHeaderPrice ? "opacity-100" : "opacity-0"}`}>
-            <div className="text-[15px] font-semibold">{formatPrice(priceUsd)}</div>
-            <div className="text-[11px] text-muted-foreground">{tokenSymbol}</div>
+            <div className="text-[15px] font-semibold font-mono">{formatPrice(priceUsd)}</div>
+            <div className="text-[15px] font-semibold font-display">{tokenSymbol}</div>
           </div>
           <button
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : "";
               composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
             }}
-            className="p-2 -mr-2 rounded-xl hover:bg-secondary transition-colors"
+            className="p-2 -mr-2 rounded-none hover:bg-secondary transition-colors"
           >
             <Share2 className="w-5 h-5" />
           </button>
@@ -491,7 +490,7 @@ export default function FundraiserDetailPage() {
               <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
               <div>
                 <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                <div className="text-[15px] font-medium">{tokenSymbol}</div>
+                <div className="text-[15px] font-medium font-display">{tokenSymbol}</div>
               </div>
             </div>
             <div className="text-right">
@@ -501,11 +500,11 @@ export default function FundraiserDetailPage() {
                   : formatPrice(priceUsd)}
               </div>
               {hoverData ? (
-                <div className="text-[13px] font-medium text-zinc-400">
+                <div className="text-[13px] font-medium font-mono text-zinc-400">
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className="text-[13px] font-medium text-zinc-400">
+                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#93C84B]" : "text-[#CF6458]"}`}>
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -517,6 +516,7 @@ export default function FundraiserDetailPage() {
             <PriceChart
               data={chartData}
               height={176}
+              color={displayChange >= 0 ? "#93C84B" : "#CF6458"}
               onHover={handleChartHover}
               tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
               initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
@@ -529,10 +529,14 @@ export default function FundraiserDetailPage() {
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-none text-[13px] font-medium font-mono transition-all ${
                   timeframe === tf
-                    ? "bg-zinc-700 text-white"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    ? displayChange >= 0
+                      ? "bg-[#93C84B] text-black"
+                      : "bg-[#CF6458] text-black"
+                    : displayChange >= 0
+                      ? "text-[#93C84B] hover:bg-[#93C84B]/10"
+                      : "text-[#CF6458] hover:bg-[#CF6458]/10"
                 }`}
               >
                 {tf}
@@ -543,8 +547,11 @@ export default function FundraiserDetailPage() {
           {/* Mining Pool Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="font-semibold text-[18px]">Today's Mining Pool</div>
-              <div className="text-[14px] tabular-nums text-muted-foreground">
+              <div>
+                <div className="font-semibold text-[18px] font-display">Today's Mining Pool</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today's coin rewards</div>
+              </div>
+              <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
                 {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
               </div>
             </div>
@@ -552,33 +559,42 @@ export default function FundraiserDetailPage() {
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-[11px] text-muted-foreground mb-1">Funded</div>
-                <div className="text-[22px] font-bold tabular-nums">
+                <div className="text-[22px] font-bold tabular-nums font-mono">
                   ${currentEpochTotalDonated.toLocaleString("en-US", { maximumFractionDigits: 0 })}
                 </div>
-                <div className="text-[13px] text-muted-foreground tabular-nums mt-0.5">
+                <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
                   {costPerToken > 0 ? `$${costPerToken.toFixed(4)}/token` : ""}
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-[11px] text-muted-foreground mb-1">Emission</div>
-                <div className="text-[22px] font-bold tabular-nums flex items-center justify-end gap-1.5">
-                  <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" />
+                <div className="text-[22px] font-bold tabular-nums font-mono flex items-center justify-end gap-1.5">
+                  <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" variant="circle" />
                   {currentEpochEmission >= 1_000_000 ? `${(currentEpochEmission / 1_000_000).toFixed(2)}M`
                     : currentEpochEmission >= 1_000 ? `${(currentEpochEmission / 1_000).toFixed(0)}K`
                     : currentEpochEmission.toFixed(0)}
                 </div>
-                <div className="text-[13px] text-muted-foreground tabular-nums mt-0.5">
+                <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
                   {priceUsd > 0 ? `~$${formatNumber(currentEpochEmission * priceUsd)} value` : `${tokenSymbol}`}
                 </div>
               </div>
             </div>
 
+            <button
+              onClick={() => setShowMineModal(true)}
+              className="w-full mt-4 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+            >
+              Mine
+            </button>
           </div>
 
           {/* Your Position Section */}
           {hasPosition && (
             <div className="mb-6">
-              <div className="font-semibold text-[18px] mb-3">Your position</div>
+              <div className="mb-3">
+                <div className="font-semibold text-[18px] font-display">Your position</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
+              </div>
 
               {/* Mining epochs */}
               {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
@@ -588,7 +604,7 @@ export default function FundraiserDetailPage() {
                     <div className="flex items-center gap-3 py-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">Epoch #{currentEpoch}</span>
+                          <span className="text-sm font-medium">Day {currentEpoch}</span>
                           <span className="text-xs text-zinc-500">active</span>
                         </div>
                       </div>
@@ -599,8 +615,8 @@ export default function FundraiserDetailPage() {
                         </div>
                         <div>
                           <div className="text-[12px] text-muted-foreground">Mining</div>
-                          <div className="text-[13px] font-medium text-zinc-400 flex items-center justify-end gap-1">
-                            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" />
+                          <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
                             {estimatedTokensFromEpoch >= 1000
                               ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
                               : formatNumber(estimatedTokensFromEpoch, 0)}
@@ -618,7 +634,7 @@ export default function FundraiserDetailPage() {
                       <div key={ep.epoch.toString()} className="flex items-center gap-3 py-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Epoch #{ep.epoch.toString()}</span>
+                            <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
                             <span className="text-xs text-zinc-500">claimable</span>
                           </div>
                         </div>
@@ -629,8 +645,8 @@ export default function FundraiserDetailPage() {
                           </div>
                           <div>
                             <div className="text-[12px] text-muted-foreground">Mined</div>
-                            <div className="text-[13px] font-medium text-zinc-400 flex items-center justify-end gap-1">
-                              <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" />
+                            <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                              <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
                               {epReward >= 1000
                                 ? `${(epReward / 1000).toFixed(1)}K`
                                 : formatNumber(epReward, 0)}
@@ -646,7 +662,7 @@ export default function FundraiserDetailPage() {
                     <button
                       onClick={handleClaim}
                       disabled={claimStatus === "pending" || claimStatus === "success"}
-                      className={`w-full mt-1 py-2.5 text-[13px] font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                      className={`w-full mt-1 h-12 text-[14px] font-semibold font-display rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         claimStatus === "success"
                           ? "bg-zinc-300 text-black"
                           : claimStatus === "error"
@@ -664,7 +680,7 @@ export default function FundraiserDetailPage() {
                         ? "Claimed!"
                         : claimStatus === "error"
                         ? claimError?.message?.includes("cancelled") ? "Rejected" : "Failed"
-                        : `Claim all · ${unclaimedEpochCount} epoch${unclaimedEpochCount !== 1 ? "s" : ""}`}
+                        : `Claim all · ${unclaimedEpochCount} day${unclaimedEpochCount !== 1 ? "s" : ""}`}
                     </button>
                   )}
                 </div>
@@ -673,30 +689,30 @@ export default function FundraiserDetailPage() {
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
-                  <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
-                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
+                  <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
                     <span>{formatNumber(userCoinBalance)}</span>
                   </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Value</div>
-                  <div className="font-semibold text-[15px] tabular-nums text-white">
+                  <div className="font-semibold text-[15px] tabular-nums font-mono text-white">
                     ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
                 {userTotals && userTotals.totalFunded > 0 && (
                   <>
                     <div>
-                      <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
-                      <div className="font-semibold text-[15px] tabular-nums">
-                        ${formatNumber(userTotals.totalFunded)}
+                      <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                        <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
+                        <span>{formatNumber(userTotals.totalMined)}</span>
                       </div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
-                      <div className="font-semibold text-[15px] tabular-nums flex items-center gap-1.5">
-                        <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
-                        <span>{formatNumber(userTotals.totalMined)}</span>
+                      <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">
+                        ${formatNumber(userTotals.totalFunded)}
                       </div>
                     </div>
                   </>
@@ -707,7 +723,10 @@ export default function FundraiserDetailPage() {
 
           {/* About Section */}
           <div className="mb-6">
-            <div className="font-semibold text-[18px] mb-3">About</div>
+            <div className="mb-3">
+              <div className="font-semibold text-[18px] font-display">About</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
+            </div>
 
             {/* Deployed by row */}
             <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
@@ -731,7 +750,7 @@ export default function FundraiserDetailPage() {
             )}
             {!metadata?.description && (
               <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                A fundraiser coin. Contributors donate and claim each epoch&apos;s emission proportional to their share.
+                A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
               </p>
             )}
 
@@ -742,7 +761,7 @@ export default function FundraiserDetailPage() {
                   href={`https://basescan.org/token/${coinAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
                 >
                   {tokenSymbol}
                 </a>
@@ -752,7 +771,7 @@ export default function FundraiserDetailPage() {
                   href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
                 >
                   {tokenSymbol}-USDC LP
                 </a>
@@ -776,119 +795,49 @@ export default function FundraiserDetailPage() {
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
                   >
                     {label}
                   </a>
                 );
               })}
             </div>
-          </div>
 
-          {/* Global Stats Grid */}
-          <div className="mb-6">
-            <div className="font-semibold text-[18px] mb-3">Stats</div>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  {formatMarketCap(marketCapUsd)}
+            {/* Action buttons */}
+            {isConnected && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowLiquidityModal(true)}
+                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Liquidity
+                  </button>
+                  <button
+                    onClick={() => setShowAuctionModal(true)}
+                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Auction
+                  </button>
                 </div>
+                {isOwner && (
+                  <button
+                    onClick={() => setShowAdminModal(true)}
+                    className="w-full h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Admin
+                  </button>
+                )}
               </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  {formatNumber(totalSupply)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${formatNumber(liquidityUsd)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${formatNumber(volume24h)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                <div className="font-semibold text-[15px] tabular-nums">
-                  ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-              {/* Fundraiser Parameters */}
-              {subgraphFundraiser && (
-                <>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Initial emission</div>
-                    <div className="font-semibold text-[15px] tabular-nums">{formatEmission(subgraphFundraiser.initialEmission)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Tail emission</div>
-                    <div className="font-semibold text-[15px] tabular-nums">{formatEmission(subgraphFundraiser.minEmission)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
-                    <div className="font-semibold text-[15px] tabular-nums">
-                      {formatPeriod(
-                        String(
-                          parseInt(subgraphFundraiser.halvingPeriod) *
-                          parseInt(subgraphFundraiser.epochDuration)
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
-                    <div className="font-semibold text-[15px] tabular-nums">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
-                  </div>
-                  {metadata?.recipientName && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
-                      <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">
-                      {metadata?.recipientName ? "Recipient address" : "Recipient"}
-                    </div>
-                    <div className="font-semibold text-[15px] font-mono">
-                      <AddressLink address={fundraiserState?.recipient ?? null} />
-                    </div>
-                  </div>
-                  {fundraiserState?.treasury && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                      <div className="font-semibold text-[15px] font-mono">
-                        <AddressLink address={fundraiserState.treasury} />
-                      </div>
-                    </div>
-                  )}
-                  {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                      <div className="font-semibold text-[15px] font-mono">
-                        <AddressLink address={fundraiserState.team} />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Recent Donations */}
           <div className="mb-6">
-            <h2 className="text-[18px] font-semibold mb-3">Recent Funding</h2>
+            <div className="mb-3">
+              <h2 className="text-[18px] font-semibold font-display">Recent Funding</h2>
+              <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
+            </div>
             {isHistoryLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -931,117 +880,152 @@ export default function FundraiserDetailPage() {
             isLoading={isLeaderboardLoading}
           />
 
+          {/* Global Stats Grid */}
+          <div className="mb-6">
+            <div className="mb-3">
+              <div className="font-semibold text-[18px] font-display">Stats</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
+            </div>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  {formatMarketCap(marketCapUsd)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  {formatNumber(totalSupply)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  ${formatNumber(liquidityUsd)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  ${formatNumber(volume24h)}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                <div className="font-semibold text-[15px] tabular-nums font-mono">
+                  ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </div>
+              </div>
+              {/* Fundraiser Parameters */}
+              {subgraphFundraiser && (
+                <>
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (start)</div>
+                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.initialEmission)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (min)</div>
+                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.minEmission)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
+                    <div className="font-semibold text-[15px] tabular-nums font-mono">
+                      {formatPeriod(
+                        String(
+                          parseInt(subgraphFundraiser.halvingPeriod) *
+                          parseInt(subgraphFundraiser.epochDuration)
+                        )
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
+                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
+                  </div>
+                  {metadata?.recipientName && (
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
+                      <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-muted-foreground text-[12px] mb-0.5">
+                      {metadata?.recipientName ? "Recipient address" : "Recipient"}
+                    </div>
+                    <div className="font-semibold text-[15px] font-mono">
+                      <AddressLink address={fundraiserState?.recipient ?? null} />
+                    </div>
+                  </div>
+                  {fundraiserState?.treasury && (
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                      <div className="font-semibold text-[15px] font-mono">
+                        <AddressLink address={fundraiserState.treasury} />
+                      </div>
+                    </div>
+                  )}
+                  {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                      <div className="font-semibold text-[15px] font-mono">
+                        <AddressLink address={fundraiserState.team} />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Darkened overlay when menu is open */}
-        {showActionMenu && (
-          <div
-            className="fixed inset-0 z-40 flex justify-center"
-            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}
-            onClick={() => setShowActionMenu(false)}
-          >
-            <div className="w-full max-w-[520px] h-full bg-black/50" />
-          </div>
-        )}
 
         {/* Bottom Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
-          <div className="flex items-center justify-between w-full max-w-[520px] px-4 py-3 bg-background">
-            <div>
-              <div className="text-muted-foreground text-[12px]">Market Cap</div>
-              <div className="font-semibold text-[17px] tabular-nums">
-                {formatMarketCap(marketCapUsd)}
-              </div>
-            </div>
-            <div className="relative">
-              {isConnected ? (
-                <>
-                  {/* Action Menu Popup - appears above button */}
-                  {showActionMenu && (
-                    <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-1.5">
-                      <button
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setTradeMode("buy");
-                          setShowTradeModal(true);
-                        }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                      >
-                        Buy
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setTradeMode("sell");
-                          setShowTradeModal(true);
-                        }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                      >
-                        Sell
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setShowMineModal(true);
-                        }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                      >
-                        Mine
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setShowAuctionModal(true);
-                        }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                      >
-                        Auction
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowActionMenu(false);
-                          setShowLiquidityModal(true);
-                        }}
-                        className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                      >
-                        Liquidity
-                      </button>
-                      {isOwner && (
-                        <button
-                          onClick={() => {
-                            setShowActionMenu(false);
-                            setShowAdminModal(true);
-                          }}
-                          className="w-32 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[14px] transition-colors"
-                        >
-                          Admin
-                        </button>
-                      )}
-                    </div>
-                  )}
+          <div className="flex items-center w-full max-w-[520px] px-4 py-3 bg-background gap-3">
+            {isConnected ? (
+              <>
+                {userCoinBalance > 0 && (
                   <button
-                    onClick={() => setShowActionMenu(!showActionMenu)}
-                    className={`w-32 h-10 text-[14px] font-semibold rounded-xl transition-all ${
-                      showActionMenu
-                        ? "bg-black border-2 border-white text-white"
-                        : "bg-white text-black"
-                    }`}
+                    onClick={() => {
+                      setTradeMode("sell");
+                      setShowTradeModal(true);
+                    }}
+                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#CF6458] text-black hover:bg-[#bf5a4e] transition-colors"
                   >
-                    {showActionMenu ? "\u2715" : "Actions"}
+                    Sell
                   </button>
-                </>
-              ) : (
+                )}
                 <button
-                  onClick={() => connect()}
-                  disabled={isConnecting || isInFrame === true}
-                  className="w-40 h-10 text-[14px] font-semibold rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  onClick={() => {
+                    setTradeMode("buy");
+                    setShowTradeModal(true);
+                  }}
+                  className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#93C84B] text-black hover:bg-[#84b943] transition-colors"
                 >
-                  {isConnecting ? "Connecting..." : "Connect Wallet"}
+                  Buy
                 </button>
-              )}
-            </div>
+              </>
+            ) : (
+              <button
+                onClick={() => connect()}
+                disabled={isConnecting || isInFrame === true}
+                className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+              >
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+              </button>
+            )}
           </div>
         </div>
+
       </div>
       <NavBar />
 
@@ -1065,6 +1049,7 @@ export default function FundraiserDetailPage() {
         marketPrice={priceUsd}
         userQuoteBalance={accountQuoteBalance ?? 0n}
         userUnitBalance={accountCoinBalance ?? 0n}
+        logoUrl={logoUrl ?? undefined}
       />
 
       {/* Auction Modal */}
