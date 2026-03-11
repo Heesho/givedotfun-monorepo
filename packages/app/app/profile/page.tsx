@@ -47,7 +47,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 300 100"
-      className={`w-24 h-8 ${isPositive ? "text-[#93C84B]" : "text-[#CF6458]"}`}
+      className={`w-24 h-8 ${isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <polyline
@@ -99,7 +99,7 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           holding.priceUsd > 0
-            ? isPositive ? "text-[#93C84B]" : "text-[#CF6458]"
+            ? isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"
             : "text-zinc-400"
         }`}>
           {holding.priceUsd > 0
@@ -148,7 +148,7 @@ function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFu
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           fundraiser.coinPrice > 0
-            ? isPositive ? "text-[#93C84B]" : "text-[#CF6458]"
+            ? isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"
             : "text-zinc-400"
         }`}>
           {fundraiser.coinPrice > 0
@@ -370,8 +370,8 @@ export default function ProfilePage() {
               <div
                 className={`w-12 h-12 rounded-none flex items-center justify-center text-white ${
                   isAddressFallbackAvatar
-                    ? "font-mono text-[15px] tracking-wide bg-gradient-to-br from-zinc-600 to-zinc-800"
-                    : "font-semibold text-lg bg-gradient-to-br from-zinc-500 to-zinc-700"
+                    ? "font-mono text-[15px] tracking-wide bg-zinc-800"
+                    : "font-semibold text-lg bg-zinc-800"
                 }`}
               >
                 {avatarFallback}

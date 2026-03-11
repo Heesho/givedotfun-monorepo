@@ -43,7 +43,7 @@ export function TokenLogo({
 
   return (
     <div
-      className={`${classes.container} ${rounding} flex items-center justify-center font-semibold bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-lg`}
+      className={`${classes.container} ${rounding} flex items-center justify-center font-semibold bg-zinc-800 text-zinc-400`}
     >
       {name.charAt(0).toUpperCase()}
     </div>

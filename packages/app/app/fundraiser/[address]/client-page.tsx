@@ -504,7 +504,7 @@ export default function FundraiserDetailPage() {
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#93C84B]" : "text-[#CF6458]"}`}>
+                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#708B45]" : "text-[#6B7A8E]"}`}>
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -516,7 +516,7 @@ export default function FundraiserDetailPage() {
             <PriceChart
               data={chartData}
               height={176}
-              color={displayChange >= 0 ? "#93C84B" : "#CF6458"}
+              color={displayChange >= 0 ? "#708B45" : "#6B7A8E"}
               onHover={handleChartHover}
               tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
               initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
@@ -532,11 +532,11 @@ export default function FundraiserDetailPage() {
                 className={`px-3.5 py-1.5 rounded-none text-[13px] font-medium font-mono transition-all ${
                   timeframe === tf
                     ? displayChange >= 0
-                      ? "bg-[#93C84B] text-black"
-                      : "bg-[#CF6458] text-black"
+                      ? "bg-[#708B45] text-black"
+                      : "bg-[#6B7A8E] text-black"
                     : displayChange >= 0
-                      ? "text-[#93C84B] hover:bg-[#93C84B]/10"
-                      : "text-[#CF6458] hover:bg-[#CF6458]/10"
+                      ? "text-[#708B45] hover:bg-[#708B45]/10"
+                      : "text-[#6B7A8E] hover:bg-[#6B7A8E]/10"
                 }`}
               >
                 {tf}
@@ -582,7 +582,7 @@ export default function FundraiserDetailPage() {
 
             <button
               onClick={() => setShowMineModal(true)}
-              className="w-full mt-4 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+              className="w-full mt-4 h-12 text-[14px] font-semibold font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
             >
               Mine
             </button>
@@ -605,7 +605,7 @@ export default function FundraiserDetailPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">Day {currentEpoch}</span>
-                          <span className="text-xs text-zinc-500">active</span>
+                          <span className="text-xs text-zinc-400">active</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -635,7 +635,7 @@ export default function FundraiserDetailPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                            <span className="text-xs text-zinc-500">claimable</span>
+                            <span className="text-xs text-zinc-400">claimable</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -666,10 +666,10 @@ export default function FundraiserDetailPage() {
                         claimStatus === "success"
                           ? "bg-zinc-300 text-black"
                           : claimStatus === "error"
-                          ? "bg-zinc-600 text-white"
+                          ? "bg-zinc-800 text-white"
                           : claimStatus === "pending"
-                          ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                          : "bg-white text-black hover:bg-zinc-200"
+                          ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
+                          : "bg-zinc-400 text-black hover:bg-zinc-400/80"
                       }`}
                     >
                       {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -809,13 +809,13 @@ export default function FundraiserDetailPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowLiquidityModal(true)}
-                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                    className="flex-1 h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
                   >
                     Liquidity
                   </button>
                   <button
                     onClick={() => setShowAuctionModal(true)}
-                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                    className="flex-1 h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
                   >
                     Auction
                   </button>
@@ -823,7 +823,7 @@ export default function FundraiserDetailPage() {
                 {isOwner && (
                   <button
                     onClick={() => setShowAdminModal(true)}
-                    className="w-full h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors"
+                    className="w-full h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
                   >
                     Admin
                   </button>
@@ -999,7 +999,7 @@ export default function FundraiserDetailPage() {
                       setTradeMode("sell");
                       setShowTradeModal(true);
                     }}
-                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#CF6458] text-black hover:bg-[#bf5a4e] transition-colors"
+                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#6B7A8E] text-black hover:bg-[#5e6e80] transition-colors"
                   >
                     Sell
                   </button>
@@ -1009,7 +1009,7 @@ export default function FundraiserDetailPage() {
                     setTradeMode("buy");
                     setShowTradeModal(true);
                   }}
-                  className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#93C84B] text-black hover:bg-[#84b943] transition-colors"
+                  className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#708B45] text-black hover:bg-[#637a3d] transition-colors"
                 >
                   Buy
                 </button>

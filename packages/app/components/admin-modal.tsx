@@ -256,7 +256,7 @@ export function AdminModal({
   const addressInputClass = (valid: boolean, value: string) =>
     `flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm font-mono min-w-0 ${
       value.length > 0 && !valid
-        ? "ring-1 ring-zinc-500/50 focus:ring-zinc-500"
+        ? "ring-1 ring-zinc-800/50 focus:ring-zinc-800"
         : ""
     }`;
 
@@ -265,10 +265,10 @@ export function AdminModal({
       successField === field
         ? "bg-zinc-300 text-black"
         : isSaving && pendingField === field
-        ? "bg-zinc-700 text-zinc-400"
+        ? "bg-zinc-800 text-zinc-400"
         : enabled
         ? "bg-white text-black hover:bg-zinc-200"
-        : "bg-zinc-800 text-zinc-600"
+        : "bg-zinc-800 text-zinc-400"
     }`;
 
   return (
@@ -304,7 +304,7 @@ export function AdminModal({
               {currentLogoUrl ? (
                 <img src={currentLogoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Camera className="w-6 h-6 text-zinc-500" />
+                <Camera className="w-6 h-6 text-zinc-400" />
               )}
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4 text-white" />
@@ -360,8 +360,8 @@ export function AdminModal({
                 <span className="text-[13px] text-foreground font-display font-medium">Add links</span>
                 <span className="text-[11px] text-muted-foreground">websites, socials</span>
               </div>
-              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-800"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-400"}`} />
               </div>
             </button>
 
@@ -383,7 +383,7 @@ export function AdminModal({
                     <button
                       type="button"
                       onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                      className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="px-2 text-zinc-400 hover:text-zinc-400 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -393,7 +393,7 @@ export function AdminModal({
                   <button
                     type="button"
                     onClick={() => setLinks([...links, ""])}
-                    className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-[12px] text-zinc-400 hover:text-zinc-400 transition-colors"
                   >
                     + Add another
                   </button>
@@ -410,10 +410,10 @@ export function AdminModal({
               successField === "metadata"
                 ? "bg-zinc-300 text-black"
                 : isSaving && pendingField === "metadata"
-                ? "bg-zinc-700 text-zinc-400"
+                ? "bg-zinc-800 text-zinc-400"
                 : metadataChanged
                 ? "bg-white text-black hover:bg-zinc-200"
-                : "bg-zinc-800 text-zinc-600"
+                : "bg-zinc-800 text-zinc-400"
             }`}
           >
             {successField === "metadata" ? (

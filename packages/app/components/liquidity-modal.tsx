@@ -43,7 +43,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -257,7 +257,7 @@ export function LiquidityModal({
               <span className="text-[11px] text-muted-foreground">{tokenSymbol}</span>
               <button
                 onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors font-mono tabular-nums"
+                className="text-[11px] text-muted-foreground hover:text-zinc-400 transition-colors font-mono tabular-nums"
               >
                 Balance: {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -280,7 +280,7 @@ export function LiquidityModal({
                   const maxTokenFromUsdc = usdcBalance / tokenPrice;
                   setTokenAmount(Math.min(tokenBalance, maxTokenFromUsdc).toFixed(2));
                 }}
-                className="text-[11px] text-muted-foreground hover:text-zinc-300 transition-colors font-mono tabular-nums"
+                className="text-[11px] text-muted-foreground hover:text-zinc-400 transition-colors font-mono tabular-nums"
               >
                 Balance: {usdcBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -307,9 +307,9 @@ export function LiquidityModal({
               isSuccess
                 ? "bg-zinc-300 text-black"
                 : isError
-                ? "bg-zinc-600 text-white"
+                ? "bg-zinc-800 text-white"
                 : !canCreate || isPending
-                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
                 : "bg-white text-black hover:bg-zinc-200"
             }`}
           >

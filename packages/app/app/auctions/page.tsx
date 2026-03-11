@@ -113,7 +113,7 @@ export default function AuctionsPage() {
                     <div className="text-right">
                       <div
                         className={`font-medium text-[15px] tabular-nums ${
-                          auction.isProfitable ? "text-zinc-300" : "text-zinc-500"
+                          auction.isProfitable ? "text-zinc-400" : "text-zinc-400"
                         }`}
                       >
                         {formatProfit(auction.profit)}
@@ -172,7 +172,7 @@ export default function AuctionsPage() {
                     </div>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <ArrowRight className="w-4 h-4 text-zinc-500" />
+                    <ArrowRight className="w-4 h-4 text-zinc-400" />
                   </div>
                   <div className="text-right">
                     <div className="text-[12px] text-muted-foreground mb-1">
@@ -189,7 +189,7 @@ export default function AuctionsPage() {
               <div className="flex items-center justify-between">
                 <div
                   className={`text-[15px] font-medium tabular-nums ${
-                    selectedAuction.isProfitable ? "text-zinc-300" : "text-zinc-500"
+                    selectedAuction.isProfitable ? "text-zinc-400" : "text-zinc-400"
                   }`}
                 >
                   {selectedAuction.isProfitable

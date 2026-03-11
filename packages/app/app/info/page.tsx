@@ -106,7 +106,7 @@ export default function InfoPage() {
                       key={i}
                       className="text-[14px] text-muted-foreground flex items-start gap-3 leading-snug"
                     >
-                      <span className="text-zinc-500 mt-0.5 font-mono text-[12px]">—</span>
+                      <span className="text-zinc-400 mt-0.5 font-mono text-[12px]">—</span>
                       {bullet}
                     </li>
                   ))}

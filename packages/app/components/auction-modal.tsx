@@ -251,9 +251,9 @@ export function AuctionModal({
                     isSuccess
                       ? "bg-zinc-300 text-black"
                       : isError
-                      ? "bg-zinc-600 text-white"
+                      ? "bg-zinc-800 text-white"
                       : !account || !isAuctionActive || !hasEnoughLp || isPending
-                      ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                      ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
                       : "bg-white text-black hover:bg-zinc-200"
                   }`}
                 >

@@ -75,7 +75,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -476,7 +476,7 @@ export function TradeModal({
 
           {/* Error messages */}
           {(quoteError || txError) && (
-            <div className="px-3 py-2 rounded-none bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
+            <div className="px-3 py-2 rounded-none bg-zinc-800/10 border border-zinc-800/20 flex items-start gap-2 mb-3">
               <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
               <span className="text-[12px] text-zinc-400">
                 {(() => {
@@ -499,7 +499,7 @@ export function TradeModal({
             onClick={handleConfirm}
             className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
-                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
                 : isSuccess
                 ? "bg-zinc-300 text-black"
                 : "bg-white text-black hover:bg-zinc-200"

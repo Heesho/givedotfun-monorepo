@@ -54,7 +54,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-700/50 rounded-none transition-colors"
+      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
     >
       {children}
     </button>
@@ -304,7 +304,7 @@ export function MineModal({
 
           {/* Error messages */}
           {txError && (
-            <div className="px-3 py-2 rounded-none bg-zinc-500/10 border border-zinc-500/20 flex items-start gap-2 mb-3">
+            <div className="px-3 py-2 rounded-none bg-zinc-800/10 border border-zinc-800/20 flex items-start gap-2 mb-3">
               <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
               <span className="text-[12px] text-zinc-400">
                 {(() => {
@@ -327,7 +327,7 @@ export function MineModal({
             onChange={(e) => setMessage(e.target.value)}
             placeholder={defaultMessage}
             maxLength={100}
-            className="w-full bg-zinc-800 rounded-none px-4 py-2.5 text-[14px] outline-none placeholder:text-zinc-500 mb-3"
+            className="w-full bg-zinc-800 rounded-none px-4 py-2.5 text-[14px] outline-none placeholder:text-zinc-400 mb-3"
           />
 
           {/* Action button */}
@@ -336,7 +336,7 @@ export function MineModal({
             onClick={handleConfirm}
             className={`w-full h-11 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
-                ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
                 : isSuccess
                 ? "bg-zinc-300 text-black"
                 : "bg-white text-black hover:bg-zinc-200"

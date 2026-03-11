@@ -19,7 +19,7 @@ function ProfileIcon({ isActive }: { isActive: boolean }) {
           ? isActive ? "ring-2 ring-white" : "opacity-60 hover:opacity-90"
           : isActive
             ? "bg-white text-black"
-            : "bg-zinc-600 text-zinc-300 hover:bg-zinc-500"
+            : "bg-zinc-800 text-zinc-400 hover:bg-zinc-800"
       )}
     >
       {pfpUrl ? (
@@ -70,7 +70,7 @@ export function NavBar() {
                 "w-6 h-6 transition-colors",
                 item.isActive
                   ? "text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  : "text-zinc-400 hover:text-zinc-400"
               )}
               strokeWidth={1.5}
             />

@@ -349,7 +349,7 @@ export default function LaunchPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Upload className="w-6 h-6 text-zinc-500" />
+                    <Upload className="w-6 h-6 text-zinc-400" />
                   )}
                 </div>
               </label>
@@ -398,8 +398,8 @@ export default function LaunchPage() {
                 <span className="text-[13px] text-foreground font-display font-medium">Add recipient</span>
                 <span className="text-[11px] text-muted-foreground">receives 50% of all funding</span>
               </div>
-              <div className={`w-9 h-5 rounded-none transition-colors relative ${showRecipient ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showRecipient ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showRecipient ? "bg-white" : "bg-zinc-800"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showRecipient ? "left-[18px] bg-black" : "left-0.5 bg-zinc-400"}`} />
               </div>
             </button>
 
@@ -441,8 +441,8 @@ export default function LaunchPage() {
                 <span className="text-[13px] text-foreground font-display font-medium">Add links</span>
                 <span className="text-[11px] text-muted-foreground">websites, socials</span>
               </div>
-              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-700"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-500"}`} />
+              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-800"}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-400"}`} />
               </div>
             </button>
 
@@ -470,7 +470,7 @@ export default function LaunchPage() {
                         }
                         setLinks(links.filter((_, j) => j !== i));
                       }}
-                      className="px-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="px-2 text-zinc-400 hover:text-zinc-400 transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -480,7 +480,7 @@ export default function LaunchPage() {
                   <button
                     type="button"
                     onClick={() => setLinks([...links, ""])}
-                    className="text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="text-[12px] text-zinc-400 hover:text-zinc-400 transition-colors"
                   >
                     + Add another
                   </button>
@@ -521,9 +521,9 @@ export default function LaunchPage() {
                 disabled={!isFormValid || isLaunching || isUploading}
                 className={`flex-1 h-12 text-[15px] font-semibold font-display rounded-none transition-all ${
                   launchError || txStatus === "error"
-                    ? "bg-zinc-700 text-zinc-300"
+                    ? "bg-zinc-800 text-zinc-400"
                     : !isFormValid || isLaunching || isUploading
-                    ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                    ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
                     : "bg-white text-black hover:bg-zinc-200"
                 }`}
               >
@@ -556,7 +556,7 @@ export default function LaunchPage() {
               {/* Token preview */}
               {logoPreview && (
                 <div className="flex justify-center">
-                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-none object-cover ring-2 ring-zinc-700" />
+                  <img src={logoPreview} alt={tokenName} className="w-24 h-24 rounded-none object-cover ring-2 ring-zinc-800" />
                 </div>
               )}
 
@@ -581,7 +581,7 @@ export default function LaunchPage() {
                   href={`https://basescan.org/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full py-3.5 px-4 bg-zinc-800 text-white font-semibold font-display text-[15px] rounded-none hover:bg-zinc-700 transition-colors"
+                  className="block w-full py-3.5 px-4 bg-zinc-800 text-white font-semibold font-display text-[15px] rounded-none hover:bg-zinc-800 transition-colors"
                 >
                   View on Basescan
                 </a>

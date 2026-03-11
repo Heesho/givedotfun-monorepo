@@ -42,7 +42,7 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
   return (
     <div
       className={`flex items-center gap-3 py-3 rounded-none transition-colors duration-1000 ${
-        isNew ? "bg-zinc-700/50 px-2 -mx-2" : ""
+        isNew ? "bg-zinc-800/50 px-2 -mx-2" : ""
       }`}
     >
       <button
@@ -63,11 +63,11 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
           <button
             onClick={handleProfileClick}
             disabled={!fid}
-            className={`text-sm font-medium truncate ${fid ? "hover:text-zinc-300 cursor-pointer" : "cursor-default"}`}
+            className={`text-sm font-medium truncate ${fid ? "hover:text-zinc-400 cursor-pointer" : "cursor-default"}`}
           >
             {displayName}
           </button>
-          <span className="text-xs text-zinc-500">{timeAgo(donation.timestamp)}</span>
+          <span className="text-xs text-zinc-400">{timeAgo(donation.timestamp)}</span>
         </div>
         {donation.uri && (
           <div className="text-xs text-zinc-400 mt-0.5 truncate">{donation.uri}</div>
