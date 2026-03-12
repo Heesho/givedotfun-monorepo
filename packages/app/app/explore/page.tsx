@@ -113,7 +113,7 @@ export default function ExplorePage() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-10 pr-10 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
+                className="w-full h-10 pl-10 pr-10 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-[15px] transition-shadow"
               />
               {searchQuery && (
                 <button
@@ -133,7 +133,7 @@ export default function ExplorePage() {
                 <button
                   key={tab.key}
                   onClick={() => setSortBy(tab.key)}
-                  className={`flex items-center gap-1 px-2.5 h-12 rounded-none text-[12px] font-medium transition-all ${
+                  className={`flex items-center gap-1 px-2.5 h-10 rounded-none text-[12px] font-medium transition-all ${
                     sortBy === tab.key
                       ? "bg-white text-black"
                       : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"

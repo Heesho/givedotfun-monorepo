@@ -497,12 +497,12 @@ export function TradeModal({
           <button
             disabled={buttonDisabled}
             onClick={handleConfirm}
-            className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               buttonDisabled
-                ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
+                ? isBuy ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
                 : isSuccess
-                ? "bg-zinc-300 text-black"
-                : "bg-white text-black hover:bg-zinc-200"
+                ? isBuy ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+                : isBuy ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

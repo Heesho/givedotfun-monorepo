@@ -519,12 +519,12 @@ export default function LaunchPage() {
               <button
                 onClick={handleLaunch}
                 disabled={!isFormValid || isLaunching || isUploading}
-                className={`flex-1 h-12 text-[15px] font-semibold font-display rounded-none transition-all ${
+                className={`flex-1 h-10 text-[15px] font-semibold font-display rounded-none transition-all ${
                   launchError || txStatus === "error"
                     ? "bg-zinc-800 text-zinc-400"
                     : !isFormValid || isLaunching || isUploading
-                    ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
-                    : "bg-white text-black hover:bg-zinc-200"
+                    ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed"
+                    : "bg-[#708B45] text-black hover:bg-[#637a3d]"
                 }`}
               >
                 {launchError || txStatus === "error"

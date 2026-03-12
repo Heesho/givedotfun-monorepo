@@ -19,6 +19,7 @@ type AdminModalProps = {
   initialUri: string;
   initialMetadata?: TokenMetadata;
   initialLogoUrl?: string;
+  colorPositive?: boolean;
 };
 
 function isValidAddress(address: string): boolean {
@@ -78,6 +79,7 @@ export function AdminModal({
   initialUri,
   initialMetadata,
   initialLogoUrl,
+  colorPositive = true,
 }: AdminModalProps) {
   // Metadata fields — initialized from parent's already-loaded IPFS data
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -263,11 +265,11 @@ export function AdminModal({
   const saveBtnClass = (field: string, enabled: boolean) =>
     `h-10 px-4 rounded-none text-[13px] font-semibold font-display transition-all flex-shrink-0 ${
       successField === field
-        ? "bg-zinc-300 text-black"
+        ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
         : isSaving && pendingField === field
-        ? "bg-zinc-800 text-zinc-400"
+        ? colorPositive ? "bg-[#708B45]/50 text-black/50" : "bg-[#6B7A8E]/50 text-black/50"
         : enabled
-        ? "bg-white text-black hover:bg-zinc-200"
+        ? colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
         : "bg-zinc-800 text-zinc-400"
     }`;
 
@@ -406,13 +408,13 @@ export function AdminModal({
           <button
             onClick={handleSaveMetadata}
             disabled={isSaving || !metadataChanged}
-            className={`w-full h-12 rounded-none text-[14px] font-semibold font-display transition-all mt-4 ${
+            className={`w-full h-10 rounded-none text-[14px] font-semibold font-display transition-all mt-4 ${
               successField === "metadata"
-                ? "bg-zinc-300 text-black"
+                ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
                 : isSaving && pendingField === "metadata"
-                ? "bg-zinc-800 text-zinc-400"
+                ? colorPositive ? "bg-[#708B45]/50 text-black/50" : "bg-[#6B7A8E]/50 text-black/50"
                 : metadataChanged
-                ? "bg-white text-black hover:bg-zinc-200"
+                ? colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
                 : "bg-zinc-800 text-zinc-400"
             }`}
           >

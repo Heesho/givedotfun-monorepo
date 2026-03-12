@@ -582,7 +582,7 @@ export default function FundraiserDetailPage() {
 
             <button
               onClick={() => setShowMineModal(true)}
-              className="w-full mt-4 h-12 text-[14px] font-semibold font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
+              className={`w-full mt-4 h-10 text-[14px] font-semibold font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
             >
               Mine
             </button>
@@ -662,14 +662,14 @@ export default function FundraiserDetailPage() {
                     <button
                       onClick={handleClaim}
                       disabled={claimStatus === "pending" || claimStatus === "success"}
-                      className={`w-full mt-1 h-12 text-[14px] font-semibold font-display rounded-none transition-all flex items-center justify-center gap-1.5 ${
+                      className={`w-full mt-1 h-10 text-[14px] font-semibold font-display rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         claimStatus === "success"
-                          ? "bg-zinc-300 text-black"
+                          ? displayChange >= 0 ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
                           : claimStatus === "error"
                           ? "bg-zinc-800 text-white"
                           : claimStatus === "pending"
-                          ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
-                          : "bg-zinc-400 text-black hover:bg-zinc-400/80"
+                          ? displayChange >= 0 ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
+                          : displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
                       }`}
                     >
                       {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -805,25 +805,23 @@ export default function FundraiserDetailPage() {
 
             {/* Action buttons */}
             {isConnected && (
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <div className="flex">
                   <button
                     onClick={() => setShowLiquidityModal(true)}
-                    className="flex-1 h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
                   >
                     Liquidity
                   </button>
                   <button
                     onClick={() => setShowAuctionModal(true)}
-                    className="flex-1 h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
                   >
                     Auction
                   </button>
-                </div>
                 {isOwner && (
                   <button
                     onClick={() => setShowAdminModal(true)}
-                    className="w-full h-12 text-[14px] font-medium font-display rounded-none bg-zinc-400 text-black hover:bg-zinc-400/80 transition-colors"
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
                   >
                     Admin
                   </button>
@@ -990,7 +988,7 @@ export default function FundraiserDetailPage() {
 
         {/* Bottom Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
-          <div className="flex items-center w-full max-w-[520px] px-4 py-3 bg-background gap-3">
+          <div className="flex items-center w-full max-w-[520px] px-4 py-3 bg-background">
             {isConnected ? (
               <>
                 {userCoinBalance > 0 && (
@@ -999,7 +997,7 @@ export default function FundraiserDetailPage() {
                       setTradeMode("sell");
                       setShowTradeModal(true);
                     }}
-                    className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#6B7A8E] text-black hover:bg-[#5e6e80] transition-colors"
+                    className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
                   >
                     Sell
                   </button>
@@ -1009,7 +1007,7 @@ export default function FundraiserDetailPage() {
                     setTradeMode("buy");
                     setShowTradeModal(true);
                   }}
-                  className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-[#708B45] text-black hover:bg-[#637a3d] transition-colors"
+                  className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#708B45] text-black hover:bg-[#637a3d]"
                 >
                   Buy
                 </button>
@@ -1018,7 +1016,7 @@ export default function FundraiserDetailPage() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting || isInFrame === true}
-                className="flex-1 h-12 text-[14px] font-semibold font-display rounded-none bg-white text-black hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className={`flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors disabled:opacity-50 ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -1036,6 +1034,7 @@ export default function FundraiserDetailPage() {
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         onSuccess={() => refetchFund()}
+        colorPositive={displayChange >= 0}
       />
 
       {/* Trade Modal (Buy/Sell) */}
@@ -1059,6 +1058,7 @@ export default function FundraiserDetailPage() {
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         tokenName={tokenName}
+        colorPositive={displayChange >= 0}
       />
 
       {/* Liquidity Modal */}
@@ -1071,6 +1071,7 @@ export default function FundraiserDetailPage() {
         tokenBalance={userCoinBalance}
         usdcBalance={userUsdcBalance}
         tokenPrice={priceUsd}
+        colorPositive={displayChange >= 0}
       />
 
       {/* Admin Modal */}
@@ -1087,6 +1088,7 @@ export default function FundraiserDetailPage() {
           initialUri={fundraiserUri ?? ""}
           initialMetadata={metadata ?? undefined}
           initialLogoUrl={logoUrl ?? undefined}
+          colorPositive={displayChange >= 0}
         />
       )}
 

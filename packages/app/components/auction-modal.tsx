@@ -26,6 +26,7 @@ type AuctionModalProps = {
   fundraiserAddress: `0x${string}`;
   tokenSymbol: string;
   tokenName: string;
+  colorPositive?: boolean;
 };
 
 export function AuctionModal({
@@ -34,6 +35,7 @@ export function AuctionModal({
   fundraiserAddress,
   tokenSymbol,
   tokenName,
+  colorPositive = true,
 }: AuctionModalProps) {
   const { address: account } = useFarcaster();
   const multicallAddr = CONTRACT_ADDRESSES.multicall as `0x${string}`;
@@ -247,14 +249,14 @@ export function AuctionModal({
                 <button
                   onClick={handleBuy}
                   disabled={!account || !isAuctionActive || !hasEnoughLp || isPending || isSuccess}
-                  className={`w-full h-12 rounded-none font-semibold font-display text-[14px] transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all flex items-center justify-center gap-2 ${
                     isSuccess
-                      ? "bg-zinc-300 text-black"
+                      ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
                       : isError
                       ? "bg-zinc-800 text-white"
                       : !account || !isAuctionActive || !hasEnoughLp || isPending
-                      ? "bg-zinc-800 text-zinc-400 cursor-not-allowed"
-                      : "bg-white text-black hover:bg-zinc-200"
+                      ? colorPositive ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
+                      : colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
                   }`}
                 >
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
