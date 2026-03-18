@@ -1,4 +1,9 @@
 {
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI3MjEwOSwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDQ5REI1QTFjOWZlRjBFMkY5OTVCNDZiMEI3MWJFQmJEOTEyQkYwZTMifQ",
+    "payload": "eyJkb21haW4iOiJnaXZlZG90ZnVuLnZlcmNlbC5hcHAifQ",
+    "signature": "Ed8lQTfkXsZSB47YT1d3ZclauqXMIzcSororZcsRfSNuBbiOwv6cfHUl9OBlBdYuoKPxdJUWRWacquefBNUE9Rs="
+  },
   "miniapp": {
     "version": "1",
     "name": "give.fun",
