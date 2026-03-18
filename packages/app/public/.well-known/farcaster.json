@@ -2,7 +2,7 @@
   "miniapp": {
     "version": "1",
     "name": "give.fun",
-    "tagline": "Crypto GoFundMe on Base",
+    "tagline": "Community fundraising on Base",
     "description": "A perpetual funding platform on Base. Create fundraisers, donate USDC, and earn proportional token emissions. 50% of every donation goes directly to the recipient.",
     "iconUrl": "https://give.fun/media/icon.png",
     "homeUrl": "https://give.fun/",
@@ -11,7 +11,7 @@
     "heroImageUrl": "https://give.fun/media/hero.png",
     "buttonTitle": "Start donating",
     "ogTitle": "give.fun",
-    "ogDescription": "A crypto GoFundMe on Base. Create fundraisers, donate USDC, earn tokens.",
+    "ogDescription": "Community fundraising on Base. Donate USDC, earn tokens.",
     "ogImageUrl": "https://give.fun/media/hero.png",
     "requiredChains": [
       "eip155:8453"
