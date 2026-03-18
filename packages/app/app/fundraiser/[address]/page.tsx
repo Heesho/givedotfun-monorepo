@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getFundraiser } from "@/lib/subgraph-launchpad";
 import FundraiserDetailPage from "./client-page";
 
-const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://give.fun";
+const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://givedotfun.vercel.app";
 const heroImageUrl = `${appDomain}/media/hero.png`;
 const splashImageUrl = `${appDomain}/media/splash.png`;
 

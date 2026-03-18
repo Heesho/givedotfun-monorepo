@@ -2,7 +2,7 @@ import "@/app/globals.css";
 import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
 
-const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://give.fun";
+const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://givedotfun.vercel.app";
 const heroImageUrl = `${appDomain}/media/hero.png`;
 const splashImageUrl = `${appDomain}/media/splash.png`;
 

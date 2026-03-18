@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { WagmiProvider, useAccount, useChainId, useSwitchChain } from "wagmi";
+import { WagmiProvider, useAccount, useChainId, useConnect, useSwitchChain } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { sdk } from "@farcaster/miniapp-sdk";
 import { wagmiConfig } from "@/lib/wagmi";
@@ -44,14 +44,27 @@ function NetworkGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function FarcasterReady() {
+function AutoConnect() {
+  const { isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
   const readyRef = useRef(false);
+
   useEffect(() => {
     if (!readyRef.current) {
       readyRef.current = true;
       sdk.actions.ready().catch(() => {});
     }
   }, []);
+
+  useEffect(() => {
+    if (isConnected) return;
+    // Try farcaster connector first, then injected
+    const connector = connectors.find((c) => c.id === "farcasterMiniApp") || connectors[0];
+    if (connector) {
+      connect({ connector });
+    }
+  }, [isConnected, connect, connectors]);
+
   return null;
 }
 
@@ -61,7 +74,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <FarcasterReady />
+        <AutoConnect />
         <NetworkGuard>{children}</NetworkGuard>
       </QueryClientProvider>
     </WagmiProvider>
