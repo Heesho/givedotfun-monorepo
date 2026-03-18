@@ -9,33 +9,31 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}",
   ],
   theme: {
-  	extend: {
-  		fontFamily: {
-  			sans: [
-  				'var(--font-sans)',
-  				'Inter',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'sans-serif'
-  			],
-  			display: [
-  				'var(--font-display)',
-  				'Archivo',
-  				'sans-serif'
-  			],
-  			mono: [
-  				'var(--font-mono)',
-  				'IBM Plex Mono',
-  				'monospace'
-  			]
-  		},
+  		extend: {
+  			fontFamily: {
+  				sans: [
+  					'var(--font-sans)',
+  					'Sora',
+  					'sans-serif'
+  				],
+  				display: [
+  					'var(--font-display)',
+  					'Sora',
+  					'sans-serif'
+  				],
+  				mono: [
+  					'var(--font-mono)',
+  					'Sora',
+  					'sans-serif'
+  				]
+  			},
   		colors: {
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
   				foreground: 'hsl(var(--primary-foreground))'
   			},
-  			gain: '#708B45',
-  			loss: '#6B7A8E',
+  			gain: '#7CCB6B',
+  			loss: '#C9865A',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

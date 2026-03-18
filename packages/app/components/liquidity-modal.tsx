@@ -307,12 +307,12 @@ export function LiquidityModal({
             disabled={!canCreate || isPending || isSuccess}
             className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
               isSuccess
-                ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+                ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
                 : isError
                 ? "bg-zinc-800 text-white"
                 : !canCreate || isPending
-                ? colorPositive ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
-                : colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+                ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
+                : colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

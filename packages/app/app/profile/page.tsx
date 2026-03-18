@@ -47,7 +47,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 300 100"
-      className={`w-24 h-8 ${isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"}`}
+      className={`w-24 h-8 ${isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <polyline
@@ -99,7 +99,7 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           holding.priceUsd > 0
-            ? isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"
+            ? isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"
             : "text-zinc-400"
         }`}>
           {holding.priceUsd > 0
@@ -148,7 +148,7 @@ function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFu
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           fundraiser.coinPrice > 0
-            ? isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"
+            ? isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"
             : "text-zinc-400"
         }`}>
           {fundraiser.coinPrice > 0

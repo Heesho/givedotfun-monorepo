@@ -32,7 +32,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 300 100"
-      className={`w-24 h-8 ${isPositive ? "text-[#708B45]" : "text-[#6B7A8E]"}`}
+      className={`w-24 h-8 ${isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <polyline
@@ -218,7 +218,7 @@ export default function ExplorePage() {
                         </div>
                         <div className={`text-[13px] tabular-nums font-mono ${
                           coin.marketCapUsd > 0
-                            ? coin.change24h >= 0 ? "text-[#708B45]" : "text-[#6B7A8E]"
+                            ? coin.change24h >= 0 ? "text-[#7CCB6B]" : "text-[#C9865A]"
                             : "text-zinc-400"
                         }`}>
                           {coin.marketCapUsd > 0

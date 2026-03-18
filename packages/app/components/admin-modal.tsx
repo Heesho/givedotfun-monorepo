@@ -265,11 +265,11 @@ export function AdminModal({
   const saveBtnClass = (field: string, enabled: boolean) =>
     `h-10 px-4 rounded-none text-[13px] font-semibold font-display transition-all flex-shrink-0 ${
       successField === field
-        ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+        ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
         : isSaving && pendingField === field
-        ? colorPositive ? "bg-[#708B45]/50 text-black/50" : "bg-[#6B7A8E]/50 text-black/50"
+        ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50" : "bg-[#C9865A]/50 text-black/50"
         : enabled
-        ? colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+        ? colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
         : "bg-zinc-800 text-zinc-400"
     }`;
 
@@ -410,11 +410,11 @@ export function AdminModal({
             disabled={isSaving || !metadataChanged}
             className={`w-full h-10 rounded-none text-[14px] font-semibold font-display transition-all mt-4 ${
               successField === "metadata"
-                ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+                ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
                 : isSaving && pendingField === "metadata"
-                ? colorPositive ? "bg-[#708B45]/50 text-black/50" : "bg-[#6B7A8E]/50 text-black/50"
+                ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50" : "bg-[#C9865A]/50 text-black/50"
                 : metadataChanged
-                ? colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+                ? colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
                 : "bg-zinc-800 text-zinc-400"
             }`}
           >

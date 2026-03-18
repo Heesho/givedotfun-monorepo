@@ -7,6 +7,7 @@ import { NavBar } from "@/components/nav-bar";
 import { useAuctions, type AuctionItem } from "@/hooks/useAuctions";
 import { useBatchMetadata } from "@/hooks/useMetadata";
 import { TokenLogo } from "@/components/token-logo";
+import { formatPrice } from "@/lib/format";
 
 function SkeletonRow() {
   return (
@@ -163,7 +164,7 @@ export default function AuctionsPage() {
                       />
                       <div>
                         <span className="font-semibold text-[17px] tabular-nums">
-                          ${selectedAuction.lpCostUsd.toFixed(2)}
+                          {formatPrice(selectedAuction.lpCostUsd)}
                         </span>
                         <div className="text-[11px] text-muted-foreground">
                           {selectedAuction.tokenSymbol}-USDC LP

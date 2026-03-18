@@ -4,6 +4,17 @@ import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 const apiKey = process.env.NEYNAR_API_KEY;
 const neynarClient = apiKey ? new NeynarAPIClient(apiKey) : null;
 
+function getHttpStatus(error: unknown): number | null {
+  if (!error || typeof error !== "object") return null;
+
+  const maybeHttpError = error as {
+    status?: number;
+    response?: { status?: number };
+  };
+
+  return maybeHttpError.response?.status ?? maybeHttpError.status ?? null;
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const address = searchParams.get("address");
@@ -54,6 +65,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (getHttpStatus(error) === 404) {
+      return NextResponse.json({ user: null });
+    }
+
     console.error("[neynar:user] Error fetching user:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

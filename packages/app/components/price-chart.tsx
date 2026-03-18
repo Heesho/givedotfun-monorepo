@@ -67,7 +67,7 @@ export function PriceChart({
         layout: {
           background: { type: ColorType.Solid, color: "transparent" },
           textColor: "#71717a",
-          fontFamily: "monospace",
+          fontFamily: "Sora, sans-serif",
           attributionLogo: false,
         },
         grid: {

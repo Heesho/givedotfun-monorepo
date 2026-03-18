@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
@@ -347,7 +347,7 @@ export default function FundraiserDetailPage() {
   const [showLiquidityModal, setShowLiquidityModal] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const tokenInfoRef = useRef<HTMLDivElement>(null);
+  const tokenIdentityRef = useRef<HTMLDivElement>(null);
 
   // Epoch countdown
   const [now, setNow] = useState(Math.floor(Date.now() / 1000));
@@ -388,19 +388,26 @@ export default function FundraiserDetailPage() {
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
-    const tokenInfo = tokenInfoRef.current;
+    const tokenIdentity = tokenIdentityRef.current;
 
-    if (!scrollContainer || !tokenInfo) return;
+    if (!scrollContainer || !tokenIdentity) return;
 
-    const handleScroll = () => {
-      const tokenInfoBottom = tokenInfo.getBoundingClientRect().bottom;
+    const updateHeaderVisibility = () => {
+      const identityBottom = tokenIdentity.getBoundingClientRect().bottom;
       const containerTop = scrollContainer.getBoundingClientRect().top;
-      setShowHeaderPrice(tokenInfoBottom < containerTop + 10);
+      setShowHeaderPrice(identityBottom <= containerTop + 8);
     };
 
-    scrollContainer.addEventListener("scroll", handleScroll);
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
-  }, []);
+    const frame = requestAnimationFrame(updateHeaderVisibility);
+    scrollContainer.addEventListener("scroll", updateHeaderVisibility);
+    window.addEventListener("resize", updateHeaderVisibility);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      scrollContainer.removeEventListener("scroll", updateHeaderVisibility);
+      window.removeEventListener("resize", updateHeaderVisibility);
+    };
+  }, [tokenName, tokenSymbol]);
 
   // Epoch countdown timer
   useEffect(() => {
@@ -466,7 +473,6 @@ export default function FundraiserDetailPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          {/* Center - Price appears on scroll */}
           <div className={`text-center transition-opacity duration-200 ${showHeaderPrice ? "opacity-100" : "opacity-0"}`}>
             <div className="text-[15px] font-semibold font-mono">{formatPrice(priceUsd)}</div>
             <div className="text-[15px] font-semibold font-display">{tokenSymbol}</div>
@@ -485,10 +491,10 @@ export default function FundraiserDetailPage() {
         {/* Content */}
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
           {/* Token Info Section */}
-          <div ref={tokenInfoRef} className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
               <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
-              <div>
+              <div ref={tokenIdentityRef}>
                 <div className="text-[13px] text-muted-foreground">{tokenName}</div>
                 <div className="text-[15px] font-medium font-display">{tokenSymbol}</div>
               </div>
@@ -504,7 +510,7 @@ export default function FundraiserDetailPage() {
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#708B45]" : "text-[#6B7A8E]"}`}>
+                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#7CCB6B]" : "text-[#C9865A]"}`}>
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -516,7 +522,7 @@ export default function FundraiserDetailPage() {
             <PriceChart
               data={chartData}
               height={176}
-              color={displayChange >= 0 ? "#708B45" : "#6B7A8E"}
+              color={displayChange >= 0 ? "#7CCB6B" : "#C9865A"}
               onHover={handleChartHover}
               tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
               initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
@@ -532,11 +538,11 @@ export default function FundraiserDetailPage() {
                 className={`px-3.5 py-1.5 rounded-none text-[13px] font-medium font-mono transition-all ${
                   timeframe === tf
                     ? displayChange >= 0
-                      ? "bg-[#708B45] text-black"
-                      : "bg-[#6B7A8E] text-black"
+                      ? "bg-[#7CCB6B] text-black"
+                      : "bg-[#C9865A] text-black"
                     : displayChange >= 0
-                      ? "text-[#708B45] hover:bg-[#708B45]/10"
-                      : "text-[#6B7A8E] hover:bg-[#6B7A8E]/10"
+                      ? "text-[#7CCB6B] hover:bg-[#7CCB6B]/10"
+                      : "text-[#C9865A] hover:bg-[#C9865A]/10"
                 }`}
               >
                 {tf}
@@ -582,7 +588,7 @@ export default function FundraiserDetailPage() {
 
             <button
               onClick={() => setShowMineModal(true)}
-              className={`w-full mt-4 h-10 text-[14px] font-semibold font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
+              className={`w-full mt-4 h-10 text-[14px] font-semibold font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
             >
               Mine
             </button>
@@ -664,12 +670,12 @@ export default function FundraiserDetailPage() {
                       disabled={claimStatus === "pending" || claimStatus === "success"}
                       className={`w-full mt-1 h-10 text-[14px] font-semibold font-display rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         claimStatus === "success"
-                          ? displayChange >= 0 ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+                          ? displayChange >= 0 ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
                           : claimStatus === "error"
                           ? "bg-zinc-800 text-white"
                           : claimStatus === "pending"
-                          ? displayChange >= 0 ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
-                          : displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+                          ? displayChange >= 0 ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
+                          : displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
                       }`}
                     >
                       {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -808,20 +814,20 @@ export default function FundraiserDetailPage() {
               <div className="flex">
                   <button
                     onClick={() => setShowLiquidityModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
                   >
                     Liquidity
                   </button>
                   <button
                     onClick={() => setShowAuctionModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
                   >
                     Auction
                   </button>
                 {isOwner && (
                   <button
                     onClick={() => setShowAdminModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
+                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
                   >
                     Admin
                   </button>
@@ -997,7 +1003,7 @@ export default function FundraiserDetailPage() {
                       setTradeMode("sell");
                       setShowTradeModal(true);
                     }}
-                    className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+                    className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#C9865A] text-black hover:bg-[#B9774D]"
                   >
                     Sell
                   </button>
@@ -1007,7 +1013,7 @@ export default function FundraiserDetailPage() {
                     setTradeMode("buy");
                     setShowTradeModal(true);
                   }}
-                  className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#708B45] text-black hover:bg-[#637a3d]"
+                  className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#7CCB6B] text-black hover:bg-[#69B859]"
                 >
                   Buy
                 </button>
@@ -1016,7 +1022,7 @@ export default function FundraiserDetailPage() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting || isInFrame === true}
-                className={`flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors disabled:opacity-50 ${displayChange >= 0 ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"}`}
+                className={`flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors disabled:opacity-50 ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>

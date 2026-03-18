@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { X, Loader2, CheckCircle } from "lucide-react";
 import { formatEther, formatUnits } from "viem";
 import { useReadContract } from "wagmi";
@@ -19,6 +19,7 @@ import {
   QUOTE_TOKEN_DECIMALS,
 } from "@/lib/contracts";
 import { DEADLINE_BUFFER_SECONDS } from "@/lib/constants";
+import { formatPrice, formatTokenAmount } from "@/lib/format";
 
 type AuctionModalProps = {
   isOpen: boolean;
@@ -46,6 +47,8 @@ export function AuctionModal({
   );
 
   const { execute, status, txHash, error, reset } = useBatchedTransaction();
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Allowance check — skip approve when sufficient
   const lpTokenAddress = auctionState?.lpToken;
@@ -75,28 +78,29 @@ export function AuctionModal({
     return () => clearTimeout(timer);
   }, [status, error, reset]);
 
-  // Auto-refetch after successful tx
+  // Auto-refetch and close after successful tx
   useEffect(() => {
     if (status === "success") {
       const timer = setTimeout(() => {
         refetchAuction();
-      }, 3000);
+        onCloseRef.current();
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [status, refetchAuction]);
 
   // Derived display values
-  const lpPriceFormatted = auctionState
-    ? formatEther(auctionState.price)
-    : "0";
+  const lpPrice = auctionState ? Number(formatEther(auctionState.price)) : 0;
+  const userLpBalance = auctionState ? Number(formatEther(auctionState.accountLpTokenBalance)) : 0;
+  const treasuryUsdc = auctionState ? Number(formatUnits(auctionState.quoteAccumulated, QUOTE_TOKEN_DECIMALS)) : 0;
+  const lpCostUsd = useMemo(() => {
+    if (!auctionState) return 0;
 
-  const userLpBalance = auctionState
-    ? formatEther(auctionState.accountLpTokenBalance)
-    : "0";
+    const lpCostInQuote = (auctionState.price * auctionState.lpTokenPrice) / (10n ** 18n);
+    const lpCostScaled = lpCostInQuote / (10n ** 12n);
 
-  const treasuryUsdc = auctionState
-    ? formatUnits(auctionState.quoteAccumulated, QUOTE_TOKEN_DECIMALS)
-    : "0";
+    return Number(formatUnits(lpCostScaled, QUOTE_TOKEN_DECIMALS));
+  }, [auctionState]);
 
   const hasEnoughLp = auctionState
     ? auctionState.price === 0n || auctionState.accountLpTokenBalance >= auctionState.price
@@ -184,7 +188,7 @@ export function AuctionModal({
                   Buy USDC
                 </h1>
                 <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
-                  {Number(userLpBalance).toFixed(8)} {tokenSymbol}-USDC LP available
+                  {formatTokenAmount(userLpBalance)} {tokenSymbol}-USDC LP available
                 </p>
               </div>
 
@@ -193,14 +197,14 @@ export function AuctionModal({
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You pay</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
-                    {isAuctionActive ? `${Number(lpPriceFormatted).toFixed(3)} LP` : "—"}
+                    {isAuctionActive ? `${formatTokenAmount(lpPrice)} LP` : "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[11px] text-muted-foreground">{tokenSymbol}-USDC LP</span>
                   {isAuctionActive && auctionState && (
                     <span className="text-[11px] text-muted-foreground font-mono tabular-nums">
-                      ~${(Number(lpPriceFormatted) * Number(formatUnits(auctionState.lpTokenPrice, 18))).toFixed(2)}
+                      ~{formatPrice(lpCostUsd)}
                     </span>
                   )}
                 </div>
@@ -211,7 +215,7 @@ export function AuctionModal({
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You receive</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
-                    {isAuctionActive ? `$${Number(treasuryUsdc).toFixed(2)}` : "—"}
+                    {isAuctionActive ? `$${treasuryUsdc.toFixed(2)}` : "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
@@ -224,9 +228,7 @@ export function AuctionModal({
                 <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums">
                   <span>
                     {(() => {
-                      const lpCost = Number(lpPriceFormatted) * Number(formatUnits(auctionState.lpTokenPrice, 18));
-                      const usdcReceive = Number(treasuryUsdc);
-                      const profit = usdcReceive - lpCost;
+                      const profit = treasuryUsdc - lpCostUsd;
                       return `${profit >= 0 ? "+" : ""}${profit.toFixed(2)} ${profit >= 0 ? "profit" : "loss"}`;
                     })()}
                   </span>
@@ -251,12 +253,12 @@ export function AuctionModal({
                   disabled={!account || !isAuctionActive || !hasEnoughLp || isPending || isSuccess}
                   className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all flex items-center justify-center gap-2 ${
                     isSuccess
-                      ? colorPositive ? "bg-[#708B45]/50 text-black" : "bg-[#6B7A8E]/50 text-black"
+                      ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
                       : isError
                       ? "bg-zinc-800 text-white"
                       : !account || !isAuctionActive || !hasEnoughLp || isPending
-                      ? colorPositive ? "bg-[#708B45]/50 text-black/50 cursor-not-allowed" : "bg-[#6B7A8E]/50 text-black/50 cursor-not-allowed"
-                      : colorPositive ? "bg-[#708B45] text-black hover:bg-[#637a3d]" : "bg-[#6B7A8E] text-black hover:bg-[#5e6e80]"
+                      ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
+                      : colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
                   }`}
                 >
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -4,7 +4,11 @@
 
 @layer base {
   :root {
-    /* Minimal dark theme - Blue + Orange accents */
+    --font-sans: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+    --font-mono: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+
+    /* Minimal dark theme with a warmer donation palette */
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
@@ -38,8 +42,8 @@
     --radius: 0.75rem;
 
     /* Semantic movement colors */
-    --gain: 84 36% 40%;       /* Moss #708B45 */
-    --loss: 212 14% 49%;      /* Storm #6B7A8E */
+    --gain: 109 48% 61%;      /* Leaf #7CCB6B */
+    --loss: 24 50% 57%;       /* Clay #C9865A */
   }
 
   * {
@@ -52,7 +56,7 @@
 
   body {
     @apply bg-zinc-800 text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
