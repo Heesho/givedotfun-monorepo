@@ -7,7 +7,6 @@ import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 
 import { NavBar } from "@/components/nav-bar";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useTokenMetadata } from "@/hooks/useMetadata";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
 import { Wallet, Rocket } from "lucide-react";
@@ -67,7 +66,6 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
 // ---------------------------------------------------------------------------
 
 function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklineData: number[] }) {
-  const { logoUrl } = useTokenMetadata(holding.uri);
   const isPositive = holding.change24h >= 0;
 
   return (
@@ -76,7 +74,7 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
       className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
     >
       <div className="flex items-center gap-3">
-        <TokenLogo name={holding.tokenName} logoUrl={logoUrl} size="md-lg" />
+        <TokenLogo name={holding.tokenName} logoUrl={holding.logoUrl} size="md-lg" />
         <div>
           <div className="font-semibold text-[15px] font-display">
             {holding.tokenSymbol.length > 6
@@ -116,7 +114,6 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
 // ---------------------------------------------------------------------------
 
 function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFundraiser; sparklineData: number[] }) {
-  const { logoUrl } = useTokenMetadata(fundraiser.uri);
   const isPositive = fundraiser.change24h >= 0;
 
   return (
@@ -125,7 +122,7 @@ function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFu
       className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
     >
       <div className="flex items-center gap-3">
-        <TokenLogo name={fundraiser.tokenName} logoUrl={logoUrl} size="md-lg" />
+        <TokenLogo name={fundraiser.tokenName} logoUrl={fundraiser.logoUrl} size="md-lg" />
         <div>
           <div className="font-semibold text-[15px] font-display">
             {fundraiser.tokenSymbol.length > 6

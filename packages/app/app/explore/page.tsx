@@ -6,7 +6,6 @@ import { Search, Flame, Clock, TrendingUp, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
 import { useExploreFundraisers, type CoinListItem, type SortOption } from "@/hooks/useAllFundraisers";
-import { useBatchMetadata } from "@/hooks/useMetadata";
 import { useSparklineData } from "@/hooks/useSparklineData";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { formatMarketCap } from "@/lib/format";
@@ -76,10 +75,6 @@ export default function ExplorePage() {
   const { address: account } = useFarcaster();
 
   const { coins, isLoading } = useExploreFundraisers(sortBy, searchQuery, account);
-
-  // Batch fetch metadata for logos
-  const coinUris = coins.map((c) => c.uri).filter(Boolean);
-  const { getLogoUrl } = useBatchMetadata(coinUris);
 
   // Batch fetch hourly sparkline data (7 days, more granular than daily)
   const coinAddresses = coins.map((c) => c.coinAddress);
@@ -179,7 +174,7 @@ export default function ExplorePage() {
                       <div className="flex items-center gap-3">
                         <TokenLogo
                           name={coin.tokenName}
-                          logoUrl={getLogoUrl(coin.uri)}
+                          logoUrl={coin.logoUrl}
                           size="md-lg"
                         />
                         <div>

@@ -8,7 +8,7 @@ import {
   type SubgraphCoinListItem,
 } from "@/lib/subgraph-launchpad";
 import { ERC20_ABI } from "@/lib/contracts";
-import { DEFAULT_CHAIN_ID } from "@/lib/constants";
+import { DEFAULT_CHAIN_ID, ipfsToHttp } from "@/lib/constants";
 
 export type UserHolding = {
   address: `0x${string}`;       // Fundraiser address
@@ -16,6 +16,7 @@ export type UserHolding = {
   tokenName: string;
   tokenSymbol: string;
   uri: string;
+  logoUrl: string | null;
   balance: bigint;              // Raw token balance (18 decimals)
   balanceNum: number;           // Formatted balance
   priceUsd: number;             // Price per token in USD
@@ -30,6 +31,7 @@ export type UserLaunchedFundraiser = {
   tokenName: string;
   tokenSymbol: string;
   uri: string;
+  logoUrl: string | null;
   totalMinted: number;
   coinPrice: number;
   marketCapUsd: number;
@@ -134,6 +136,7 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
         tokenName: coin.name,
         tokenSymbol: coin.symbol,
         uri: coin.fundraiser?.uri ?? "",
+        logoUrl: coin.fundraiser?.metadata?.image ? ipfsToHttp(coin.fundraiser.metadata.image) : null,
         balance,
         balanceNum,
         priceUsd,
@@ -170,6 +173,7 @@ export function useUserProfile(accountAddress: `0x${string}` | undefined) {
           tokenName: u.name,
           tokenSymbol: u.symbol,
           uri: u.fundraiser?.uri ?? "",
+          logoUrl: u.fundraiser?.metadata?.image ? ipfsToHttp(u.fundraiser.metadata.image) : null,
           totalMinted,
           coinPrice,
           marketCapUsd,

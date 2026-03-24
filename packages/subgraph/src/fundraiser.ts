@@ -1,4 +1,4 @@
-import { BigDecimal, BigInt, Address } from '@graphprotocol/graph-ts'
+import { BigDecimal, BigInt, Address, DataSourceContext } from '@graphprotocol/graph-ts'
 import {
   Fundraiser__Funded as FundedEvent,
   Fundraiser__Claimed as ClaimedEvent,
@@ -13,6 +13,7 @@ import {
   Fundraiser as FundraiserContract,
 } from '../generated/templates/Fundraiser/Fundraiser'
 import { Core as CoreContract } from '../generated/templates/Fundraiser/Core'
+import { FundraiserMetadataFile as FundraiserMetadataTemplate } from '../generated/templates'
 import {
   Fundraiser,
   Recipient,
@@ -38,12 +39,29 @@ import {
   getOrCreateProtocol,
   getOrCreateAccount,
 } from './helpers'
+import { buildFundraiserMetadataId, getIpfsPathFromUri } from './metadata-utils'
 
 // Fee constants for Fundraiser (basis points)
 const RECIPIENT_BPS = BigInt.fromI32(5000) // 50%
 const TEAM_BPS = BigInt.fromI32(400) // 4%
 const PROTOCOL_BPS = BigInt.fromI32(100) // 1%
 const DIVISOR = BigInt.fromI32(10000)
+
+function indexFundraiserMetadata(fundraiserId: string, uri: string): string | null {
+  let ipfsPath = getIpfsPathFromUri(uri)
+  if (ipfsPath === null) {
+    return null
+  }
+
+  let metadataId = buildFundraiserMetadataId(fundraiserId, uri)
+  let context = new DataSourceContext()
+  context.setString('metadataId', metadataId)
+  context.setString('fundraiserId', fundraiserId)
+  context.setString('uri', uri)
+  FundraiserMetadataTemplate.createWithContext(ipfsPath, context)
+
+  return metadataId
+}
 
 function calculateFee(amount: BigDecimal, feeBps: BigInt): BigDecimal {
   return amount.times(feeBps.toBigDecimal()).div(DIVISOR.toBigDecimal())
@@ -325,6 +343,10 @@ export function handleFundUriSet(event: UriSetEvent): void {
   if (fundraiser === null) return
 
   fundraiser.uri = event.params.uri
+  let metadataId = indexFundraiserMetadata(fundraiser.id, fundraiser.uri)
+  if (metadataId !== null) {
+    fundraiser.metadata = metadataId
+  }
   fundraiser.save()
 }
 

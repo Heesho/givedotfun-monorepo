@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Flame, ArrowRight, Check } from "lucide-react";
 import { NavBar } from "@/components/nav-bar";
 import { useAuctions, type AuctionItem } from "@/hooks/useAuctions";
-import { useBatchMetadata } from "@/hooks/useMetadata";
 import { TokenLogo } from "@/components/token-logo";
 import { formatPrice } from "@/lib/format";
 
@@ -37,13 +36,6 @@ function formatProfit(profit: number): string {
 export default function AuctionsPage() {
   const { auctions, isLoading } = useAuctions();
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // Collect fundraiser URIs for batch metadata fetch
-  const fundraiserUris = useMemo(
-    () => auctions.map((a) => a.uri),
-    [auctions]
-  );
-  const { getLogoUrl } = useBatchMetadata(fundraiserUris);
 
   const selectedAuction: AuctionItem | undefined = auctions[selectedIndex];
 
@@ -91,7 +83,7 @@ export default function AuctionsPage() {
                       <div className="relative">
                         <TokenLogo
                           name={auction.tokenName}
-                          logoUrl={getLogoUrl(auction.uri)}
+                          logoUrl={auction.logoUrl}
                           size="md-lg"
                         />
                         {selectedIndex === index && (
@@ -159,7 +151,7 @@ export default function AuctionsPage() {
                     <div className="flex items-center gap-2">
                       <TokenLogo
                         name={selectedAuction.tokenName}
-                        logoUrl={getLogoUrl(selectedAuction.uri)}
+                        logoUrl={selectedAuction.logoUrl}
                         size="md-lg"
                       />
                       <div>

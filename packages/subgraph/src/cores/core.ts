@@ -1,10 +1,11 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'
+import { Address, BigInt, DataSourceContext } from '@graphprotocol/graph-ts'
 import { Core__Launched as CoreLaunchedEvent } from '../../generated/Core/Core'
 import { Fundraiser as FundraiserContract } from '../../generated/Core/Fundraiser'
 import {
   UniswapV2Pair as PairTemplate,
   Fundraiser as FundraiserTemplate,
   Coin as CoinTemplate,
+  FundraiserMetadataFile as FundraiserMetadataTemplate,
 } from '../../generated/templates'
 import { Protocol, Coin, Fundraiser, Account } from '../../generated/schema'
 import {
@@ -21,8 +22,25 @@ import {
   createCoin,
   convertTokenToDecimal,
 } from '../helpers'
+import { buildFundraiserMetadataId, getIpfsPathFromUri } from '../metadata-utils'
 
 const DEFAULT_MIN_DONATION = BigInt.fromI32(10_000)
+
+function indexFundraiserMetadata(fundraiserId: string, uri: string): string | null {
+  let ipfsPath = getIpfsPathFromUri(uri)
+  if (ipfsPath === null) {
+    return null
+  }
+
+  let metadataId = buildFundraiserMetadataId(fundraiserId, uri)
+  let context = new DataSourceContext()
+  context.setString('metadataId', metadataId)
+  context.setString('fundraiserId', fundraiserId)
+  context.setString('uri', uri)
+  FundraiserMetadataTemplate.createWithContext(ipfsPath, context)
+
+  return metadataId
+}
 
 export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   // Load or create Protocol entity (singleton)
@@ -87,6 +105,12 @@ export function handleCoreLaunched(event: CoreLaunchedEvent): void {
   fundraiser.currentDay = ZERO_BI
   fundraiser.totalDonated = ZERO_BD
   fundraiser.uniqueDonors = ZERO_BI
+
+  let metadataId = indexFundraiserMetadata(fundraiser.id, fundraiser.uri)
+  if (metadataId !== null) {
+    fundraiser.metadata = metadataId
+  }
+
   fundraiser.save()
 
   // Link coin to fundraiser

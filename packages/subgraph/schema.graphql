@@ -247,6 +247,7 @@ type Fundraiser @entity(immutable: false) {
   auction: Bytes!
   quoteToken: Bytes!                   # Payment token for fundraiser actions
   uri: String!
+  metadata: FundraiserMetadata
 
   # Initial LP amounts (from launch)
   usdcAmount: BigDecimal!              # USDC deposited into LP at launch (6 decimals -> BigDecimal)
@@ -300,6 +301,19 @@ type Fundraiser @entity(immutable: false) {
   dayData: [FundraiserDayData!]! @derivedFrom(field: "fundraiser")
   donorAccounts: [Donor!]! @derivedFrom(field: "fundraiser")
   dayDonorAccounts: [DayDonor!]! @derivedFrom(field: "fundraiser")
+}
+
+type FundraiserMetadata @entity(immutable: true) {
+  id: ID!
+  fundraiserId: String!
+  uri: String!
+  image: String
+  name: String
+  symbol: String
+  description: String
+  defaultMessage: String
+  recipientName: String
+  links: [String!]
 }
 
 # Recipient for Fundraiser

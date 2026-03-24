@@ -41,6 +41,17 @@ export type SubgraphFundraiser = {
   auction: string; // Bytes
   quoteToken: string; // Bytes
   uri: string;
+  metadata?: {
+    id: string;
+    uri: string;
+    image?: string | null;
+    name?: string | null;
+    symbol?: string | null;
+    description?: string | null;
+    defaultMessage?: string | null;
+    recipientName?: string | null;
+    links?: string[] | null;
+  } | null;
   usdcAmount: string; // BigDecimal — USDC deposited into LP at launch
   coinAmount: string; // BigDecimal — Coin tokens deposited into LP at launch
   treasuryRevenue: string; // BigDecimal
@@ -79,6 +90,11 @@ export type SubgraphCoinListItem = {
   fundraiser: {
     id: string; // Fundraiser contract address
     uri: string;
+    metadata?: {
+      id: string;
+      uri: string;
+      image?: string | null;
+    } | null;
     launcher: { id: string };
     auction: string;
   };
@@ -138,6 +154,17 @@ const FUNDRAISER_FIELDS = `
   auction
   quoteToken
   uri
+  metadata {
+    id
+    uri
+    image
+    name
+    symbol
+    description
+    defaultMessage
+    recipientName
+    links
+  }
   usdcAmount
   coinAmount
   treasuryRevenue
@@ -180,6 +207,11 @@ const COIN_LIST_FIELDS = `
   fundraiser {
     id
     uri
+    metadata {
+      id
+      uri
+      image
+    }
     launcher { id }
     auction
   }

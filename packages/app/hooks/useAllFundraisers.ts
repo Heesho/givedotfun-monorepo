@@ -7,6 +7,7 @@ import {
   searchCoins,
   type SubgraphCoinListItem,
 } from "@/lib/subgraph-launchpad";
+import { ipfsToHttp } from "@/lib/constants";
 
 export type CoinListItem = {
   address: `0x${string}`;         // Fundraiser contract address
@@ -15,6 +16,7 @@ export type CoinListItem = {
   tokenName: string;
   tokenSymbol: string;
   uri: string;
+  logoUrl: string | null;
   launcher: `0x${string}`;
   // Market data (from subgraph)
   priceUsd: number;
@@ -113,6 +115,7 @@ function coinToCoinListItem(u: SubgraphCoinListItem): CoinListItem {
     tokenName: u.name,
     tokenSymbol: u.symbol,
     uri: u.fundraiser.uri,
+    logoUrl: u.fundraiser.metadata?.image ? ipfsToHttp(u.fundraiser.metadata.image) : null,
     launcher: u.fundraiser.launcher.id.toLowerCase() as `0x${string}`,
     priceUsd,
     change24h,

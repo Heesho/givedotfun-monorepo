@@ -8,6 +8,7 @@ import {
   QUOTE_TOKEN_DECIMALS,
   type AuctionState,
 } from "@/lib/contracts";
+import { ipfsToHttp } from "@/lib/constants";
 import { useCoinList } from "./useAllFundraisers";
 import { useFarcaster } from "./useFarcaster";
 import type { SubgraphCoinListItem } from "@/lib/subgraph-launchpad";
@@ -16,7 +17,7 @@ export type AuctionItem = {
   fundraiserAddress: `0x${string}`;
   tokenName: string;
   tokenSymbol: string;
-  uri: string;
+  logoUrl: string | null;
   // Auction state
   lpPrice: bigint; // Current LP cost (18 dec)
   quoteAccumulated: bigint; // USDC in auction (6 dec)
@@ -48,7 +49,7 @@ export function useAuctions() {
     const mapping: IndexedFundraiser[] = [];
 
     for (const u of allCoins) {
-      if (!u.fundraiser?.uri?.startsWith("ipfs://")) continue;
+      if (!u.fundraiser?.id) continue;
       const fundraiserAddr = u.fundraiser.id.toLowerCase() as `0x${string}`;
 
       contractCalls.push({
@@ -97,7 +98,7 @@ export function useAuctions() {
           fundraiserAddress,
           tokenName: coin.name,
           tokenSymbol: coin.symbol,
-          uri: coin.fundraiser.uri,
+          logoUrl: coin.fundraiser.metadata?.image ? ipfsToHttp(coin.fundraiser.metadata.image) : null,
           lpPrice: state.price,
           quoteAccumulated: state.quoteAccumulated,
           lpTokenPrice: state.lpTokenPrice,
