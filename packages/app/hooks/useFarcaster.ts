@@ -93,7 +93,7 @@ export function useFarcaster() {
   }, [connectAsync, isConnected, isConnecting, farcasterConnector, isInFrame]);
 
   // Connect wallet manually
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (): Promise<`0x${string}` | undefined> => {
     if (address) {
       return address;
     }
@@ -124,7 +124,7 @@ export function useFarcaster() {
           }
         }
 
-        return "";
+        return undefined;
       }
       throw error;
     }
