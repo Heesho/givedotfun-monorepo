@@ -32,12 +32,12 @@ type TradeModalProps = {
   onClose: () => void;
   mode: "buy" | "sell";
   tokenSymbol: string;
-  tokenName: string;
   unitAddress: `0x${string}`;
   marketPrice: number;
   userQuoteBalance: bigint;
   userUnitBalance: bigint;
   logoUrl?: string;
+  colorPositive?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
+      className="ghost-border flex h-12 flex-1 items-center justify-center text-lg font-mono font-medium text-foreground transition-colors hover:bg-surface-high active:bg-surface-high sm:h-14 sm:text-xl"
     >
       {children}
     </button>
@@ -91,18 +91,18 @@ export function TradeModal({
   onClose,
   mode,
   tokenSymbol,
-  tokenName,
   unitAddress,
   marketPrice,
   userQuoteBalance,
   userUnitBalance,
   logoUrl,
+  colorPositive = true,
 }: TradeModalProps) {
   // ---- Local state --------------------------------------------------------
   const [amount, setAmount] = useState("0");
 
   const { address: taker } = useFarcaster();
-  const { execute, status, txHash, error: txError, reset } = useBatchedTransaction();
+  const { execute, status, error: txError, reset } = useBatchedTransaction();
 
   const isBuy = mode === "buy";
   const usdcAddress = CONTRACT_ADDRESSES.usdc as `0x${string}`;
@@ -230,35 +230,37 @@ export function TradeModal({
 
   // Price impact = (spotOutput - actualOutput) / spotOutput
   const priceImpactBps = useMemo(() => {
-    if (!spotOutputWei || spotOutputWei === 0n || !buyAmountWei) return null;
+    if (!spotOutputWei || spotOutputWei === 0n || buyAmountWei === null) return null;
     // Basis points: (spot - actual) * 10000 / spot
     const diff = spotOutputWei - buyAmountWei;
     if (diff <= 0n) return 0;
-    return Number((diff * 10000n) / spotOutputWei);
+    const rawBps = Number((diff * 10000n) / spotOutputWei);
+    if (!Number.isFinite(rawBps)) return 10000;
+    return Math.min(Math.max(rawBps, 0), 10000);
   }, [spotOutputWei, buyAmountWei]);
 
   // Auto slippage = price impact + buffer
   const autoSlippageBps = useMemo(() => {
     if (priceImpactBps === null) return SLIPPAGE_BUFFER_BPS;
-    return priceImpactBps + SLIPPAGE_BUFFER_BPS;
+    return Math.min(priceImpactBps + SLIPPAGE_BUFFER_BPS, 10000);
   }, [priceImpactBps]);
 
-  // Minimum output: spot output * (1 - autoSlippage)
+  // Minimum output should follow the quoted output, not the idealized spot output.
   const amountOutMin = useMemo(() => {
-    if (!spotOutputWei || spotOutputWei === 0n) return null;
-    return (spotOutputWei * BigInt(10000 - autoSlippageBps)) / 10000n;
-  }, [spotOutputWei, autoSlippageBps]);
+    if (buyAmountWei === null) return null;
+    return (buyAmountWei * BigInt(10000 - autoSlippageBps)) / 10000n;
+  }, [buyAmountWei, autoSlippageBps]);
 
   // ---- Display values -----------------------------------------------------
   const estimatedOutput = useMemo(() => {
-    if (buyAmountWei) return formatUnits(buyAmountWei, outDecimals);
+    if (buyAmountWei !== null) return formatUnits(buyAmountWei, outDecimals);
     return null;
   }, [buyAmountWei, outDecimals]);
 
   const pricePerToken = spotPrice ?? marketPrice;
 
   const minReceivedDisplay = useMemo(() => {
-    if (!amountOutMin) return null;
+    if (amountOutMin === null) return null;
     return Number(formatUnits(amountOutMin, outDecimals));
   }, [amountOutMin, outDecimals]);
 
@@ -306,7 +308,7 @@ export function TradeModal({
 
   // ---- Execute swap -------------------------------------------------------
   const handleConfirm = useCallback(async () => {
-    if (!buyAmountWei || !amountOutMin || !taker) return;
+    if (buyAmountWei === null || buyAmountWei <= 0n || amountOutMin === null || !taker) return;
 
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 1200); // 20 min
     const path = [sellToken, buyToken] as readonly `0x${string}`[];
@@ -352,8 +354,9 @@ export function TradeModal({
   const buttonDisabled =
     parsedInput === 0n ||
     insufficientBalance ||
-    !buyAmountWei ||
-    !amountOutMin ||
+    buyAmountWei === null ||
+    buyAmountWei <= 0n ||
+    amountOutMin === null ||
     isQuoteLoading ||
     status === "pending";
 
@@ -364,7 +367,7 @@ export function TradeModal({
     if (insufficientBalance) return "Insufficient balance";
     if (isQuoteLoading && parsedInput > 0n) return "Fetching quote...";
     if (parsedInput === 0n) return isBuy ? "Buy" : "Sell";
-    if (!buyAmountWei) return "No liquidity";
+    if (buyAmountWei === null || buyAmountWei <= 0n) return "No liquidity";
     return isBuy ? "Buy" : "Sell";
   }, [
     status,
@@ -382,9 +385,9 @@ export function TradeModal({
   const isSuccess = status === "success";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -393,7 +396,7 @@ export function TradeModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <X className="w-5 h-5" />
           </button>
@@ -402,7 +405,7 @@ export function TradeModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col px-4">
+        <div className="flex-1 min-h-0 flex flex-col px-4">
           {/* Title */}
           <div className="mt-4 mb-6">
             <h1 className="text-2xl font-semibold font-display tracking-tight">
@@ -414,7 +417,7 @@ export function TradeModal({
           </div>
 
           {/* Amount input display */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums flex items-center gap-1.5">
@@ -429,7 +432,7 @@ export function TradeModal({
           </div>
 
           {/* Market price */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset mt-2 px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Market price</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -439,7 +442,7 @@ export function TradeModal({
           </div>
 
           {/* Estimated output */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset mt-2 px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Est. received</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -476,9 +479,9 @@ export function TradeModal({
 
           {/* Error messages */}
           {(quoteError || txError) && (
-            <div className="px-3 py-2 rounded-none bg-zinc-800/10 border border-zinc-800/20 flex items-start gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
-              <span className="text-[12px] text-zinc-400">
+            <div className="slab-inset mb-3 flex items-start gap-2 px-3 py-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-loss" />
+              <span className="text-[12px] text-loss">
                 {(() => {
                   const msg = txError?.message || quoteError?.message || "";
                   if (msg.includes("rejected") || msg.includes("denied")) return "Transaction cancelled";
@@ -497,12 +500,12 @@ export function TradeModal({
           <button
             disabled={buttonDisabled}
             onClick={handleConfirm}
-            className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 ${
               buttonDisabled
-                ? isBuy ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
+                ? isBuy ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
                 : isSuccess
-                ? isBuy ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
-                : isBuy ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
+                ? isBuy ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
+                : isBuy ? "slab-button" : "slab-button slab-button-loss"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -513,9 +516,9 @@ export function TradeModal({
           {/* Number pad */}
           <div
             className="pb-4"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
           >
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "backspace"].map(
                 (key) => (
                   <NumPadButton key={key} value={key} onClick={handleNumPadPress}>

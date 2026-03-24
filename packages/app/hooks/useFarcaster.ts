@@ -94,15 +94,41 @@ export function useFarcaster() {
 
   // Connect wallet manually
   const connect = useCallback(async () => {
+    if (address) {
+      return address;
+    }
+
     if (!primaryConnector) {
       throw new Error("Wallet connector not available");
     }
-    const result = await connectAsync({
-      connector: primaryConnector,
-      chainId: base.id,
-    });
-    return result.accounts[0];
-  }, [connectAsync, primaryConnector]);
+
+    try {
+      const result = await connectAsync({
+        connector: primaryConnector,
+        chainId: base.id,
+      });
+      return result.accounts[0];
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConnectorAlreadyConnectedError"
+      ) {
+        if (address) {
+          return address;
+        }
+
+        if (typeof primaryConnector.getAccounts === "function") {
+          const accounts = await primaryConnector.getAccounts().catch(() => []);
+          if (accounts[0]) {
+            return accounts[0];
+          }
+        }
+
+        return "";
+      }
+      throw error;
+    }
+  }, [address, connectAsync, primaryConnector]);
 
   return {
     context,

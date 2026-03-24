@@ -10,7 +10,6 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
 import { Wallet, Rocket } from "lucide-react";
-import { formatNumber } from "@/lib/format";
 import { TokenLogo } from "@/components/token-logo";
 import { useSparklineData } from "@/hooks/useSparklineData";
 
@@ -46,7 +45,7 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   return (
     <svg
       viewBox="0 0 300 100"
-      className={`w-24 h-8 ${isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"}`}
+      className={`h-8 w-24 ${isPositive ? "positive-value" : "negative-value"}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <polyline
@@ -65,23 +64,33 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
 // HoldingRow
 // ---------------------------------------------------------------------------
 
-function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklineData: number[] }) {
+function HoldingRow({
+  holding,
+  sparklineData,
+  isAlt = false,
+}: {
+  holding: UserHolding;
+  sparklineData: number[];
+  isAlt?: boolean;
+}) {
   const isPositive = holding.change24h >= 0;
 
   return (
     <Link
       href={`/fundraiser/${holding.address}`}
-      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
+      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 transition-colors duration-200 ${
+        isAlt ? "data-row data-row-alt" : "data-row"
+      } hover-slab`}
     >
       <div className="flex items-center gap-3">
         <TokenLogo name={holding.tokenName} logoUrl={holding.logoUrl} size="md-lg" />
-        <div>
-          <div className="font-semibold text-[15px] font-display">
+        <div className="min-w-0">
+          <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
             {holding.tokenSymbol.length > 6
               ? `${holding.tokenSymbol.slice(0, 6)}...`
               : holding.tokenSymbol}
           </div>
-          <div className="text-[13px] text-muted-foreground">
+          <div className="truncate text-[13px] text-muted-foreground">
             {holding.tokenName.length > 12
               ? `${holding.tokenName.slice(0, 12)}...`
               : holding.tokenName}
@@ -97,8 +106,8 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           holding.priceUsd > 0
-            ? isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"
-            : "text-zinc-400"
+            ? isPositive ? "positive-value" : "negative-value"
+            : "text-muted-foreground"
         }`}>
           {holding.priceUsd > 0
             ? `${isPositive ? "+" : ""}${holding.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
@@ -113,23 +122,33 @@ function HoldingRow({ holding, sparklineData }: { holding: UserHolding; sparklin
 // LaunchedRow
 // ---------------------------------------------------------------------------
 
-function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFundraiser; sparklineData: number[] }) {
+function LaunchedRow({
+  fundraiser,
+  sparklineData,
+  isAlt = false,
+}: {
+  fundraiser: UserLaunchedFundraiser;
+  sparklineData: number[];
+  isAlt?: boolean;
+}) {
   const isPositive = fundraiser.change24h >= 0;
 
   return (
     <Link
       href={`/fundraiser/${fundraiser.address}`}
-      className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 hover:bg-white/[0.02]"
+      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 transition-colors duration-200 ${
+        isAlt ? "data-row data-row-alt" : "data-row"
+      } hover-slab`}
     >
       <div className="flex items-center gap-3">
         <TokenLogo name={fundraiser.tokenName} logoUrl={fundraiser.logoUrl} size="md-lg" />
-        <div>
-          <div className="font-semibold text-[15px] font-display">
+        <div className="min-w-0">
+          <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
             {fundraiser.tokenSymbol.length > 6
               ? `${fundraiser.tokenSymbol.slice(0, 6)}...`
               : fundraiser.tokenSymbol}
           </div>
-          <div className="text-[13px] text-muted-foreground">
+          <div className="truncate text-[13px] text-muted-foreground">
             {fundraiser.tokenName.length > 12
               ? `${fundraiser.tokenName.slice(0, 12)}...`
               : fundraiser.tokenName}
@@ -145,8 +164,8 @@ function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFu
         </div>
         <div className={`text-[13px] tabular-nums font-mono ${
           fundraiser.coinPrice > 0
-            ? isPositive ? "text-[#7CCB6B]" : "text-[#C9865A]"
-            : "text-zinc-400"
+            ? isPositive ? "positive-value" : "negative-value"
+            : "text-muted-foreground"
         }`}>
           {fundraiser.coinPrice > 0
             ? `${isPositive ? "+" : ""}${fundraiser.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
@@ -163,38 +182,56 @@ function LaunchedRow({ fundraiser, sparklineData }: { fundraiser: UserLaunchedFu
 
 function ProfileSkeleton() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-3 py-4">
-            <div className="w-12 h-12 rounded-full bg-secondary animate-pulse" />
-            <div>
-              <div className="w-28 h-5 bg-secondary rounded-none animate-pulse mb-1" />
-              <div className="w-20 h-4 bg-secondary rounded-none animate-pulse" />
+        <div className="page-header">
+          <div className="mb-3">
+            <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
+            <div className="mb-2 h-10 w-32 bg-secondary animate-pulse" />
+            <div className="h-4 w-56 bg-secondary animate-pulse" />
+          </div>
+          <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 bg-secondary animate-pulse" />
+              <div className="flex-1">
+                <div className="mb-1 h-5 w-28 bg-secondary animate-pulse" />
+                <div className="h-4 w-20 bg-secondary animate-pulse" />
+              </div>
+              <div className="h-4 w-20 bg-secondary animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="slab-inset px-3 py-3">
+                <div className="mb-1 h-3 w-20 bg-secondary animate-pulse" />
+                <div className="h-8 w-24 bg-secondary animate-pulse" />
+              </div>
+              <div className="slab-inset px-3 py-3">
+                <div className="mb-1 h-3 w-16 bg-secondary animate-pulse" />
+                <div className="h-8 w-24 bg-secondary animate-pulse" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="h-9 bg-secondary animate-pulse" />
+              <div className="h-9 bg-secondary animate-pulse" />
             </div>
           </div>
         </div>
-        <div className="flex border-b border-secondary mx-4 mb-4">
-          <div className="w-24 h-8 bg-secondary rounded-none animate-pulse mr-4" />
-          <div className="w-24 h-8 bg-secondary rounded-none animate-pulse" />
-        </div>
-        <div className="flex-1 px-4 space-y-3">
+        <div className="flex-1 space-y-2 px-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 py-3">
-              <div className="w-10 h-10 rounded-none bg-secondary animate-pulse" />
+            <div key={i} className="slab-inset flex items-center gap-3 px-3 py-3">
+              <div className="h-10 w-10 bg-secondary animate-pulse" />
               <div className="flex-1">
-                <div className="w-24 h-4 bg-secondary rounded-none animate-pulse mb-1" />
-                <div className="w-16 h-3 bg-secondary rounded-none animate-pulse" />
+                <div className="mb-1 h-4 w-24 bg-secondary animate-pulse" />
+                <div className="h-3 w-16 bg-secondary animate-pulse" />
               </div>
               <div className="text-right">
-                <div className="w-16 h-4 bg-secondary rounded-none animate-pulse mb-1" />
-                <div className="w-12 h-3 bg-secondary rounded-none animate-pulse" />
+                <div className="mb-1 h-4 w-16 bg-secondary animate-pulse" />
+                <div className="h-3 w-12 bg-secondary animate-pulse" />
               </div>
             </div>
           ))}
@@ -213,18 +250,18 @@ function NotConnected() {
   const { isInFrame, isConnecting, connect } = useFarcaster();
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="w-16 h-16 rounded-none bg-secondary flex items-center justify-center mb-4">
+          <div className="slab-panel mb-4 flex h-16 w-16 items-center justify-center">
             <svg
-              className="w-8 h-8 text-muted-foreground"
+              className="h-8 w-8 text-muted-foreground"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -257,7 +294,7 @@ function NotConnected() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting}
-                className="px-6 py-2.5 rounded-none bg-white text-black text-[14px] font-semibold font-display hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="slab-button px-6 text-[11px] disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -342,118 +379,119 @@ export default function ProfilePage() {
       : address.slice(-2).toUpperCase();
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
         {/* Header */}
-        <div className="px-4 pb-2">
+        <div className="page-header">
           <div className="mb-3">
-            <h1 className="text-2xl font-bold tracking-tight font-display">Profile</h1>
-            <p className="text-[13px] text-muted-foreground mt-1">Your portfolio, holdings, and launched fundraisers</p>
+            <div className="section-kicker">Holdings Ledger</div>
+            <h1 className="page-title mt-2">Profile</h1>
+            <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
           </div>
-          <div className="flex items-center gap-3 py-3">
-            {pfpUrl ? (
-              <img
-                src={pfpUrl}
-                alt={displayName}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className={`w-12 h-12 rounded-none flex items-center justify-center text-white ${
-                  isAddressFallbackAvatar
-                    ? "font-mono text-[15px] tracking-wide bg-zinc-800"
-                    : "font-semibold text-lg bg-zinc-800"
-                }`}
-              >
-                {avatarFallback}
-              </div>
-            )}
-            <div>
-              <div className="text-[17px] font-semibold font-display">{displayName}</div>
-              {username && (
-                <div className="text-[13px] text-muted-foreground">
-                  {username}
+          <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
+            <div className="flex items-center gap-3">
+              {pfpUrl ? (
+                <img
+                  src={pfpUrl}
+                  alt={displayName}
+                  className="ghost-border h-10 w-10 object-cover"
+                />
+              ) : (
+                <div
+                  className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${
+                    isAddressFallbackAvatar
+                      ? "bg-surface-lowest font-mono text-[14px] tracking-wide"
+                      : "bg-surface-lowest text-base font-semibold"
+                  }`}
+                >
+                  {avatarFallback}
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Portfolio value */}
-          <div className="pb-3">
-            <div className="text-[12px] text-muted-foreground mb-0.5">
-              Portfolio value
-            </div>
-            <div className="text-[28px] font-bold tabular-nums font-mono">
-              {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
-            </div>
-          </div>
-
-          {/* Cash Balance */}
-          <div className="pb-3">
-            <div className="text-[12px] text-muted-foreground mb-1">
-              Cash Balance
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-[18px] font-semibold tabular-nums font-mono">
-                ${formattedUsdc}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
+                <div className="truncate text-[12px] text-muted-foreground">
+                  {username || shortAddress}
+                </div>
               </div>
+              <div className="hidden text-right sm:block">
+                <div className="section-kicker">Wallet</div>
+                <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="slab-inset px-3 py-3">
+                <div className="section-kicker">Portfolio</div>
+                <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
+                  {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
+                </div>
+              </div>
+              <div className="slab-inset px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="section-kicker">Cash</div>
+                    <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
+                      ${formattedUsdc}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      mintUsdc({
+                        address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+                        abi: MOCK_MINT_ABI,
+                        functionName: "mint",
+                        args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
+                      })
+                    }
+                    disabled={isUsdcMinting}
+                    className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                  >
+                    {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() =>
-                  mintUsdc({
-                    address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
-                    abi: MOCK_MINT_ABI,
-                    functionName: "mint",
-                    args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
-                  })
-                }
-                disabled={isUsdcMinting}
-                className="text-[12px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                onClick={() => setActiveTab("holdings")}
+                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                  activeTab === "holdings"
+                    ? "bg-primary text-primary-foreground shadow-slab"
+                    : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                }`}
               >
-                {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                <Wallet className="w-3.5 h-3.5" />
+                Coins
+              </button>
+              <button
+                onClick={() => setActiveTab("launched")}
+                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                  activeTab === "launched"
+                    ? "bg-primary text-primary-foreground shadow-slab"
+                    : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                }`}
+              >
+                <Rocket className="w-3.5 h-3.5" />
+                Fundraisers
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex px-4 pb-3">
-          <button
-            onClick={() => setActiveTab("holdings")}
-            className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-none text-[13px] font-medium font-display transition-all ${
-              activeTab === "holdings"
-                ? "bg-white text-black"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Wallet className="w-3.5 h-3.5" />
-            Coins
-          </button>
-          <button
-            onClick={() => setActiveTab("launched")}
-            className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-none text-[13px] font-medium font-display transition-all ${
-              activeTab === "launched"
-                ? "bg-white text-black"
-                : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Rocket className="w-3.5 h-3.5" />
-            Fundraisers
-          </button>
-        </div>
-
         {/* Tab Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2">
           {activeTab === "holdings" && (
             <>
               {holdings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-none bg-secondary flex items-center justify-center mb-3">
+                  <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
                     <svg
                       className="w-6 h-6 text-muted-foreground"
                       fill="none"
@@ -476,14 +514,14 @@ export default function ProfilePage() {
                   </div>
                   <Link
                     href="/explore"
-                    className="px-4 py-2 rounded-none bg-white text-black text-[13px] font-semibold font-display hover:bg-zinc-200 transition-colors"
+                    className="slab-button px-4 text-[11px]"
                   >
                     Explore coins
                   </Link>
                 </div>
               ) : (
-                <div className="py-1">
-                  {holdings.map((holding) => {
+                <div>
+                  {holdings.map((holding, index) => {
                     const hourly = getSparkline(holding.coinAddress, holding.priceUsd);
                     const sparklineData = hourly.length > 1 ? hourly
                       : holding.sparklinePrices.length > 1 ? holding.sparklinePrices
@@ -493,6 +531,7 @@ export default function ProfilePage() {
                         key={holding.coinAddress}
                         holding={holding}
                         sparklineData={sparklineData}
+                        isAlt={index % 2 === 1}
                       />
                     );
                   })}
@@ -505,7 +544,7 @@ export default function ProfilePage() {
             <>
               {launchedFundraisers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-none bg-secondary flex items-center justify-center mb-3">
+                  <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
                     <svg
                       className="w-6 h-6 text-muted-foreground"
                       fill="none"
@@ -528,14 +567,14 @@ export default function ProfilePage() {
                   </div>
                   <Link
                     href="/launch"
-                    className="px-4 py-2 rounded-none bg-white text-black text-[13px] font-semibold font-display hover:bg-zinc-200 transition-colors"
+                    className="slab-button px-4 text-[11px]"
                   >
                     Launch a fundraiser
                   </Link>
                 </div>
               ) : (
-                <div className="py-1">
-                  {launchedFundraisers.map((fundraiser) => {
+                <div>
+                  {launchedFundraisers.map((fundraiser, index) => {
                     const hourly = getSparkline(fundraiser.coinAddress, fundraiser.coinPrice);
                     const sparklineData = hourly.length > 1 ? hourly
                       : fundraiser.sparklinePrices.length > 1 ? fundraiser.sparklinePrices
@@ -545,6 +584,7 @@ export default function ProfilePage() {
                         key={fundraiser.address}
                         fundraiser={fundraiser}
                         sparklineData={sparklineData}
+                        isAlt={index % 2 === 1}
                       />
                     );
                   })}

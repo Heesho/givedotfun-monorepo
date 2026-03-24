@@ -16,7 +16,6 @@ type AdminModalProps = {
   initialTreasury: string;
   initialTeam: string;
   initialRecipient: string;
-  initialUri: string;
   initialMetadata?: TokenMetadata;
   initialLogoUrl?: string;
   colorPositive?: boolean;
@@ -76,7 +75,6 @@ export function AdminModal({
   initialTreasury,
   initialTeam,
   initialRecipient,
-  initialUri,
   initialMetadata,
   initialLogoUrl,
   colorPositive = true,
@@ -256,27 +254,27 @@ export function AdminModal({
   const currentLogoUrl = logoPreview || initialLogoUrl;
 
   const addressInputClass = (valid: boolean, value: string) =>
-    `flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm font-mono min-w-0 ${
+    `field-input flex-1 h-10 text-sm font-mono min-w-0 ${
       value.length > 0 && !valid
-        ? "ring-1 ring-zinc-800/50 focus:ring-zinc-800"
+        ? "field-input-invalid"
         : ""
     }`;
 
   const saveBtnClass = (field: string, enabled: boolean) =>
-    `h-10 px-4 rounded-none text-[13px] font-semibold font-display transition-all flex-shrink-0 ${
+    `h-10 px-4 text-[11px] flex-shrink-0 ${
       successField === field
-        ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
+        ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
         : isSaving && pendingField === field
-        ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50" : "bg-[#C9865A]/50 text-black/50"
+        ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
         : enabled
-        ? colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
-        : "bg-zinc-800 text-zinc-400"
+        ? colorPositive ? "slab-button" : "slab-button slab-button-loss"
+        : "slab-button-ghost text-muted-foreground"
     }`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
@@ -286,7 +284,7 @@ export function AdminModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <X className="w-5 h-5" />
           </button>
@@ -296,213 +294,230 @@ export function AdminModal({
 
         {/* Scrollable Content */}
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-2">
-
-          {/* Logo + Name */}
-          <div className="flex items-start gap-3 mb-3">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="relative w-[88px] h-[88px] rounded-none bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0 hover:bg-secondary/80 transition-colors"
-            >
-              {currentLogoUrl ? (
-                <img src={currentLogoUrl} alt="Logo" className="w-full h-full object-cover" />
-              ) : (
-                <Camera className="w-6 h-6 text-zinc-400" />
-              )}
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <Camera className="w-4 h-4 text-white" />
+          <div className="space-y-4 pb-6">
+            <div className="slab-panel px-3 py-3">
+              <div className="section-kicker">Profile</div>
+              <div className="mt-1 text-[13px] text-muted-foreground">
+                Update the coin identity, supporter message, and public links.
               </div>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleLogoSelect}
-              className="hidden"
-            />
-            <div className="flex-1 min-w-0 pt-2">
-              <div className="text-[16px] font-semibold font-display">{tokenName}</div>
-              <div className="text-[13px] text-muted-foreground">${tokenSymbol}</div>
-            </div>
-          </div>
 
-          {/* Text fields */}
-          <span className="text-[12px] text-muted-foreground block mb-1 font-display">Description</span>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your coin..."
-            rows={2}
-            className="w-full px-3 py-2.5 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 resize-none text-sm"
-          />
-          <span className="text-[12px] text-muted-foreground block mt-2 mb-1 font-display">Default message</span>
-          <input
-            type="text"
-            value={defaultMessage}
-            onChange={(e) => setDefaultMessage(e.target.value)}
-            placeholder="gm"
-            className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
-          />
-          <span className="text-[12px] text-muted-foreground block mt-2 mb-1 font-display">Recipient name</span>
-          <input
-            type="text"
-            value={recipientName}
-            onChange={(e) => setRecipientName(e.target.value)}
-            placeholder="Who receives donations"
-            className="w-full h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
-          />
-
-          {/* Links toggle */}
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setShowLinks(!showLinks)}
-              className="flex items-center justify-between w-full py-2"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="text-[13px] text-foreground font-display font-medium">Add links</span>
-                <span className="text-[11px] text-muted-foreground">websites, socials</span>
-              </div>
-              <div className={`w-9 h-5 rounded-none transition-colors relative ${showLinks ? "bg-white" : "bg-zinc-800"}`}>
-                <div className={`absolute top-0.5 w-4 h-4 rounded-none transition-all ${showLinks ? "left-[18px] bg-black" : "left-0.5 bg-zinc-400"}`} />
-              </div>
-            </button>
-
-            {showLinks && (
-              <div className="space-y-2 mt-2">
-                {links.map((link, i) => (
-                  <div key={i} className="flex gap-2">
-                    <input
-                      type="url"
-                      value={link}
-                      onChange={(e) => {
-                        const updated = [...links];
-                        updated[i] = e.target.value;
-                        setLinks(updated);
-                      }}
-                      placeholder="https://..."
-                      className="flex-1 h-10 px-3 rounded-none bg-secondary text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-white/20 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                      className="px-2 text-zinc-400 hover:text-zinc-400 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+              <div className="mt-3 flex items-start gap-3">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="ghost-border relative flex h-[88px] w-[88px] flex-shrink-0 items-center justify-center overflow-hidden bg-surface-lowest transition-colors hover:bg-surface-high"
+                >
+                  {currentLogoUrl ? (
+                    <img src={currentLogoUrl} alt="Logo" className="h-full w-full object-cover" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/40 opacity-0 transition-opacity hover:opacity-100">
+                    <Camera className="h-4 w-4 text-foreground" />
                   </div>
-                ))}
-                {links.length < 5 && (
-                  <button
-                    type="button"
-                    onClick={() => setLinks([...links, ""])}
-                    className="text-[12px] text-zinc-400 hover:text-zinc-400 transition-colors"
-                  >
-                    + Add another
-                  </button>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoSelect}
+                  className="hidden"
+                />
+                <div className="flex-1 min-w-0 pt-2">
+                  <div className="text-[16px] font-semibold font-display">{tokenName}</div>
+                  <div className="text-[13px] text-muted-foreground">{tokenSymbol}</div>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-2">
+                <div>
+                  <span className="mb-1 block text-[12px] text-muted-foreground font-display">Description</span>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your coin..."
+                    rows={2}
+                    className="field-input min-h-[88px] resize-none px-3 py-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <span className="mb-1 block text-[12px] text-muted-foreground font-display">Default message</span>
+                  <input
+                    type="text"
+                    value={defaultMessage}
+                    onChange={(e) => setDefaultMessage(e.target.value)}
+                    placeholder="gm"
+                    className="field-input h-10 text-sm"
+                  />
+                </div>
+                <div>
+                  <span className="mb-1 block text-[12px] text-muted-foreground font-display">Recipient name</span>
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Who receives donations"
+                    className="field-input h-10 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowLinks(!showLinks)}
+                  className="flex w-full items-center justify-between gap-3"
+                >
+                  <div className="min-w-0 text-left">
+                    <div className="section-kicker">Outbound Links</div>
+                    <div className="mt-1 text-[13px] text-foreground font-display font-medium">Add links</div>
+                    <div className="text-[11px] text-muted-foreground">Website, socials, or docs.</div>
+                  </div>
+                  <div className="toggle-track shrink-0" data-state={showLinks ? "on" : "off"}>
+                    <div className="toggle-thumb" />
+                  </div>
+                </button>
+
+                {showLinks && (
+                  <div className="mt-3 space-y-2">
+                    {links.map((link, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input
+                          type="url"
+                          value={link}
+                          onChange={(e) => {
+                            const updated = [...links];
+                            updated[i] = e.target.value;
+                            setLinks(updated);
+                          }}
+                          placeholder="https://..."
+                          className="field-input h-10 flex-1 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setLinks(links.filter((_, j) => j !== i))}
+                          className="ghost-border flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    {links.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => setLinks([...links, ""])}
+                        className="text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        + Add another
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Save Metadata */}
-          <button
-            onClick={handleSaveMetadata}
-            disabled={isSaving || !metadataChanged}
-            className={`w-full h-10 rounded-none text-[14px] font-semibold font-display transition-all mt-4 ${
-              successField === "metadata"
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
-                : isSaving && pendingField === "metadata"
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50" : "bg-[#C9865A]/50 text-black/50"
-                : metadataChanged
-                ? colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
-                : "bg-zinc-800 text-zinc-400"
-            }`}
-          >
-            {successField === "metadata" ? (
-              "Saved"
-            ) : isSaving && pendingField === "metadata" ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                {isUploadingMetadata ? "Uploading..." : "Confirming..."}
-              </span>
-            ) : (
-              "Save Profile"
-            )}
-          </button>
-
-          <div className="text-[13px] font-semibold font-display text-foreground mt-5 mb-3">Contract Settings</div>
-          <div className="space-y-3">
-            {/* Recipient */}
-            <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground font-display">Recipient</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={recipient}
-                  onChange={(e) => setRecipient(e.target.value)}
-                  placeholder="0x..."
-                  className={addressInputClass(isRecipientValid, recipient)}
-                />
-                <button
-                  onClick={() => handleSave("recipient")}
-                  disabled={isSaving || !isRecipientValid || recipient === initialRecipient}
-                  className={saveBtnClass("recipient", isRecipientValid && recipient !== initialRecipient)}
-                >
-                  {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
+              <button
+                onClick={handleSaveMetadata}
+                disabled={isSaving || !metadataChanged}
+                className={`mt-4 w-full px-4 text-[11px] ${
+                  successField === "metadata"
+                    ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
+                    : isSaving && pendingField === "metadata"
+                    ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
+                    : metadataChanged
+                    ? colorPositive ? "slab-button" : "slab-button slab-button-loss"
+                    : "slab-button-ghost text-muted-foreground"
+                }`}
+              >
+                {successField === "metadata" ? (
+                  "Saved"
+                ) : isSaving && pendingField === "metadata" ? (
+                  <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : "Save"}
-                </button>
-              </div>
+                    {isUploadingMetadata ? "Uploading..." : "Confirming..."}
+                  </span>
+                ) : (
+                  "Save Profile"
+                )}
+              </button>
             </div>
+
+            <div className="slab-panel px-3 py-3">
+              <div className="section-kicker">Contract Settings</div>
+              <div className="mt-1 text-[13px] text-muted-foreground">
+                Update the on-chain payout and treasury routing addresses.
+              </div>
+
+              <div className="mt-3 space-y-3">
+            {/* Recipient */}
+                <div className="slab-inset px-3 py-3">
+                  <span className="text-[12px] text-muted-foreground font-display">Recipient</span>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      value={recipient}
+                      onChange={(e) => setRecipient(e.target.value)}
+                      placeholder="0x..."
+                      className={addressInputClass(isRecipientValid, recipient)}
+                    />
+                    <button
+                      onClick={() => handleSave("recipient")}
+                      disabled={isSaving || !isRecipientValid || recipient === initialRecipient}
+                      className={saveBtnClass("recipient", isRecipientValid && recipient !== initialRecipient)}
+                    >
+                      {successField === "recipient" ? "Saved" : isSaving && pendingField === "recipient" ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : "Save"}
+                    </button>
+                  </div>
+                </div>
 
             {/* Treasury */}
-            <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground font-display">Treasury</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={treasury}
-                  onChange={(e) => setTreasury(e.target.value)}
-                  placeholder="0x..."
-                  className={addressInputClass(isTreasuryValid, treasury)}
-                />
-                <button
-                  onClick={() => handleSave("treasury")}
-                  disabled={isSaving || !isTreasuryValid || treasury === initialTreasury}
-                  className={saveBtnClass("treasury", isTreasuryValid && treasury !== initialTreasury)}
-                >
-                  {successField === "treasury" ? "Saved" : isSaving && pendingField === "treasury" ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : "Save"}
-                </button>
-              </div>
-            </div>
+                <div className="slab-inset px-3 py-3">
+                  <span className="text-[12px] text-muted-foreground font-display">Treasury</span>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      value={treasury}
+                      onChange={(e) => setTreasury(e.target.value)}
+                      placeholder="0x..."
+                      className={addressInputClass(isTreasuryValid, treasury)}
+                    />
+                    <button
+                      onClick={() => handleSave("treasury")}
+                      disabled={isSaving || !isTreasuryValid || treasury === initialTreasury}
+                      className={saveBtnClass("treasury", isTreasuryValid && treasury !== initialTreasury)}
+                    >
+                      {successField === "treasury" ? "Saved" : isSaving && pendingField === "treasury" ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : "Save"}
+                    </button>
+                  </div>
+                </div>
 
             {/* Team */}
-            <div className="space-y-1">
-              <span className="text-[12px] text-muted-foreground font-display">Team</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={team}
-                  onChange={(e) => setTeam(e.target.value)}
-                  placeholder="0x..."
-                  className={addressInputClass(isTeamValid, team)}
-                />
-                <button
-                  onClick={() => handleSave("team")}
-                  disabled={isSaving || !isTeamValid || team === initialTeam}
-                  className={saveBtnClass("team", isTeamValid && team !== initialTeam)}
-                >
-                  {successField === "team" ? "Saved" : isSaving && pendingField === "team" ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : "Save"}
-                </button>
+                <div className="slab-inset px-3 py-3">
+                  <span className="text-[12px] text-muted-foreground font-display">Team</span>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="text"
+                      value={team}
+                      onChange={(e) => setTeam(e.target.value)}
+                      placeholder="0x..."
+                      className={addressInputClass(isTeamValid, team)}
+                    />
+                    <button
+                      onClick={() => handleSave("team")}
+                      disabled={isSaving || !isTeamValid || team === initialTeam}
+                      className={saveBtnClass("team", isTeamValid && team !== initialTeam)}
+                    >
+                      {successField === "team" ? "Saved" : isSaving && pendingField === "team" ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : "Save"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="pb-6" />
         </div>
       </div>
     </div>

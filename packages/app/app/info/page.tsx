@@ -72,41 +72,43 @@ const INFO_SECTIONS = [
 
 export default function InfoPage() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
         {/* Header */}
-        <div className="px-5 pb-4">
-          <h1 className="text-2xl font-bold tracking-tight font-display">About</h1>
-          <p className="text-[13px] text-muted-foreground mt-1">How give.fun works and why it matters</p>
+        <div className="page-header px-5">
+          <div className="section-kicker">Protocol Anatomy</div>
+          <h1 className="page-title mt-2">About</h1>
+          <p className="page-subtitle">How give.fun works and why it matters.</p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-5">
-          <div className="space-y-0">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3">
+          <div className="space-y-3">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
-                className={`py-6 ${index > 0 ? "border-t border-border" : ""}`}
+                className={`slab-panel px-4 py-5 ${index % 2 === 0 ? "light-leak" : ""}`}
               >
-                <h2 className="text-[17px] font-semibold text-foreground mb-3 font-display">
+                <div className="section-kicker mb-2">Section {index + 1}</div>
+                <h2 className="mb-3 font-display text-[17px] font-semibold uppercase tracking-[-0.03em] text-foreground">
                   {section.title}
                 </h2>
-                <p className="text-[15px] text-muted-foreground leading-relaxed mb-4">
+                <p className="mb-4 text-[15px] leading-relaxed text-muted-foreground">
                   {section.content}
                 </p>
                 <ul className="space-y-2">
                   {section.bullets.map((bullet, i) => (
                     <li
                       key={i}
-                      className="text-[14px] text-muted-foreground flex items-start gap-3 leading-snug"
+                      className="flex items-start gap-3 text-[14px] leading-snug text-muted-foreground"
                     >
-                      <span className="text-muted-foreground">·</span>
+                      <span className="mt-1 h-2 w-2 bg-primary" />
                       {bullet}
                     </li>
                   ))}

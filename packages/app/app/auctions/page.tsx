@@ -10,19 +10,17 @@ import { formatPrice } from "@/lib/format";
 
 function SkeletonRow() {
   return (
-    <div
-      className="flex items-center justify-between py-4 border-b border-border"
-    >
+    <div className="slab-inset flex items-center justify-between px-3 py-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-secondary animate-pulse" />
+        <div className="h-10 w-10 bg-secondary animate-pulse" />
         <div className="space-y-2">
-          <div className="w-16 h-4 rounded bg-secondary animate-pulse" />
-          <div className="w-24 h-3 rounded bg-secondary animate-pulse" />
+          <div className="h-4 w-16 bg-secondary animate-pulse" />
+          <div className="h-3 w-24 bg-secondary animate-pulse" />
         </div>
       </div>
       <div className="space-y-2 text-right">
-        <div className="w-14 h-4 rounded bg-secondary animate-pulse ml-auto" />
-        <div className="w-10 h-3 rounded bg-secondary animate-pulse ml-auto" />
+        <div className="ml-auto h-4 w-14 bg-secondary animate-pulse" />
+        <div className="ml-auto h-3 w-10 bg-secondary animate-pulse" />
       </div>
     </div>
   );
@@ -40,25 +38,26 @@ export default function AuctionsPage() {
   const selectedAuction: AuctionItem | undefined = auctions[selectedIndex];
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
         }}
       >
         {/* Header */}
-        <div className="px-4 pb-4">
-          <h1 className="text-2xl font-semibold tracking-tight mb-1">Auctions</h1>
-          <p className="text-[13px] text-muted-foreground">
+        <div className="page-header">
+          <div className="section-kicker">Treasury Mechanism</div>
+          <h1 className="page-title mt-2">Auctions</h1>
+          <p className="page-subtitle">
             Trade LP tokens for USDC rewards
           </p>
         </div>
 
         {/* Auction List */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
-          <div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1">
+          <div className="space-y-2">
             {isLoading && (
               <>
                 <SkeletonRow />
@@ -72,11 +71,13 @@ export default function AuctionsPage() {
                 <button
                   key={auction.fundraiserAddress}
                   onClick={() => setSelectedIndex(index)}
-                  className={`w-full py-4 transition-all text-left ${
+                  className={`w-full px-3 py-4 text-left transition-all ${
                     selectedIndex === index
-                      ? "bg-white/[0.03]"
-                      : "hover:bg-white/[0.02]"
-                  }${index < auctions.length - 1 ? " border-b border-border" : ""}`}
+                      ? "data-row light-leak"
+                      : index % 2 === 0
+                        ? "data-row"
+                        : "data-row data-row-alt"
+                  } hover-slab`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -87,13 +88,13 @@ export default function AuctionsPage() {
                           size="md-lg"
                         />
                         {selectedIndex === index && (
-                          <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                            <Check className="w-3 h-3 text-black" />
+                          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center bg-primary text-primary-foreground shadow-slab">
+                            <Check className="h-3 w-3" />
                           </div>
                         )}
                       </div>
                       <div>
-                        <div className="font-semibold text-[15px]">
+                        <div className="font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
                           {auction.tokenSymbol.length > 8
                             ? `${auction.tokenSymbol.slice(0, 8)}...`
                             : auction.tokenSymbol}
@@ -104,11 +105,7 @@ export default function AuctionsPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div
-                        className={`font-medium text-[15px] tabular-nums ${
-                          auction.isProfitable ? "text-zinc-400" : "text-zinc-400"
-                        }`}
-                      >
+                      <div className={`text-[15px] font-medium tabular-nums ${auction.isProfitable ? "positive-value" : "negative-value"}`}>
                         {formatProfit(auction.profit)}
                       </div>
                       <div className="text-[13px] text-muted-foreground">profit</div>
@@ -119,8 +116,8 @@ export default function AuctionsPage() {
 
             {!isLoading && auctions.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
-                  <Flame className="w-6 h-6 opacity-50" />
+                <div className="slab-inset mb-3 flex h-12 w-12 items-center justify-center">
+                  <Flame className="h-6 w-6 opacity-50" />
                 </div>
                 <p className="text-[15px] font-medium">No active auctions</p>
                 <p className="text-[13px] mt-1 opacity-70">Check back later</p>
@@ -132,20 +129,17 @@ export default function AuctionsPage() {
         {/* Bottom Action Bar */}
         {selectedAuction && (
           <div
-            className="fixed left-0 right-0 bg-background"
+            className="fixed left-0 right-0"
             style={{
               bottom: "calc(env(safe-area-inset-bottom, 0px) + 76px)",
-              borderTop: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <div className="max-w-[520px] mx-auto px-4 py-4">
+            <div className="glass-panel mx-auto max-w-[520px] px-4 py-4">
               {/* Trade Summary */}
-              <div
-                className="pb-4 mb-4 border-b border-border"
-              >
+              <div className="slab-inset mb-4 p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[12px] text-muted-foreground mb-1">
+                    <div className="mb-1 text-[12px] text-muted-foreground">
                       You Pay
                     </div>
                     <div className="flex items-center gap-2">
@@ -164,8 +158,8 @@ export default function AuctionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <ArrowRight className="w-4 h-4 text-zinc-400" />
+                  <div className="ghost-border flex h-8 w-8 items-center justify-center bg-surface-lowest">
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="text-right">
                     <div className="text-[12px] text-muted-foreground mb-1">
@@ -180,18 +174,14 @@ export default function AuctionsPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <div
-                  className={`text-[15px] font-medium tabular-nums ${
-                    selectedAuction.isProfitable ? "text-zinc-400" : "text-zinc-400"
-                  }`}
-                >
+                <div className={`text-[15px] font-medium tabular-nums ${selectedAuction.isProfitable ? "positive-value" : "negative-value"}`}>
                   {selectedAuction.isProfitable
                     ? `+$${selectedAuction.profit.toFixed(2)} profit`
                     : `-$${Math.abs(selectedAuction.profit).toFixed(2)} loss`}
                 </div>
                 <Link
                   href={`/fundraiser/${selectedAuction.fundraiserAddress}`}
-                  className="h-10 px-6 bg-white text-black text-[14px] font-semibold rounded-xl hover:bg-zinc-200 transition-colors inline-flex items-center justify-center"
+                  className="slab-button px-6 text-[11px]"
                 >
                   Buy Auction
                 </Link>

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { X, Delete, Loader2, CheckCircle } from "lucide-react";
-import { parseUnits, parseEther, formatEther, formatUnits } from "viem";
+import { parseUnits, parseEther } from "viem";
 import { useReadContract } from "wagmi";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import {
@@ -24,7 +24,6 @@ type LiquidityModalProps = {
   onClose: () => void;
   unitAddress: `0x${string}`;
   tokenSymbol?: string;
-  tokenName?: string;
   tokenBalance?: number;
   usdcBalance?: number;
   tokenPrice?: number; // Token price in USDC
@@ -44,7 +43,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
+      className="ghost-border flex h-12 flex-1 items-center justify-center text-lg font-mono font-medium text-foreground transition-colors hover:bg-surface-high active:bg-surface-high sm:h-14 sm:text-xl"
     >
       {children}
     </button>
@@ -56,18 +55,16 @@ export function LiquidityModal({
   onClose,
   unitAddress,
   tokenSymbol = "TOKEN",
-  tokenName = "Token",
   tokenBalance = 0,
   usdcBalance = 0,
   tokenPrice = 0,
   colorPositive = true,
 }: LiquidityModalProps) {
   const { address: account } = useFarcaster();
-  const { execute, status: txStatus, txHash, error: txError, reset: resetTx } = useBatchedTransaction();
+  const { execute, status: txStatus, error: txError, reset: resetTx } = useBatchedTransaction();
   const [tokenAmount, setTokenAmount] = useState("0");
 
   // Reset when modal opens/closes
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (isOpen) {
       setTokenAmount("0");
@@ -82,7 +79,6 @@ export function LiquidityModal({
     const timer = setTimeout(() => resetTx(), isRejection ? 2000 : 5000);
     return () => clearTimeout(timer);
   }, [txStatus, txError, resetTx]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Handle number pad input
   const handleNumPadPress = useCallback((value: string) => {
@@ -218,9 +214,9 @@ export function LiquidityModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -229,7 +225,7 @@ export function LiquidityModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <X className="w-5 h-5" />
           </button>
@@ -238,7 +234,7 @@ export function LiquidityModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col px-4">
+        <div className="flex-1 min-h-0 flex flex-col px-4">
           {/* Title */}
           <div className="mt-4 mb-6">
             <h1 className="text-2xl font-semibold font-display tracking-tight">Add Liquidity</h1>
@@ -248,7 +244,7 @@ export function LiquidityModal({
           </div>
 
           {/* Token Input */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">You provide</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -259,7 +255,7 @@ export function LiquidityModal({
               <span className="text-[11px] text-muted-foreground">{tokenSymbol}</span>
               <button
                 onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
-                className="text-[11px] text-muted-foreground hover:text-zinc-400 transition-colors font-mono tabular-nums"
+                className="text-[11px] text-muted-foreground transition-colors font-mono tabular-nums hover:text-primary"
               >
                 Balance: {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -267,7 +263,7 @@ export function LiquidityModal({
           </div>
 
           {/* Required USDC */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset mt-2 px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Required USDC</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -282,7 +278,7 @@ export function LiquidityModal({
                   const maxTokenFromUsdc = usdcBalance / tokenPrice;
                   setTokenAmount(Math.min(tokenBalance, maxTokenFromUsdc).toFixed(2));
                 }}
-                className="text-[11px] text-muted-foreground hover:text-zinc-400 transition-colors font-mono tabular-nums"
+                className="text-[11px] text-muted-foreground transition-colors font-mono tabular-nums hover:text-primary"
               >
                 Balance: {usdcBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </button>
@@ -305,14 +301,14 @@ export function LiquidityModal({
           <button
             onClick={handleAddLiquidity}
             disabled={!canCreate || isPending || isSuccess}
-            className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
+            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 ${
               isSuccess
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
+                ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
                 : isError
-                ? "bg-zinc-800 text-white"
+                ? "slab-button-ghost text-loss"
                 : !canCreate || isPending
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
-                : colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
+                ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
+                : colorPositive ? "slab-button" : "slab-button slab-button-loss"
             }`}
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -337,9 +333,9 @@ export function LiquidityModal({
           {/* Number pad */}
           <div
             className="pb-4"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
           >
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "backspace"].map(
                 (key) => (
                   <NumPadButton key={key} value={key} onClick={handleNumPadPress}>

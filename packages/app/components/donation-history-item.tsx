@@ -41,8 +41,8 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
 
   return (
     <div
-      className={`flex items-center gap-3 py-3 rounded-none transition-colors duration-1000 ${
-        isNew ? "bg-zinc-800/50 px-2 -mx-2" : ""
+      className={`data-row flex items-center gap-3 px-3 py-3 transition-colors duration-1000 ${
+        isNew ? "light-leak animate-bump-in" : ""
       }`}
     >
       <button
@@ -52,7 +52,7 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
       >
         <Avatar className="h-8 w-8 flex-shrink-0">
           <AvatarImage src={avatarUrl} alt={displayName} />
-          <AvatarFallback className="bg-zinc-800 text-white text-xs">
+          <AvatarFallback className="text-xs">
             {donation.donor.slice(2, 4).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -63,14 +63,14 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
           <button
             onClick={handleProfileClick}
             disabled={!fid}
-            className={`text-sm font-medium truncate ${fid ? "hover:text-zinc-400 cursor-pointer" : "cursor-default"}`}
+            className={`truncate text-sm font-medium ${fid ? "cursor-pointer hover:text-primary" : "cursor-default"}`}
           >
             {displayName}
           </button>
-          <span className="text-xs text-zinc-400">{timeAgo(donation.timestamp)}</span>
+          <span className="text-xs text-muted-foreground">{timeAgo(donation.timestamp)}</span>
         </div>
         {donation.uri && (
-          <div className="text-xs text-zinc-400 mt-0.5 truncate">{donation.uri}</div>
+          <div className="mt-0.5 truncate text-xs text-muted-foreground">{donation.uri}</div>
         )}
       </div>
 
