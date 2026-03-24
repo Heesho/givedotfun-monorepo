@@ -42,12 +42,12 @@ type Timeframe = "1H" | "1D" | "1W" | "1M" | "ALL";
 function AddressLink({ address }: { address: string | null }) {
   if (!address) return <span>None</span>;
   return (
-    <a
-      href={`https://basescan.org/address/${address}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="hover:underline hover:text-white transition-colors"
-    >
+      <a
+        href={`https://basescan.org/address/${address}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-colors hover:text-primary hover:underline"
+      >
       {truncateAddress(address)}
     </a>
   );
@@ -94,9 +94,9 @@ function formatCountdown(seconds: number): string {
 // Loading skeleton for the page
 function LoadingSkeleton() {
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
@@ -110,8 +110,10 @@ function LoadingSkeleton() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="text-center opacity-0">
-            <div className="text-[15px] font-semibold">--</div>
+          <div className="min-w-[144px] opacity-0">
+            <div className="slab-inset px-3 py-1.5">
+              <div className="text-[15px] font-semibold">--</div>
+            </div>
           </div>
           <div className="p-2 -mr-2" />
         </div>
@@ -266,10 +268,6 @@ export default function FundraiserDetailPage() {
   const positionBalanceUsd = userCoinBalance * priceUsd;
 
   // User quote balance (USDC, 6 decimals)
-  const userQuoteBalance = accountQuoteBalance
-    ? Number(formatUnits(accountQuoteBalance, QUOTE_TOKEN_DECIMALS))
-    : 0;
-
   // User USDC balance (6 decimals)
   const userUsdcBalance = accountUsdcBalance
     ? Number(formatUnits(accountUsdcBalance, QUOTE_TOKEN_DECIMALS))
@@ -335,6 +333,10 @@ export default function FundraiserDetailPage() {
     if (!firstPoint || firstPoint.value === 0) return 0;
     return ((priceUsd - firstPoint.value) / firstPoint.value) * 100;
   }, [chartData, priceUsd]);
+  const movementColor = displayChange >= 0 ? "#4ae183" : "#c9ce00";
+  const movementClass = displayChange >= 0 ? "positive-value" : "negative-value";
+  const isCoinPositive = displayChange >= 0;
+  const coinActionButtonClass = isCoinPositive ? "slab-button" : "slab-button slab-button-loss";
 
   const [hoverData, setHoverData] = useState<HoverData>(null);
   const handleChartHover = useCallback((data: HoverData) => setHoverData(data), []);
@@ -457,9 +459,9 @@ export default function FundraiserDetailPage() {
   }
 
   return (
-    <main className="flex h-screen w-screen justify-center bg-zinc-800">
+    <main className="app-shell">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className="app-frame"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
@@ -469,34 +471,46 @@ export default function FundraiserDetailPage() {
         <div className="flex items-center justify-between px-4 pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className={`text-center transition-opacity duration-200 ${showHeaderPrice ? "opacity-100" : "opacity-0"}`}>
-            <div className="text-[15px] font-semibold font-mono">{formatPrice(priceUsd)}</div>
-            <div className="text-[15px] font-semibold font-display">{tokenSymbol}</div>
+          <div
+            className={`pointer-events-none min-w-[144px] transition-all duration-200 ${
+              showHeaderPrice ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+            }`}
+          >
+            <div className={`px-3 py-1.5 ${displayChange >= 0 ? "ticker-plaque-positive" : "ticker-plaque-negative"}`}>
+              <div className="text-center text-current">
+                <div className="font-display text-[11px] font-semibold uppercase leading-none tracking-[0.08em]">
+                  {tokenSymbol}
+                </div>
+                <div className="mt-0.5 font-mono text-[13px] font-semibold leading-none tabular-nums">
+                  {formatPrice(priceUsd)}
+                </div>
+              </div>
+            </div>
           </div>
           <button
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : "";
               composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
             }}
-            className="p-2 -mr-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -mr-2 p-2 transition-colors hover:bg-surface-high"
           >
             <Share2 className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-4">
           {/* Token Info Section */}
-          <div className="flex items-center justify-between py-3">
+          <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel mb-3 flex items-center justify-between px-3 py-3`}>
             <div className="flex items-center gap-3">
               <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
               <div ref={tokenIdentityRef}>
                 <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                <div className="text-[15px] font-medium font-display">{tokenSymbol}</div>
+                <div className="font-display text-[15px] font-medium uppercase tracking-[-0.02em]">{tokenSymbol}</div>
               </div>
             </div>
             <div className="text-right">
@@ -506,11 +520,11 @@ export default function FundraiserDetailPage() {
                   : formatPrice(priceUsd)}
               </div>
               {hoverData ? (
-                <div className="text-[13px] font-medium font-mono text-zinc-400">
+                <div className="text-[13px] font-medium font-mono text-muted-foreground">
                   {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               ) : (
-                <div className={`text-[13px] font-medium font-mono ${displayChange >= 0 ? "text-[#7CCB6B]" : "text-[#C9865A]"}`}>
+                <div className={`text-[13px] font-medium font-mono ${movementClass}`}>
                   {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                 </div>
               )}
@@ -522,7 +536,7 @@ export default function FundraiserDetailPage() {
             <PriceChart
               data={chartData}
               height={176}
-              color={displayChange >= 0 ? "#7CCB6B" : "#C9865A"}
+              color={movementColor}
               onHover={handleChartHover}
               tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
               initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
@@ -530,19 +544,17 @@ export default function FundraiserDetailPage() {
           </div>
 
           {/* Timeframe Selector */}
-          <div className="flex justify-between mb-5 px-2">
+          <div className="mb-5 grid grid-cols-5 gap-2">
             {(["1H", "1D", "1W", "1M", "ALL"] as Timeframe[]).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-3.5 py-1.5 rounded-none text-[13px] font-medium font-mono transition-all ${
+                className={`ghost-border px-2 py-2 text-[12px] font-medium font-mono transition-all ${
                   timeframe === tf
                     ? displayChange >= 0
-                      ? "bg-[#7CCB6B] text-black"
-                      : "bg-[#C9865A] text-black"
-                    : displayChange >= 0
-                      ? "text-[#7CCB6B] hover:bg-[#7CCB6B]/10"
-                      : "text-[#C9865A] hover:bg-[#C9865A]/10"
+                      ? "bg-primary text-primary-foreground shadow-slab"
+                      : "bg-loss text-loss-foreground shadow-slab-loss"
+                    : "bg-secondary text-muted-foreground hover:bg-surface-high hover:text-foreground"
                 }`}
               >
                 {tf}
@@ -551,11 +563,11 @@ export default function FundraiserDetailPage() {
           </div>
 
           {/* Mining Pool Section */}
-          <div className="mb-6">
+          <div className="slab-panel mb-6 px-3 py-4">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="font-semibold text-[18px] font-display">Today's Mining Pool</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today's coin rewards</div>
+                <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
               </div>
               <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
                 {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
@@ -588,7 +600,7 @@ export default function FundraiserDetailPage() {
 
             <button
               onClick={() => setShowMineModal(true)}
-              className={`w-full mt-4 h-10 text-[14px] font-semibold font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
+              className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
             >
               Mine
             </button>
@@ -596,9 +608,9 @@ export default function FundraiserDetailPage() {
 
           {/* Your Position Section */}
           {hasPosition && (
-            <div className="mb-6">
+            <div className="slab-panel mb-6 px-3 py-4">
               <div className="mb-3">
-                <div className="font-semibold text-[18px] font-display">Your position</div>
+                <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
               </div>
 
@@ -607,11 +619,11 @@ export default function FundraiserDetailPage() {
                 <div className="mb-4">
                   {/* Current epoch - active */}
                   {userCurrentEpochDonation > 0 && (
-                    <div className="flex items-center gap-3 py-3">
+                    <div className="data-row mb-2 flex items-center gap-3 px-3 py-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">Day {currentEpoch}</span>
-                          <span className="text-xs text-zinc-400">active</span>
+                          <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -637,11 +649,11 @@ export default function FundraiserDetailPage() {
                     const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
                     const epReward = Number(formatEther(ep.pendingReward));
                     return (
-                      <div key={ep.epoch.toString()} className="flex items-center gap-3 py-3">
+                      <div key={ep.epoch.toString()} className="data-row data-row-alt mb-2 flex items-center gap-3 px-3 py-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                            <span className="text-xs text-zinc-400">claimable</span>
+                            <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -668,14 +680,14 @@ export default function FundraiserDetailPage() {
                     <button
                       onClick={handleClaim}
                       disabled={claimStatus === "pending" || claimStatus === "success"}
-                      className={`w-full mt-1 h-10 text-[14px] font-semibold font-display rounded-none transition-all flex items-center justify-center gap-1.5 ${
+                      className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
                         claimStatus === "success"
-                          ? displayChange >= 0 ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
+                          ? `${coinActionButtonClass} opacity-70`
                           : claimStatus === "error"
-                          ? "bg-zinc-800 text-white"
+                          ? "slab-button-ghost text-loss"
                           : claimStatus === "pending"
-                          ? displayChange >= 0 ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
-                          : displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
+                          ? `${coinActionButtonClass} opacity-50`
+                          : coinActionButtonClass
                       }`}
                     >
                       {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -702,7 +714,7 @@ export default function FundraiserDetailPage() {
                 </div>
                 <div>
                   <div className="text-muted-foreground text-[12px] mb-1">Value</div>
-                  <div className="font-semibold text-[15px] tabular-nums font-mono text-white">
+                  <div className="text-[15px] font-semibold tabular-nums font-mono text-foreground">
                     ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -728,9 +740,9 @@ export default function FundraiserDetailPage() {
           )}
 
           {/* About Section */}
-          <div className="mb-6">
+          <div className="slab-panel mb-6 px-3 py-4">
             <div className="mb-3">
-              <div className="font-semibold text-[18px] font-display">About</div>
+              <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
               <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
             </div>
 
@@ -767,7 +779,7 @@ export default function FundraiserDetailPage() {
                   href={`https://basescan.org/token/${coinAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                  className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
                 >
                   {tokenSymbol}
                 </a>
@@ -777,7 +789,7 @@ export default function FundraiserDetailPage() {
                   href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                  className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
                 >
                   {tokenSymbol}-USDC LP
                 </a>
@@ -801,7 +813,7 @@ export default function FundraiserDetailPage() {
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-secondary text-[12px] text-muted-foreground hover:bg-secondary/80 transition-colors"
+                    className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
                   >
                     {label}
                   </a>
@@ -811,23 +823,23 @@ export default function FundraiserDetailPage() {
 
             {/* Action buttons */}
             {isConnected && (
-              <div className="flex">
+              <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setShowLiquidityModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
+                    className={`${coinActionButtonClass} text-[11px]`}
                   >
                     Liquidity
                   </button>
                   <button
                     onClick={() => setShowAuctionModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
+                    className={`${coinActionButtonClass} text-[11px]`}
                   >
                     Auction
                   </button>
                 {isOwner && (
                   <button
                     onClick={() => setShowAdminModal(true)}
-                    className={`flex-1 h-10 text-[14px] font-medium font-display rounded-none transition-colors ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
+                    className={`${coinActionButtonClass} col-span-2 text-[11px]`}
                   >
                     Admin
                   </button>
@@ -837,9 +849,9 @@ export default function FundraiserDetailPage() {
           </div>
 
           {/* Recent Donations */}
-          <div className="mb-6">
+          <div className="slab-panel mb-6 px-3 py-4">
             <div className="mb-3">
-              <h2 className="text-[18px] font-semibold font-display">Recent Funding</h2>
+              <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
               <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
             </div>
             {isHistoryLoading ? (
@@ -851,7 +863,7 @@ export default function FundraiserDetailPage() {
                 No funding yet
               </div>
             ) : (
-              <div>
+              <div className="space-y-2">
                 {donations.map((donation, index) => (
                   <DonationHistoryItem
                     key={`${donation.donor}-${donation.timestamp}-${index}`}
@@ -885,9 +897,9 @@ export default function FundraiserDetailPage() {
           />
 
           {/* Global Stats Grid */}
-          <div className="mb-6">
+          <div className="slab-panel mb-6 px-3 py-4">
             <div className="mb-3">
-              <div className="font-semibold text-[18px] font-display">Stats</div>
+              <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
               <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
             </div>
             <div className="grid grid-cols-2 gap-y-4 gap-x-8">
@@ -993,8 +1005,8 @@ export default function FundraiserDetailPage() {
 
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-800 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
-          <div className="flex items-center w-full max-w-[520px] px-4 py-3 bg-background">
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
+          <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-2 px-4 py-3">
             {isConnected ? (
               <>
                 {userCoinBalance > 0 && (
@@ -1003,7 +1015,7 @@ export default function FundraiserDetailPage() {
                       setTradeMode("sell");
                       setShowTradeModal(true);
                     }}
-                    className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#C9865A] text-black hover:bg-[#B9774D]"
+                    className="slab-button slab-button-loss flex-1 text-[11px]"
                   >
                     Sell
                   </button>
@@ -1013,7 +1025,7 @@ export default function FundraiserDetailPage() {
                     setTradeMode("buy");
                     setShowTradeModal(true);
                   }}
-                  className="flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors bg-[#7CCB6B] text-black hover:bg-[#69B859]"
+                  className="slab-button flex-1 text-[11px]"
                 >
                   Buy
                 </button>
@@ -1022,7 +1034,7 @@ export default function FundraiserDetailPage() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting || isInFrame === true}
-                className={`flex-1 h-10 text-[14px] font-semibold font-display rounded-none transition-colors disabled:opacity-50 ${displayChange >= 0 ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"}`}
+                className="slab-button flex-1 text-[11px] disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
@@ -1031,7 +1043,7 @@ export default function FundraiserDetailPage() {
         </div>
 
       </div>
-      <NavBar />
+      <NavBar attachedTop />
 
       {/* Mine Modal */}
       <MineModal
@@ -1040,7 +1052,7 @@ export default function FundraiserDetailPage() {
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
         onSuccess={() => refetchFund()}
-        colorPositive={displayChange >= 0}
+        colorPositive={isCoinPositive}
       />
 
       {/* Trade Modal (Buy/Sell) */}
@@ -1049,12 +1061,12 @@ export default function FundraiserDetailPage() {
         onClose={() => setShowTradeModal(false)}
         mode={tradeMode}
         tokenSymbol={tokenSymbol}
-        tokenName={tokenName}
         unitAddress={(coinAddress ?? "0x0") as `0x${string}`}
         marketPrice={priceUsd}
         userQuoteBalance={accountQuoteBalance ?? 0n}
         userUnitBalance={accountCoinBalance ?? 0n}
         logoUrl={logoUrl ?? undefined}
+        colorPositive={isCoinPositive}
       />
 
       {/* Auction Modal */}
@@ -1063,8 +1075,7 @@ export default function FundraiserDetailPage() {
         onClose={() => setShowAuctionModal(false)}
         fundraiserAddress={fundraiserAddress}
         tokenSymbol={tokenSymbol}
-        tokenName={tokenName}
-        colorPositive={displayChange >= 0}
+        colorPositive={isCoinPositive}
       />
 
       {/* Liquidity Modal */}
@@ -1073,11 +1084,10 @@ export default function FundraiserDetailPage() {
         onClose={() => setShowLiquidityModal(false)}
         unitAddress={(coinAddress ?? "0x0") as `0x${string}`}
         tokenSymbol={tokenSymbol}
-        tokenName={tokenName}
         tokenBalance={userCoinBalance}
         usdcBalance={userUsdcBalance}
         tokenPrice={priceUsd}
-        colorPositive={displayChange >= 0}
+        colorPositive={isCoinPositive}
       />
 
       {/* Admin Modal */}
@@ -1091,10 +1101,9 @@ export default function FundraiserDetailPage() {
           initialTreasury={fundraiserState?.treasury ?? ""}
           initialTeam={fundraiserState?.team ?? ""}
           initialRecipient={fundraiserState?.recipient ?? ""}
-          initialUri={fundraiserUri ?? ""}
           initialMetadata={metadata ?? undefined}
           initialLogoUrl={logoUrl ?? undefined}
-          colorPositive={displayChange >= 0}
+          colorPositive={isCoinPositive}
         />
       )}
 

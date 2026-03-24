@@ -55,7 +55,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="flex-1 h-14 flex items-center justify-center text-xl font-mono font-medium text-white hover:bg-zinc-800/50 active:bg-zinc-800/50 rounded-none transition-colors"
+      className="ghost-border flex h-12 flex-1 items-center justify-center text-lg font-mono font-medium text-foreground transition-colors hover:bg-surface-high active:bg-surface-high sm:h-14 sm:text-xl"
     >
       {children}
     </button>
@@ -78,7 +78,7 @@ export function MineModal({
   const [message, setMessage] = useState("");
 
   const { address: account } = useFarcaster();
-  const { execute, status, txHash, error: txError, reset } = useBatchedTransaction();
+  const { execute, status, error: txError, reset } = useBatchedTransaction();
 
   const { fundraiserState } = useFundraiserState(fundraiserAddress, account);
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
@@ -241,9 +241,9 @@ export function MineModal({
   const isSuccess = status === "success";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -252,7 +252,7 @@ export function MineModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <X className="w-5 h-5" />
           </button>
@@ -261,7 +261,7 @@ export function MineModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col px-4">
+        <div className="flex-1 min-h-0 flex flex-col px-4">
           {/* Balance */}
           <div className="mt-4 mb-6">
             <h1 className="text-2xl font-semibold font-display tracking-tight">
@@ -273,7 +273,7 @@ export function MineModal({
           </div>
 
           {/* Amount input display */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -283,7 +283,7 @@ export function MineModal({
           </div>
 
           {/* Cost per coin */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset mt-2 px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Cost per coin</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -293,7 +293,7 @@ export function MineModal({
           </div>
 
           {/* Estimated coins */}
-          <div className="py-4 border-b border-border">
+          <div className="slab-inset mt-2 px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Est. coins</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -306,9 +306,9 @@ export function MineModal({
 
           {/* Error messages */}
           {txError && (
-            <div className="px-3 py-2 rounded-none bg-zinc-800/10 border border-zinc-800/20 flex items-start gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
-              <span className="text-[12px] text-zinc-400">
+            <div className="slab-inset mb-3 flex items-start gap-2 px-3 py-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-loss" />
+              <span className="text-[12px] text-loss">
                 {(() => {
                   const msg = txError?.message || "";
                   if (msg.includes("rejected") || msg.includes("denied") || msg.includes("cancelled")) return "Transaction cancelled";
@@ -322,39 +322,41 @@ export function MineModal({
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Message input */}
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={defaultMessage}
-            maxLength={100}
-            className="w-full bg-zinc-800 rounded-none px-4 py-2.5 text-[14px] outline-none placeholder:text-zinc-400 mb-3"
-          />
+          <div className="mb-3 sm:mb-4">
+            {/* Message input */}
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={defaultMessage}
+              maxLength={100}
+              className="field-input h-11 px-4 text-[14px]"
+            />
 
-          {/* Action button */}
-          <button
-            disabled={buttonDisabled}
-            onClick={handleConfirm}
-            className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all mb-4 flex items-center justify-center gap-2 ${
-              buttonDisabled
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
-                : isSuccess
-                ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
-                : colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
-            }`}
-          >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isSuccess && <CheckCircle className="w-4 h-4" />}
-            {buttonLabel}
-          </button>
+            {/* Action button */}
+            <button
+              disabled={buttonDisabled}
+              onClick={handleConfirm}
+              className={`-mt-px flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] ${
+                buttonDisabled
+                  ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
+                  : isSuccess
+                  ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
+                  : colorPositive ? "slab-button" : "slab-button slab-button-loss"
+              }`}
+            >
+              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSuccess && <CheckCircle className="w-4 h-4" />}
+              {buttonLabel}
+            </button>
+          </div>
 
           {/* Number pad */}
           <div
             className="pb-4"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
           >
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "backspace"].map(
                 (key) => (
                   <NumPadButton key={key} value={key} onClick={handleNumPadPress}>

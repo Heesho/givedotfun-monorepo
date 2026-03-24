@@ -17,7 +17,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Fetch fundraiser info from subgraph
   const fundraiser = await getFundraiser(fundraiserAddress);
 
-  const tokenName = fundraiser?.coin?.name || "Fundraiser";
   const tokenSymbol = fundraiser?.coin?.symbol || "TOKEN";
   const fundraiserUrl = `${appDomain}/fundraiser/${fundraiserAddress}`;
 

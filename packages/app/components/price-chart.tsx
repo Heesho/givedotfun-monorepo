@@ -66,8 +66,8 @@ export function PriceChart({
       const chart = createChart(container, {
         layout: {
           background: { type: ColorType.Solid, color: "transparent" },
-          textColor: "#71717a",
-          fontFamily: "Sora, sans-serif",
+          textColor: "#9f9992",
+          fontFamily: "Inter, sans-serif",
           attributionLogo: false,
         },
         grid: {
@@ -99,7 +99,7 @@ export function PriceChart({
           vertLine: {
             visible: true,
             labelVisible: false,
-            color: "#a1a1aa50",
+            color: "rgba(229, 226, 225, 0.18)",
             width: 1,
             style: 2,
           },
@@ -126,11 +126,14 @@ export function PriceChart({
 
           baselineSeries = chart.addSeries(LineSeries, {
             color: "#52525b",
-            lineWidth: 1,
             lineStyle: LineStyle.Dashed,
+            lineWidth: 1,
             priceLineVisible: false,
             lastValueVisible: false,
             crosshairMarkerVisible: false,
+          });
+          baselineSeries.applyOptions({
+            color: "rgba(159, 153, 146, 0.65)",
           });
           baselineSeries.setData(baselineData);
 

@@ -14,6 +14,8 @@ type FundraiserCardProps = {
   isNewBump?: boolean;
 };
 
+const renderEpochSeconds = Math.floor(Date.now() / 1000);
+
 const formatUsd = (value: number | undefined | null) => {
   if (value == null || value === 0) return "$0.00";
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -60,7 +62,7 @@ function MiniSparkline({ prices }: { prices: number[] }) {
   })();
 
   return (
-    <svg width="60" height="24" className="overflow-visible text-zinc-400">
+    <svg width="60" height="24" className="overflow-visible text-muted-foreground">
       <polyline
         points={points}
         fill="none"
@@ -78,7 +80,7 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Fetch candle data — use minute candles for tokens < 24h old, hourly otherwise
-  const tokenAge = coin.createdAt ? Math.floor(Date.now() / 1000) - coin.createdAt : Infinity;
+  const tokenAge = coin.createdAt ? renderEpochSeconds - coin.createdAt : Infinity;
   const { data: candles } = useQuery({
     queryKey: ["miniSparkline", coin.coinAddress, tokenAge < 86400 ? "minute" : "hour"],
     queryFn: async () => {
@@ -129,13 +131,13 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
     <Link href={`/fundraiser/${coin.address}`} className="block">
       <div
         className={cn(
-          "flex items-center gap-3 py-4 transition-colors hover:bg-white/[0.02] border-b border-border",
-          isNewBump && "animate-bump-enter",
-          isTopBump && !isNewBump && "animate-bump-glow"
+          "data-row hover-slab flex items-center gap-3 px-3 py-4",
+          isNewBump && "light-leak animate-bump-in",
+          isTopBump && !isNewBump && "light-leak"
         )}
       >
         {/* Token Logo */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
+        <div className="ghost-border flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden bg-surface-lowest">
           {logoUrl ? (
             <img
               src={logoUrl}
@@ -143,7 +145,7 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
               className="w-10 h-10 object-cover"
             />
           ) : (
-            <span className="text-zinc-400 font-semibold text-sm">
+            <span className="text-sm font-semibold text-muted-foreground">
               {coin.tokenSymbol.slice(0, 2)}
             </span>
           )}
@@ -151,7 +153,7 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
 
         {/* Token Name & Symbol */}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-[15px] truncate">
+          <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
             {coin.tokenSymbol}
           </div>
           <div className="text-[13px] text-muted-foreground truncate mt-0.5">
@@ -169,7 +171,7 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
           <div className="text-[15px] font-medium tabular-nums">
             {formatUsd(marketCapUsd)}
           </div>
-          <div className="text-[13px] tabular-nums mt-0.5 text-zinc-400">
+          <div className={cn("mt-0.5 text-[13px] tabular-nums", change24h >= 0 ? "positive-value" : "negative-value")}>
             {change24h >= 0 ? "+" : ""}{change24h.toFixed(2)}%
           </div>
         </div>

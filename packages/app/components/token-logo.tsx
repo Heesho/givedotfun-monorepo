@@ -28,14 +28,17 @@ export function TokenLogo({
 }: TokenLogoProps) {
   const [imgError, setImgError] = useState(false);
   const classes = sizeClasses[size];
-  const rounding = variant === "circle" ? "rounded-full" : "rounded-none";
+  const shapeClasses =
+    variant === "circle"
+      ? "ghost-border bg-surface-lowest"
+      : "ghost-border bg-surface-lowest";
 
   if (logoUrl && !imgError) {
     return (
       <img
         src={logoUrl}
         alt={name}
-        className={`${classes.img} ${rounding} object-cover`}
+        className={`${classes.img} ${shapeClasses} object-cover`}
         onError={() => setImgError(true)}
       />
     );
@@ -43,7 +46,7 @@ export function TokenLogo({
 
   return (
     <div
-      className={`${classes.container} ${rounding} flex items-center justify-center font-semibold bg-zinc-800 text-zinc-400`}
+      className={`${classes.container} ${shapeClasses} flex items-center justify-center font-semibold text-muted-foreground`}
     >
       {name.charAt(0).toUpperCase()}
     </div>

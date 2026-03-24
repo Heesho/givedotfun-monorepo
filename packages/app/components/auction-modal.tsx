@@ -26,7 +26,6 @@ type AuctionModalProps = {
   onClose: () => void;
   fundraiserAddress: `0x${string}`;
   tokenSymbol: string;
-  tokenName: string;
   colorPositive?: boolean;
 };
 
@@ -35,7 +34,6 @@ export function AuctionModal({
   onClose,
   fundraiserAddress,
   tokenSymbol,
-  tokenName,
   colorPositive = true,
 }: AuctionModalProps) {
   const { address: account } = useFarcaster();
@@ -46,7 +44,7 @@ export function AuctionModal({
     account
   );
 
-  const { execute, status, txHash, error, reset } = useBatchedTransaction();
+  const { execute, status, error, reset } = useBatchedTransaction();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -152,9 +150,9 @@ export function AuctionModal({
   const isError = status === "error";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-zinc-800">
+    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className="relative flex h-full w-full max-w-[520px] flex-col bg-background"
+        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -163,7 +161,7 @@ export function AuctionModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <X className="w-5 h-5" />
           </button>
@@ -193,7 +191,7 @@ export function AuctionModal({
               </div>
 
               {/* You Pay */}
-              <div className="py-4 border-b border-border">
+              <div className="slab-inset px-3 py-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You pay</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
@@ -211,7 +209,7 @@ export function AuctionModal({
               </div>
 
               {/* You Receive */}
-              <div className="py-4 border-b border-border">
+              <div className="slab-inset mt-2 px-3 py-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You receive</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
@@ -251,14 +249,14 @@ export function AuctionModal({
                 <button
                   onClick={handleBuy}
                   disabled={!account || !isAuctionActive || !hasEnoughLp || isPending || isSuccess}
-                  className={`w-full h-10 rounded-none font-semibold font-display text-[14px] transition-all flex items-center justify-center gap-2 ${
+                  className={`flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] ${
                     isSuccess
-                      ? colorPositive ? "bg-[#7CCB6B]/50 text-black" : "bg-[#C9865A]/50 text-black"
+                      ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
                       : isError
-                      ? "bg-zinc-800 text-white"
+                      ? "slab-button-ghost text-loss"
                       : !account || !isAuctionActive || !hasEnoughLp || isPending
-                      ? colorPositive ? "bg-[#7CCB6B]/50 text-black/50 cursor-not-allowed" : "bg-[#C9865A]/50 text-black/50 cursor-not-allowed"
-                      : colorPositive ? "bg-[#7CCB6B] text-black hover:bg-[#69B859]" : "bg-[#C9865A] text-black hover:bg-[#B9774D]"
+                      ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
+                      : colorPositive ? "slab-button" : "slab-button slab-button-loss"
                   }`}
                 >
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

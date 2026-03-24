@@ -1,10 +1,9 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Medal, Users, Share2 } from "lucide-react";
+import { Crown, Medal, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LeaderboardEntry } from "@/hooks/useRigLeaderboard";
-import { composeCast } from "@/hooks/useFarcaster";
 
 type LeaderboardProps = {
   entries: LeaderboardEntry[];
@@ -15,14 +14,18 @@ type LeaderboardProps = {
   isLoading?: boolean;
 };
 
-function getRankIcon(rank: number) {
-  if (rank === 1) return <Crown className="w-4 h-4 text-zinc-400" />;
-  if (rank === 2) return <Medal className="w-4 h-4 text-zinc-400" />;
-  if (rank === 3) return <Medal className="w-4 h-4 text-zinc-400" />;
-  return <span className="w-4 text-center text-xs text-zinc-400">#{rank}</span>;
+function LeaderboardShell({ children }: { children: React.ReactNode }) {
+  return <div className="slab-panel mb-6 px-3 py-4">{children}</div>;
 }
 
-function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; tokenSymbol: string }) {
+function getRankIcon(rank: number) {
+  if (rank === 1) return <Crown className="h-4 w-4 text-primary" />;
+  if (rank === 2) return <Medal className="h-4 w-4 text-loss" />;
+  if (rank === 3) return <Medal className="h-4 w-4 text-muted-foreground" />;
+  return <span className="w-4 text-center text-xs text-muted-foreground">#{rank}</span>;
+}
+
+function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
   const displayName = entry.profile?.displayName
     ?? entry.profile?.username
     ?? `${entry.address.slice(0, 6)}...${entry.address.slice(-4)}`;
@@ -31,7 +34,7 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
     ?? `https://api.dicebear.com/7.x/shapes/svg?seed=${entry.address.toLowerCase()}`;
 
   return (
-    <div className="flex items-center gap-3 py-3">
+    <div className="data-row flex items-center gap-3 px-3 py-3">
       {/* Rank */}
       <div className="w-6 flex justify-center flex-shrink-0">
         {getRankIcon(entry.rank)}
@@ -40,7 +43,7 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
       {/* Avatar */}
       <Avatar className="h-7 w-7 flex-shrink-0">
         <AvatarImage src={avatarUrl} alt={displayName} />
-        <AvatarFallback className="bg-zinc-800 text-white text-[10px]">
+        <AvatarFallback className="text-[10px]">
           {entry.address.slice(2, 4).toUpperCase()}
         </AvatarFallback>
       </Avatar>
@@ -50,16 +53,16 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
         <div className="flex items-center gap-1.5">
           <span className={cn(
             "text-sm truncate",
-            entry.isCurrentUser && "font-semibold text-white",
-            entry.isFriend && !entry.isCurrentUser && "text-zinc-400"
+            entry.isCurrentUser && "font-semibold text-primary",
+            entry.isFriend && !entry.isCurrentUser && "text-muted-foreground"
           )}>
             {displayName}
           </span>
           {entry.isCurrentUser && (
-            <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded-full">You</span>
+            <span className="ghost-border bg-surface-lowest px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-primary">You</span>
           )}
           {entry.isFriend && !entry.isCurrentUser && (
-            <Users className="w-3 h-3 text-zinc-400" />
+            <Users className="h-3 w-3 text-muted-foreground" />
           )}
         </div>
       </div>
@@ -76,74 +79,60 @@ function LeaderboardRow({ entry, tokenSymbol }: { entry: LeaderboardEntry; token
 export function Leaderboard({
   entries,
   userRank,
-  tokenSymbol,
-  tokenName,
-  fundraiserUrl,
   isLoading,
 }: LeaderboardProps) {
-  const handleShareChallenge = async () => {
-    if (!userRank) return;
-
-    const text = `I'm ranked #${userRank} on the ${tokenName} ($${tokenSymbol}) donor leaderboard on give.fun! Join me 👇`;
-
-    await composeCast({
-      text,
-      embeds: [fundraiserUrl],
-    });
-  };
-
   if (isLoading) {
     return (
-      <div className="mt-6">
+      <LeaderboardShell>
         <div className="mb-3">
-          <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
-          <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
+          <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
+          <div className="mt-0.5 text-[12px] text-muted-foreground">Top supporters ranked by total contribution</div>
         </div>
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 bg-zinc-800/30 rounded-none animate-pulse" />
+            <div key={i} className="slab-inset h-12 animate-pulse" />
           ))}
         </div>
-      </div>
+      </LeaderboardShell>
     );
   }
 
   if (entries.length === 0) {
     return (
-      <div className="mt-6">
+      <LeaderboardShell>
         <div className="mb-3">
-          <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
+          <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
           <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
         </div>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
           No supporters yet
         </div>
-      </div>
+      </LeaderboardShell>
     );
   }
 
   return (
-    <div className="mt-6">
+    <LeaderboardShell>
       <div className="mb-3">
-        <h2 className="text-[18px] font-semibold font-display">Leaderboard</h2>
+        <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
         <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
       </div>
 
       {/* User rank summary if not in top entries */}
       {userRank && userRank > entries.length && (
-        <div className="mb-3 p-2.5 rounded-none bg-zinc-800 border border-zinc-800">
+        <div className="slab-inset mb-3 p-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-zinc-400">Your rank</span>
-            <span className="text-sm font-semibold text-white">#{userRank}</span>
+            <span className="text-sm text-muted-foreground">Your rank</span>
+            <span className="text-sm font-semibold text-primary">#{userRank}</span>
           </div>
         </div>
       )}
 
-      <div>
+      <div className="space-y-2">
         {entries.map((entry) => (
-          <LeaderboardRow key={entry.address} entry={entry} tokenSymbol={tokenSymbol} />
+          <LeaderboardRow key={entry.address} entry={entry} />
         ))}
       </div>
-    </div>
+    </LeaderboardShell>
   );
 }
