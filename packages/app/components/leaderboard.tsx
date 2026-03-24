@@ -34,7 +34,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
     ?? `https://api.dicebear.com/7.x/shapes/svg?seed=${entry.address.toLowerCase()}`;
 
   return (
-    <div className="data-row flex items-center gap-3 px-3 py-3">
+    <div className="flex items-center gap-2.5 px-0 py-2.5">
       {/* Rank */}
       <div className="w-6 flex justify-center flex-shrink-0">
         {getRankIcon(entry.rank)}
@@ -52,7 +52,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <span className={cn(
-            "text-sm truncate",
+            "truncate text-[13px]",
             entry.isCurrentUser && "font-semibold text-primary",
             entry.isFriend && !entry.isCurrentUser && "text-muted-foreground"
           )}>
@@ -69,8 +69,8 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
 
       {/* Funded amount */}
       <div className="text-right flex-shrink-0">
-        <div className="text-[12px] text-muted-foreground">Funded</div>
-        <div className="text-[13px] font-medium font-mono tabular-nums">{entry.donatedFormatted}</div>
+        <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Funded</div>
+        <div className="mt-0.5 text-[12px] font-medium font-mono tabular-nums">{entry.donatedFormatted}</div>
       </div>
     </div>
   );
@@ -88,9 +88,9 @@ export function Leaderboard({
           <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
           <div className="mt-0.5 text-[12px] text-muted-foreground">Top supporters ranked by total contribution</div>
         </div>
-        <div className="space-y-2">
+        <div className="ledger-list">
           {[1, 2, 3].map(i => (
-            <div key={i} className="slab-inset h-12 animate-pulse" />
+            <div key={i} className="h-11 animate-pulse bg-transparent" />
           ))}
         </div>
       </LeaderboardShell>
@@ -128,7 +128,7 @@ export function Leaderboard({
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="ledger-list">
         {entries.map((entry) => (
           <LeaderboardRow key={entry.address} entry={entry} />
         ))}

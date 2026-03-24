@@ -209,6 +209,10 @@
     background: hsl(var(--surface-container-lowest));
   }
 
+  .ledger-list > * + * {
+    box-shadow: inset 0 1px 0 hsl(var(--outline-variant) / 0.14);
+  }
+
   .glass-panel {
     background: hsl(var(--surface) / 0.82);
     backdrop-filter: blur(24px);

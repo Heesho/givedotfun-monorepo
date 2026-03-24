@@ -41,7 +41,7 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
 
   return (
     <div
-      className={`data-row flex items-center gap-3 px-3 py-3 transition-colors duration-1000 ${
+      className={`grid grid-cols-[auto,minmax(0,1fr),auto] items-center gap-2.5 px-0 py-2 transition-colors duration-1000 ${
         isNew ? "light-leak animate-bump-in" : ""
       }`}
     >
@@ -50,7 +50,7 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
         disabled={!fid}
         className={fid ? "cursor-pointer" : "cursor-default"}
       >
-        <Avatar className="h-8 w-8 flex-shrink-0">
+        <Avatar className="h-7 w-7 flex-shrink-0">
           <AvatarImage src={avatarUrl} alt={displayName} />
           <AvatarFallback className="text-xs">
             {donation.donor.slice(2, 4).toUpperCase()}
@@ -59,29 +59,28 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
       </button>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="truncate text-[13px] font-medium leading-tight">
           <button
             onClick={handleProfileClick}
             disabled={!fid}
-            className={`truncate text-sm font-medium ${fid ? "cursor-pointer hover:text-primary" : "cursor-default"}`}
+            className={`truncate ${fid ? "cursor-pointer hover:text-primary" : "cursor-default"}`}
           >
             {displayName}
           </button>
-          <span className="text-xs text-muted-foreground">{timeAgo(donation.timestamp)}</span>
         </div>
-        {donation.uri && (
-          <div className="mt-0.5 truncate text-xs text-muted-foreground">{donation.uri}</div>
-        )}
+        <div className="mt-0.5 truncate text-[11px] leading-tight text-muted-foreground">
+          {donation.uri ? `${donation.uri} • ${timeAgo(donation.timestamp)}` : timeAgo(donation.timestamp)}
+        </div>
       </div>
 
-      <div className="flex items-center gap-4 flex-shrink-0 text-right">
-        <div>
-          <div className="text-[12px] text-muted-foreground">Funded</div>
-          <div className="text-[13px] font-medium font-mono tabular-nums">${amount.toFixed(2)}</div>
+      <div className="grid grid-cols-2 gap-x-3.5 flex-shrink-0 text-right">
+        <div className="min-w-[52px]">
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Funded</div>
+          <div className="mt-0.5 text-[12px] font-medium font-mono tabular-nums">${amount.toFixed(2)}</div>
         </div>
-        <div>
-          <div className="text-[12px] text-muted-foreground">Mining</div>
-          <div className="text-[13px] font-medium font-mono tabular-nums flex items-center justify-end gap-1">
+        <div className="min-w-[60px]">
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Mining</div>
+          <div className="mt-0.5 flex items-center justify-end gap-1 text-[12px] font-medium font-mono tabular-nums">
             <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
             {formatNumber(tokens, 0)}
           </div>

@@ -849,8 +849,8 @@ export default function FundraiserDetailPage() {
           </div>
 
           {/* Recent Donations */}
-          <div className="slab-panel mb-6 px-3 py-4">
-            <div className="mb-3">
+          <div className="slab-panel mb-6 px-3 py-3">
+            <div className="mb-2.5">
               <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
               <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
             </div>
@@ -863,7 +863,7 @@ export default function FundraiserDetailPage() {
                 No funding yet
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="ledger-list">
                 {donations.map((donation, index) => (
                   <DonationHistoryItem
                     key={`${donation.donor}-${donation.timestamp}-${index}`}
