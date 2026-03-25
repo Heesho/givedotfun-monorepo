@@ -40,7 +40,7 @@ export function GlobalNav() {
 
   // Text color: white on landing (over video), normal on other pages
   const textColor = isLanding && !menuOpen ? "text-white" : "text-foreground";
-  const logoColor = isLanding && !menuOpen ? "text-white" : "text-primary";
+  const logoColor = "text-primary";
 
   return (
     <>
