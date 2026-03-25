@@ -274,7 +274,7 @@ export function AdminModal({
   return (
     <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
       <div
-        className={`${colorPositive ? "glass-panel glass-panel-positive" : "glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
@@ -405,7 +405,7 @@ export function AdminModal({
                       <button
                         type="button"
                         onClick={() => setLinks([...links, ""])}
-                        className="text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
+                        className="signal-hover text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground"
                       >
                         + Add another
                       </button>

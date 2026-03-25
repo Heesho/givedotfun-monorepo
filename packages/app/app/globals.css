@@ -233,6 +233,14 @@
       hsl(var(--surface) / 0.82);
   }
 
+  .signal-theme-positive {
+    --signal: var(--primary);
+  }
+
+  .signal-theme-negative {
+    --signal: var(--tertiary);
+  }
+
   .dock-panel {
     background: hsl(var(--surface-container-low) / 0.96);
     backdrop-filter: blur(20px);
@@ -259,6 +267,19 @@
 
   .field-input-invalid {
     border-bottom-color: hsl(var(--destructive) / 0.9);
+  }
+
+  .signal-theme-positive .field-input,
+  .signal-theme-negative .field-input {
+    caret-color: hsl(var(--signal));
+  }
+
+  .signal-theme-positive .field-input:focus,
+  .signal-theme-negative .field-input:focus {
+    border-bottom-color: hsl(var(--signal));
+    background:
+      linear-gradient(135deg, hsl(var(--signal) / 0.1), transparent 50%),
+      hsl(var(--surface-container-lowest));
   }
 
   .slab-button {
@@ -323,6 +344,18 @@
   .toggle-track[data-state="on"] .toggle-thumb {
     left: 22px;
     background: hsl(var(--primary));
+  }
+
+  .signal-theme-positive .toggle-track[data-state="on"],
+  .signal-theme-negative .toggle-track[data-state="on"] {
+    background:
+      linear-gradient(135deg, hsl(var(--signal) / 0.18), transparent 70%),
+      hsl(var(--surface-container-high));
+  }
+
+  .signal-theme-positive .toggle-track[data-state="on"] .toggle-thumb,
+  .signal-theme-negative .toggle-track[data-state="on"] .toggle-thumb {
+    background: hsl(var(--signal));
   }
 }
 
@@ -394,6 +427,15 @@
 
   .animate-slide-down {
     animation: slide-down 0.35s ease-out forwards;
+  }
+
+  .signal-hover {
+    transition: color 150ms ease;
+  }
+
+  .signal-theme-positive .signal-hover:hover,
+  .signal-theme-negative .signal-hover:hover {
+    color: hsl(var(--signal));
   }
 }
 
