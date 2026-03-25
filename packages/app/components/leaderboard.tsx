@@ -59,7 +59,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
             {displayName}
           </span>
           {entry.isCurrentUser && (
-            <span className="ghost-border bg-surface-lowest px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-primary">You</span>
+            <span className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] bg-surface-lowest px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-primary">You</span>
           )}
           {entry.isFriend && !entry.isCurrentUser && (
             <Users className="h-3 w-3 text-muted-foreground" />
