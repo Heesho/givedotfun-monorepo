@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { formatUnits, parseUnits } from "viem";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { NavBar } from "@/components/nav-bar";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
@@ -188,8 +187,8 @@ function ProfileSkeleton() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
@@ -243,7 +242,6 @@ function ProfileSkeleton() {
           </div>
         </div>
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }
@@ -260,8 +258,8 @@ function NotConnected() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -308,7 +306,6 @@ function NotConnected() {
           )}
         </div>
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }
@@ -390,8 +387,8 @@ export default function ProfilePage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         {/* Mobile Header */}
@@ -764,7 +761,6 @@ export default function ProfilePage() {
           </div>
         </motion.div>
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }

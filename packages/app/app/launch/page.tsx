@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Upload, X } from "lucide-react";
 import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import { useReadContract, useWaitForTransactionReceipt } from "wagmi";
-import { NavBar } from "@/components/nav-bar";
 import { Particles } from "@/components/ui/particles";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import {
@@ -541,7 +540,7 @@ export default function LaunchPage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
@@ -643,9 +642,6 @@ export default function LaunchPage() {
           )}
         </div>
       </div>
-
-      {/* Nav Bar */}
-      <NavBar attachedTop desktopWide />
 
       {/* Success */}
       {txStatus === "success" && txHash && (

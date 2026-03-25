@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { NavBar } from "@/components/nav-bar";
 
 const INFO_SECTIONS = [
   {
@@ -77,8 +76,8 @@ export default function InfoPage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         {/* Header */}
@@ -159,7 +158,6 @@ export default function InfoPage() {
           </div>
         </motion.div>
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }

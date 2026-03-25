@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search, Flame, Clock, TrendingUp, X, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NavBar } from "@/components/nav-bar";
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import { useExploreFundraisers, type SortOption } from "@/hooks/useAllFundraisers";
 import { useSparklineData } from "@/hooks/useSparklineData";
@@ -236,8 +235,8 @@ export default function ExplorePage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 lg:px-8 lg:pb-0 lg:pt-24 xl:px-10">
@@ -524,7 +523,6 @@ export default function ExplorePage() {
           </div>
         </div>
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }

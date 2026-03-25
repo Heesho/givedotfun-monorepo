@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Flame, ArrowRight, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import { NavBar } from "@/components/nav-bar";
 import { useAuctions, type AuctionItem } from "@/hooks/useAuctions";
 import { TokenLogo } from "@/components/token-logo";
 import { formatPrice } from "@/lib/format";
@@ -43,7 +42,7 @@ export default function AuctionsPage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
         }}
       >
@@ -197,7 +196,6 @@ export default function AuctionsPage() {
           </div>
         )}
       </div>
-      <NavBar desktopWide />
     </main>
   );
 }

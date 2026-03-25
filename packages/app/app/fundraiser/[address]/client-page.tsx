@@ -6,7 +6,6 @@ import Link from "next/link";
 import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatEther, formatUnits } from "viem";
-import { NavBar } from "@/components/nav-bar";
 import { MineModal } from "@/components/mine-modal";
 import { TradeModal } from "@/components/trade-modal";
 import { AuctionModal } from "@/components/auction-modal";
@@ -99,7 +98,7 @@ function LoadingSkeleton() {
       <div
         className="app-frame"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
@@ -465,7 +464,7 @@ export default function FundraiserDetailPage() {
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
@@ -1397,7 +1396,7 @@ export default function FundraiserDetailPage() {
         </div>{/* end scroll container */}
 
         {/* Mobile header — back arrow, ticker plaque, share */}
-        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)", background: "hsl(var(--background))" }}>
+        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)", background: "hsl(var(--background))" }}>
           <Link
             href="/explore"
             className="-ml-2 p-2 transition-colors hover:bg-surface-high"
@@ -1470,7 +1469,6 @@ export default function FundraiserDetailPage() {
         </div>
 
       </div>
-      <NavBar attachedTop desktopWide />
 
       {/* Mine Modal */}
       <MineModal
