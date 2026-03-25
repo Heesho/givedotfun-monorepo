@@ -38,13 +38,16 @@ export function GlobalNav() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [menuOpen]);
 
-  // Text color: white on landing (over video), normal on other pages
-  const textColor = isLanding && !menuOpen ? "text-white" : "text-foreground";
+  // Landing: white hamburger (over video), transparent header bg
+  // Inner pages: black hamburger, white header bg
+  // Menu open: always dark text on white bg
+  const hamburgerColor = menuOpen ? "text-black" : isLanding ? "text-white" : "text-black";
+  const headerBg = isLanding && !menuOpen ? "" : "bg-white";
 
   return (
     <>
-      {/* Fixed top bar — always visible, no entrance animation */}
-      <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${isLanding ? "" : "bg-background"}`}>
+      {/* Fixed top bar — always visible */}
+      <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${headerBg}`}>
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-4 sm:py-5 flex items-center justify-between">
           {/* Logo — bigger */}
           <div className="pointer-events-auto">
@@ -67,7 +70,7 @@ export function GlobalNav() {
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${textColor}`}
+            className={`pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${hamburgerColor}`}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
           >
@@ -97,7 +100,7 @@ export function GlobalNav() {
             animate={{ y: 0 }}
             exit={{ y: "-100%" }}
             transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="fixed inset-0 z-[200] bg-background flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[200] bg-white flex flex-col items-center justify-center"
           >
             <div className="flex flex-col items-center gap-4 sm:gap-6 md:gap-8">
               {menuItems.map(({ label, href }, i) => (
@@ -110,7 +113,7 @@ export function GlobalNav() {
                   <Link
                     href={href}
                     className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold transition-colors touch-manipulation ${
-                      pathname === href ? "text-primary" : "text-foreground hover:text-primary"
+                      pathname === href ? "text-primary" : "text-black hover:text-primary"
                     }`}
                   >
                     {label}
