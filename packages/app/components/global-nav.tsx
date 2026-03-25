@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const menuItems = [
+  { href: "/", label: "Home" },
   { href: "/explore", label: "Explore" },
   { href: "/launch", label: "Launch" },
   { href: "/info", label: "About" },
@@ -14,6 +15,7 @@ const menuItems = [
 
 export function GlobalNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const isLanding = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -110,14 +112,18 @@ export function GlobalNav() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.06 }}
                 >
-                  <Link
-                    href={href}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      router.push(href);
+                    }}
                     className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold transition-colors touch-manipulation ${
                       pathname === href ? "text-primary" : "text-black hover:text-primary"
                     }`}
                   >
                     {label}
-                  </Link>
+                  </button>
                 </motion.div>
               ))}
             </div>
