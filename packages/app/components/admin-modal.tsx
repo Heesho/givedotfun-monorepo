@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, Camera, Loader2 } from "lucide-react";
 import { encodeFunctionData } from "viem";
 import type { TokenMetadata } from "@/hooks/useMetadata";
@@ -272,9 +273,13 @@ export function AdminModal({
     }`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-background/80 backdrop-blur-xl lg:items-center lg:bg-background/50 lg:backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:overflow-y-auto`}
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:overflow-y-auto lg:rounded-2xl`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
@@ -519,7 +524,7 @@ export function AdminModal({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
