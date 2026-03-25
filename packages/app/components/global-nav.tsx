@@ -60,7 +60,9 @@ export function GlobalNav() {
                 className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
               />
               <span
-                className="font-semibold tracking-[-0.03em] text-xl sm:text-2xl md:text-[1.75rem] text-primary"
+                className={`font-bold tracking-[-0.02em] text-2xl sm:text-3xl md:text-[2rem] transition-colors duration-300 ${
+                  isLanding && !menuOpen ? "text-white" : "text-black"
+                }`}
                 style={{ fontFamily: '"Metropolis", sans-serif' }}
               >
                 give.fun
