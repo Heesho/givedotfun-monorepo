@@ -65,17 +65,17 @@ export function NavBar({
         <header className="fixed inset-x-0 top-0 z-50 hidden lg:block"
           style={{
             background: "hsl(var(--background))",
-            boxShadow: "inset 0 -1px 0 hsl(var(--outline-variant) / 0.1)",
           }}
         >
-          <div className="mx-auto flex w-full max-w-[1480px] items-center gap-10 px-8 py-3.5 xl:px-10">
-            <Link href="/explore" className="flex shrink-0 items-center gap-3 transition-opacity hover:opacity-80">
+          <div className="mx-auto w-full lg:max-w-[1360px] xl:max-w-[1480px] px-8 xl:px-10">
+          <div className="mx-auto flex w-full max-w-[1360px] items-center gap-10 py-3.5">
+            <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
               <img
                 src="/media/icon.png"
                 alt="give.fun"
                 className="ghost-border h-9 w-9 bg-surface-lowest object-cover"
               />
-              <div className="font-display text-[17px] font-semibold tracking-[-0.03em] text-foreground">
+              <div className="font-display text-[17px] font-semibold tracking-[-0.03em] text-primary">
                 give.fun
               </div>
             </Link>
@@ -112,6 +112,7 @@ export function NavBar({
               </span>
               <ProfileIcon isActive={isProfileActive} />
             </Link>
+          </div>
           </div>
         </header>
       )}
@@ -167,66 +168,68 @@ export function NavBar({
             boxShadow: "inset 0 1px 0 hsl(var(--outline-variant) / 0.12)",
           }}
         >
-          <div className="mx-auto w-full max-w-[1480px] px-8 py-10 xl:px-10">
-            <div className="flex items-start justify-between gap-8">
-              <div className="max-w-[320px]">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/media/icon.png"
-                    alt="give.fun"
-                    className="ghost-border h-8 w-8 bg-surface-lowest object-cover"
-                  />
-                  <div className="font-display text-[16px] font-semibold tracking-[-0.03em] text-foreground">
-                    give.fun
+          <div className="mx-auto w-full lg:max-w-[1360px] xl:max-w-[1480px] px-8 py-10 xl:px-10">
+            <div className="mx-auto w-full max-w-[1360px]">
+              <div className="flex items-start justify-between gap-8">
+                <div className="max-w-[320px]">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/media/icon.png"
+                      alt="give.fun"
+                      className="ghost-border h-8 w-8 bg-surface-lowest object-cover"
+                    />
+                    <div className="font-display text-[16px] font-semibold tracking-[-0.03em] text-primary">
+                      give.fun
+                    </div>
                   </div>
+                  <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                    Fund causes you care about and mine coins as a reward. Built on Base.
+                  </p>
                 </div>
-                <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-                  Fund causes you care about and mine coins as a reward. Built on Base.
-                </p>
-              </div>
 
-              <div className="flex gap-14">
-                <div>
-                  <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
-                    Navigate
-                  </div>
-                  <div className="flex flex-col gap-2.5">
-                    {desktopLinks.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {item.label}
+                <div className="flex gap-14">
+                  <div>
+                    <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                      Navigate
+                    </div>
+                    <div className="flex flex-col gap-2.5">
+                      {desktopLinks.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                      <Link href="/profile" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+                        Profile
                       </Link>
-                    ))}
-                    <Link href="/profile" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
-                      Profile
-                    </Link>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
-                    Protocol
-                  </div>
-                  <div className="flex flex-col gap-2.5">
-                    <a href="https://basescan.org" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
-                      Contracts
-                    </a>
-                    <a href="https://warpcast.com" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
-                      Warpcast
-                    </a>
+                  <div>
+                    <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                      Protocol
+                    </div>
+                    <div className="flex flex-col gap-2.5">
+                      <a href="https://basescan.org" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+                        Contracts
+                      </a>
+                      <a href="https://warpcast.com" target="_blank" rel="noopener noreferrer" className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+                        Warpcast
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 flex items-center justify-between border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
-              <div className="text-[12px] text-muted-foreground/50">
-                give.fun protocol
-              </div>
-              <div className="text-[12px] text-muted-foreground/50">
-                Built on Base
+              <div className="mt-8 flex items-center justify-between border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
+                <div className="text-[12px] text-muted-foreground/50">
+                  give.fun protocol
+                </div>
+                <div className="text-[12px] text-muted-foreground/50">
+                  Built on Base
+                </div>
               </div>
             </div>
           </div>

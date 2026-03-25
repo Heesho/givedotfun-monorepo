@@ -9,7 +9,8 @@ import { useFarcaster } from "@/hooks/useFarcaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
-import { Wallet, Rocket } from "lucide-react";
+import { Wallet, Rocket, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { TokenLogo } from "@/components/token-logo";
 import { useSparklineData } from "@/hooks/useSparklineData";
 
@@ -240,8 +241,8 @@ function ProfileSkeleton() {
             ))}
           </div>
         </div>
-        <NavBar desktopWide />
       </div>
+      <NavBar desktopWide />
     </main>
   );
 }
@@ -305,8 +306,8 @@ function NotConnected() {
             </>
           )}
         </div>
-        <NavBar desktopWide />
       </div>
+      <NavBar desktopWide />
     </main>
   );
 }
@@ -317,6 +318,7 @@ function NotConnected() {
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("holdings");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Data hooks
   const { user, address } = useFarcaster();
@@ -391,218 +393,362 @@ export default function ProfilePage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
-        {/* Header */}
-        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
-            <div className="mb-3">
-              <h1 className="page-title">Profile</h1>
-              <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
+        {/* Mobile Header */}
+        <div className="page-header lg:hidden">
+          <h1 className="page-title">Profile</h1>
+          <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
+        </div>
+
+        {/* ── Mobile layout ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:hidden">
+          <div className="space-y-3">
+            {/* User info */}
+            <div className="flex items-center gap-3">
+              {pfpUrl ? (
+                <img src={pfpUrl} alt={displayName} className="ghost-border h-10 w-10 object-cover" />
+              ) : (
+                <div className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-surface-lowest font-mono text-[14px] tracking-wide" : "bg-surface-lowest text-base font-semibold"}`}>
+                  {avatarFallback}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
+                <div className="truncate text-[12px] text-muted-foreground">{username || shortAddress}</div>
+              </div>
+              <div className="hidden text-right sm:block">
+                <div className="section-kicker">Wallet</div>
+                <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
+              </div>
             </div>
-            <div className="space-y-3">
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="slab-inset px-3 py-3">
+                <div className="section-kicker">Portfolio</div>
+                <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
+                  {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
+                </div>
+              </div>
+              <div className="slab-inset px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="section-kicker">Cash</div>
+                    <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
+                      ${formattedUsdc}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
+                    disabled={isUsdcMinting}
+                    className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                  >
+                    {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setActiveTab("holdings")}
+                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-slab" : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"}`}
+              >
+                <Wallet className="w-3.5 h-3.5" /> Coins
+              </button>
+              <button
+                onClick={() => setActiveTab("launched")}
+                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-slab" : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"}`}
+              >
+                <Rocket className="w-3.5 h-3.5" /> Fundraisers
+              </button>
+            </div>
+
+            {/* Tab content — mobile */}
+            {activeTab === "holdings" && (
+              <>
+                {holdings.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
+                      <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6h16.5m-15-9h13.5A2.25 2.25 0 0121 8.25v7.5A2.25 2.25 0 0118.75 18H5.25A2.25 2.25 0 013 15.75v-7.5A2.25 2.25 0 015.25 6z" />
+                      </svg>
+                    </div>
+                    <div className="text-[15px] font-medium mb-1 font-display">No holdings yet</div>
+                    <div className="text-[13px] text-muted-foreground mb-4">Fund a cause or trade to earn coins</div>
+                    <Link href="/explore" className="slab-button px-4 text-[11px]">Explore coins</Link>
+                  </div>
+                ) : (
+                  <div>
+                    {holdings.map((holding, index) => {
+                      const hourly = getSparkline(holding.coinAddress, holding.priceUsd);
+                      const sparklineData = hourly.length > 1 ? hourly : holding.sparklinePrices.length > 1 ? holding.sparklinePrices : [holding.priceUsd, holding.priceUsd];
+                      return <HoldingRow key={holding.coinAddress} holding={holding} sparklineData={sparklineData} isAlt={index % 2 === 1} />;
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+            {activeTab === "launched" && (
+              <>
+                {launchedFundraisers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
+                      <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                      </svg>
+                    </div>
+                    <div className="text-[15px] font-medium mb-1 font-display">No launches yet</div>
+                    <div className="text-[13px] text-muted-foreground mb-4">You haven&apos;t launched any fundraisers yet</div>
+                    <Link href="/launch" className="slab-button px-4 text-[11px]">Launch a fundraiser</Link>
+                  </div>
+                ) : (
+                  <div>
+                    {launchedFundraisers.map((fundraiser, index) => {
+                      const hourly = getSparkline(fundraiser.coinAddress, fundraiser.coinPrice);
+                      const sparklineData = hourly.length > 1 ? hourly : fundraiser.sparklinePrices.length > 1 ? fundraiser.sparklinePrices : [fundraiser.coinPrice, fundraiser.coinPrice];
+                      return <LaunchedRow key={fundraiser.address} fundraiser={fundraiser} sparklineData={sparklineData} isAlt={index % 2 === 1} />;
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ── Desktop layout (explore-style) ── */}
+        <div className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide px-8 pb-6 pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
+            {/* Header row: title left, tabs + search right */}
+            <div className="flex items-end justify-between gap-8">
+              <div>
+                <h1 className="font-display text-[2.75rem] font-semibold uppercase leading-[0.9] tracking-[-0.04em]">
+                  Profile
+                </h1>
+                <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                  Your portfolio, holdings, and launched fundraisers.
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search holdings..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 w-[220px] bg-[hsl(var(--surface-container-lowest))] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 transition-all focus:outline-none focus:w-[280px]"
+                    style={{
+                      boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)",
+                      transition: "width 200ms ease, box-shadow 150ms ease",
+                    }}
+                    onFocus={(e) => { e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--primary) / 0.4)"; }}
+                    onBlur={(e) => { e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)"; }}
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex gap-1">
+                  {([
+                    { key: "holdings" as Tab, label: "Coins", icon: Wallet },
+                    { key: "launched" as Tab, label: "Fundraisers", icon: Rocket },
+                  ]).map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all",
+                        activeTab === tab.key
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-container-high))]"
+                      )}
+                      style={activeTab === tab.key ? {
+                        boxShadow: "3px 3px 0 hsl(var(--primary-container))",
+                      } : {
+                        boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.15)",
+                      }}
+                    >
+                      <tab.icon className="h-3 w-3" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Stats bar */}
+            <div className="mt-5 flex items-center gap-6 slab-panel px-5 py-4">
               <div className="flex items-center gap-3">
                 {pfpUrl ? (
-                  <img
-                    src={pfpUrl}
-                    alt={displayName}
-                    className="ghost-border h-10 w-10 object-cover"
-                  />
+                  <img src={pfpUrl} alt={displayName} className="ghost-border h-9 w-9 object-cover" />
                 ) : (
-                  <div
-                    className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${
-                      isAddressFallbackAvatar
-                        ? "bg-surface-lowest font-mono text-[14px] tracking-wide"
-                        : "bg-surface-lowest text-base font-semibold"
-                    }`}
-                  >
+                  <div className={`ghost-border flex h-9 w-9 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-surface-lowest font-mono text-[13px] tracking-wide" : "bg-surface-lowest text-sm font-semibold"}`}>
                     {avatarFallback}
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
-                  <div className="truncate text-[12px] text-muted-foreground">
-                    {username || shortAddress}
-                  </div>
-                </div>
-                <div className="hidden text-right sm:block">
-                  <div className="section-kicker">Wallet</div>
-                  <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-[15px] font-semibold font-display">{displayName}</div>
+                  <div className="truncate text-[12px] text-muted-foreground font-mono">{shortAddress}</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <div className="slab-inset px-3 py-3">
-                  <div className="section-kicker">Portfolio</div>
-                  <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
-                    {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
-                  </div>
+              <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
+
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Portfolio</div>
+                <div className="mt-0.5 text-[18px] font-bold tabular-nums font-mono leading-none">
+                  {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
                 </div>
-                <div className="slab-inset px-3 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="section-kicker">Cash</div>
-                      <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
-                        ${formattedUsdc}
+              </div>
+
+              <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
+
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Cash</div>
+                <div className="mt-0.5 text-[18px] font-semibold tabular-nums font-mono leading-none">
+                  ${formattedUsdc}
+                </div>
+              </div>
+
+              <button
+                onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
+                disabled={isUsdcMinting}
+                className="ml-auto text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+              >
+                {isUsdcMinting ? "Minting..." : "Mint 1000"}
+              </button>
+            </div>
+
+            {/* Card grid */}
+            <div className="mt-5">
+              {activeTab === "holdings" && (
+                <>
+                  {holdings.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                      <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
+                        <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6h16.5m-15-9h13.5A2.25 2.25 0 0121 8.25v7.5A2.25 2.25 0 0118.75 18H5.25A2.25 2.25 0 013 15.75v-7.5A2.25 2.25 0 015.25 6z" />
+                        </svg>
                       </div>
+                      <div className="text-[15px] font-medium mb-1 font-display">No holdings yet</div>
+                      <div className="text-[13px] text-muted-foreground mb-4">Fund a cause or trade to earn coins</div>
+                      <Link href="/explore" className="slab-button px-4 text-[11px]">Explore coins</Link>
                     </div>
-                    <button
-                      onClick={() =>
-                        mintUsdc({
-                          address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
-                          abi: MOCK_MINT_ABI,
-                          functionName: "mint",
-                          args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
-                        })
-                      }
-                      disabled={isUsdcMinting}
-                      className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
-                    >
-                      {isUsdcMinting ? "Minting..." : "Mint 1000"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setActiveTab("holdings")}
-                  className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
-                    activeTab === "holdings"
-                      ? "bg-primary text-primary-foreground shadow-slab"
-                      : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                  }`}
-                >
-                  <Wallet className="w-3.5 h-3.5" />
-                  Coins
-                </button>
-                <button
-                  onClick={() => setActiveTab("launched")}
-                  className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
-                    activeTab === "launched"
-                      ? "bg-primary text-primary-foreground shadow-slab"
-                      : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                  }`}
-                >
-                  <Rocket className="w-3.5 h-3.5" />
-                  Fundraisers
-                </button>
-              </div>
+                  ) : (
+                    <div className="grid auto-rows-min grid-cols-2 gap-5 xl:grid-cols-3">
+                      {holdings
+                        .filter((h) => !searchQuery || h.tokenName.toLowerCase().includes(searchQuery.toLowerCase()) || h.tokenSymbol.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((holding) => {
+                          const hourly = getSparkline(holding.coinAddress, holding.priceUsd);
+                          const sparklineData = hourly.length > 1 ? hourly : holding.sparklinePrices.length > 1 ? holding.sparklinePrices : [holding.priceUsd, holding.priceUsd];
+                          const isPositive = holding.change24h >= 0;
+                          return (
+                            <Link
+                              key={holding.coinAddress}
+                              href={`/fundraiser/${holding.address}`}
+                              className={`group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${isPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative"}`}
+                              style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; }}
+                            >
+                              <div className="relative h-[140px] w-full overflow-hidden bg-[hsl(var(--surface-container-lowest))]">
+                                {holding.logoUrl ? (
+                                  <img src={holding.logoUrl} alt={holding.tokenName} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--surface-container-high)) 0%, hsl(var(--surface-container-lowest)) 100%)" }}>
+                                    <span className="font-display text-[48px] font-bold uppercase tracking-[-0.04em] text-muted-foreground/15">{holding.tokenSymbol.slice(0, 4)}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 p-4">
+                                <div className="min-w-0">
+                                  <div className="truncate font-display text-[18px] font-semibold uppercase leading-none tracking-[-0.03em]">{holding.tokenSymbol}</div>
+                                  <div className="mt-1 truncate text-[13px] text-muted-foreground">{holding.tokenName}</div>
+                                </div>
+                                <div className="flex items-center">
+                                  <Sparkline data={sparklineData} isPositive={isPositive} />
+                                </div>
+                                <div className="font-mono text-[15px] font-medium tabular-nums">{holding.valueUsd > 0 ? formatUsd(holding.valueUsd) : "--"}</div>
+                                <div className={`text-right font-mono text-[13px] tabular-nums ${holding.priceUsd > 0 ? (isPositive ? "positive-value" : "negative-value") : "text-muted-foreground"}`}>
+                                  {holding.priceUsd > 0 ? `${isPositive ? "+" : ""}${holding.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "--"}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                    </div>
+                  )}
+                </>
+              )}
+              {activeTab === "launched" && (
+                <>
+                  {launchedFundraisers.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                      <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
+                        <svg className="w-6 h-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                        </svg>
+                      </div>
+                      <div className="text-[15px] font-medium mb-1 font-display">No launches yet</div>
+                      <div className="text-[13px] text-muted-foreground mb-4">You haven&apos;t launched any fundraisers yet</div>
+                      <Link href="/launch" className="slab-button px-4 text-[11px]">Launch a fundraiser</Link>
+                    </div>
+                  ) : (
+                    <div className="grid auto-rows-min grid-cols-2 gap-5 xl:grid-cols-3">
+                      {launchedFundraisers
+                        .filter((f) => !searchQuery || f.tokenName.toLowerCase().includes(searchQuery.toLowerCase()) || f.tokenSymbol.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((fundraiser) => {
+                          const hourly = getSparkline(fundraiser.coinAddress, fundraiser.coinPrice);
+                          const sparklineData = hourly.length > 1 ? hourly : fundraiser.sparklinePrices.length > 1 ? fundraiser.sparklinePrices : [fundraiser.coinPrice, fundraiser.coinPrice];
+                          const isPositive = fundraiser.change24h >= 0;
+                          return (
+                            <Link
+                              key={fundraiser.address}
+                              href={`/fundraiser/${fundraiser.address}`}
+                              className={`group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${isPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative"}`}
+                              style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; }}
+                            >
+                              <div className="relative h-[140px] w-full overflow-hidden bg-[hsl(var(--surface-container-lowest))]">
+                                {fundraiser.logoUrl ? (
+                                  <img src={fundraiser.logoUrl} alt={fundraiser.tokenName} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(var(--surface-container-high)) 0%, hsl(var(--surface-container-lowest)) 100%)" }}>
+                                    <span className="font-display text-[48px] font-bold uppercase tracking-[-0.04em] text-muted-foreground/15">{fundraiser.tokenSymbol.slice(0, 4)}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 p-4">
+                                <div className="min-w-0">
+                                  <div className="truncate font-display text-[18px] font-semibold uppercase leading-none tracking-[-0.03em]">{fundraiser.tokenSymbol}</div>
+                                  <div className="mt-1 truncate text-[13px] text-muted-foreground">{fundraiser.tokenName}</div>
+                                </div>
+                                <div className="flex items-center">
+                                  <Sparkline data={sparklineData} isPositive={isPositive} />
+                                </div>
+                                <div className="font-mono text-[15px] font-medium tabular-nums">{fundraiser.marketCapUsd > 0 ? formatUsd(fundraiser.marketCapUsd) : "--"}</div>
+                                <div className={`text-right font-mono text-[13px] tabular-nums ${fundraiser.coinPrice > 0 ? (isPositive ? "positive-value" : "negative-value") : "text-muted-foreground"}`}>
+                                  {fundraiser.coinPrice > 0 ? `${isPositive ? "+" : ""}${fundraiser.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "--"}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Tab Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:px-8 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
-          {activeTab === "holdings" && (
-            <>
-              {holdings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-muted-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.75 9h16.5m-16.5 6h16.5m-15-9h13.5A2.25 2.25 0 0121 8.25v7.5A2.25 2.25 0 0118.75 18H5.25A2.25 2.25 0 013 15.75v-7.5A2.25 2.25 0 015.25 6z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-[15px] font-medium mb-1 font-display">
-                    No holdings yet
-                  </div>
-                  <div className="text-[13px] text-muted-foreground mb-4">
-                    Fund a cause or trade to earn coins
-                  </div>
-                  <Link
-                    href="/explore"
-                    className="slab-button px-4 text-[11px]"
-                  >
-                    Explore coins
-                  </Link>
-                </div>
-              ) : (
-                <div>
-                  {holdings.map((holding, index) => {
-                    const hourly = getSparkline(holding.coinAddress, holding.priceUsd);
-                    const sparklineData = hourly.length > 1 ? hourly
-                      : holding.sparklinePrices.length > 1 ? holding.sparklinePrices
-                      : [holding.priceUsd, holding.priceUsd];
-                    return (
-                      <HoldingRow
-                        key={holding.coinAddress}
-                        holding={holding}
-                        sparklineData={sparklineData}
-                        isAlt={index % 2 === 1}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "launched" && (
-            <>
-              {launchedFundraisers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="slab-panel mb-3 flex h-12 w-12 items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-muted-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-[15px] font-medium mb-1 font-display">
-                    No launches yet
-                  </div>
-                  <div className="text-[13px] text-muted-foreground mb-4">
-                    You haven&apos;t launched any fundraisers yet
-                  </div>
-                  <Link
-                    href="/launch"
-                    className="slab-button px-4 text-[11px]"
-                  >
-                    Launch a fundraiser
-                  </Link>
-                </div>
-              ) : (
-                <div>
-                  {launchedFundraisers.map((fundraiser, index) => {
-                    const hourly = getSparkline(fundraiser.coinAddress, fundraiser.coinPrice);
-                    const sparklineData = hourly.length > 1 ? hourly
-                      : fundraiser.sparklinePrices.length > 1 ? fundraiser.sparklinePrices
-                      : [fundraiser.coinPrice, fundraiser.coinPrice];
-                    return (
-                      <LaunchedRow
-                        key={fundraiser.address}
-                        fundraiser={fundraiser}
-                        sparklineData={sparklineData}
-                        isAlt={index % 2 === 1}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
-          </div>
-        </div>
-
-        <NavBar desktopWide />
       </div>
+      <NavBar desktopWide />
     </main>
   );
 }
