@@ -98,7 +98,7 @@ function LoadingSkeleton() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
@@ -464,7 +464,7 @@ export default function FundraiserDetailPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
@@ -1396,7 +1396,7 @@ export default function FundraiserDetailPage() {
         </div>{/* end scroll container */}
 
         {/* Mobile header — back arrow, ticker plaque, share */}
-        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)", background: "hsl(var(--background))" }}>
+        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)", background: "hsl(var(--background))" }}>
           <Link
             href="/explore"
             className="-ml-2 p-2 transition-colors hover:bg-surface-high"

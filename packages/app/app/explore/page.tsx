@@ -235,11 +235,11 @@ export default function ExplorePage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide lg:pb-0 lg:pt-24">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide lg:pb-0 lg:pt-16">
           <div className="mx-auto w-full">
             {/* ── Mobile: sticky header with title + search + sort ── */}
             <div className="sticky top-0 z-10 -mx-4 px-4 pb-3 lg:hidden"
@@ -293,7 +293,7 @@ export default function ExplorePage() {
             <section className="hidden lg:block">
               <div className="flex items-end justify-between gap-8">
                 <div>
-                  <h1 className="font-display text-[2.75rem] font-semibold uppercase leading-[0.9] tracking-[-0.04em]">
+                  <h1 className="font-display text-[2.75rem] font-semibold leading-[0.9] tracking-[-0.04em]">
                     Explore
                   </h1>
                   <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">

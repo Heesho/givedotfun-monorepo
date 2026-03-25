@@ -540,12 +540,12 @@ export default function LaunchPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
         {/* Header */}
-        <div className="page-header lg:pt-24">
+        <div className="page-header lg:pt-16">
           <div className="mx-auto w-full">
             <h1 className="page-title">Launch</h1>
             <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>

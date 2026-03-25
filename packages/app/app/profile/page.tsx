@@ -187,11 +187,11 @@ function ProfileSkeleton() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="page-header lg:pt-24">
+        <div className="page-header lg:pt-16">
           <div className="mx-auto w-full">
             <div className="mb-3">
               <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
@@ -258,7 +258,7 @@ function NotConnected() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -387,7 +387,7 @@ export default function ProfilePage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 88px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -535,7 +535,7 @@ export default function ProfilePage() {
             {/* Header row: title left, tabs + search right */}
             <div className="flex items-end justify-between gap-8">
               <div>
-                <h1 className="font-display text-[2.75rem] font-semibold uppercase leading-[0.9] tracking-[-0.04em]">
+                <h1 className="font-display text-[2.75rem] font-semibold leading-[0.9] tracking-[-0.04em]">
                   Profile
                 </h1>
                 <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
