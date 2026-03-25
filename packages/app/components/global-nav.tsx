@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const menuItems = [
-  { href: "/", label: "Home" },
   { href: "/explore", label: "Explore" },
   { href: "/launch", label: "Launch" },
   { href: "/info", label: "About" },
@@ -53,7 +52,7 @@ export function GlobalNav() {
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-4 sm:py-5 flex items-center justify-between">
           {/* Logo — bigger */}
           <div className="pointer-events-auto">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img
                 src="/media/logo-transparent.png"
                 alt="give.fun"
