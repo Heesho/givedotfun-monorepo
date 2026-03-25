@@ -276,28 +276,23 @@
     min-height: 2.75rem;
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    box-shadow: 4px 4px 0 hsl(var(--primary-container));
   }
 
   .slab-button:hover:not(:disabled) {
     transform: translate(-1px, -1px);
-    box-shadow: 6px 6px 0 hsl(var(--primary-container));
   }
 
   .slab-button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
-    box-shadow: 4px 4px 0 hsl(var(--primary-container) / 0.45);
   }
 
   .slab-button-loss {
     background: hsl(var(--loss));
     color: hsl(var(--loss-foreground));
-    box-shadow: 4px 4px 0 hsl(var(--surface-container-high));
   }
 
   .slab-button-loss:hover:not(:disabled) {
-    box-shadow: 6px 6px 0 hsl(var(--surface-container-high));
   }
 
   .slab-button-ghost {

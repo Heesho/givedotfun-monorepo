@@ -307,6 +307,232 @@ export default function LaunchPage() {
     return n.toString();
   };
 
+  // Shared launch button JSX
+  const launchButtonBlock = (
+    <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Pay</div>
+          <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
+            ${formatNumber(usdcAmount)}
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Balance</div>
+          <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
+            ${formatNumber(usdcBalance ? Number(formatUnits(usdcBalance, QUOTE_TOKEN_DECIMALS)) : 0)}
+          </div>
+        </div>
+      </div>
+      {!isConnected ? (
+        <button
+          onClick={() => connect()}
+          disabled={isConnecting}
+          className="slab-button flex-1 text-[11px] disabled:opacity-50"
+        >
+          {isConnecting ? "Connecting..." : "Connect Wallet"}
+        </button>
+      ) : (
+        <button
+          onClick={handleLaunch}
+          disabled={!isFormValid || isLaunching || isUploading}
+          className={`flex-1 px-4 text-[11px] ${
+            launchError || txStatus === "error"
+              ? "slab-button-ghost text-muted-foreground"
+              : !isFormValid || isLaunching || isUploading
+              ? "slab-button opacity-50"
+              : "slab-button"
+          }`}
+        >
+          {launchError || txStatus === "error"
+            ? txError?.message?.includes("cancelled") ? "Rejected" : "Failed"
+            : isUploading
+            ? "Uploading..."
+            : isLaunching
+            ? "Launching..."
+            : "Launch"}
+        </button>
+      )}
+    </div>
+  );
+
+  // Shared recipient section JSX
+  const recipientSection = (
+    <div>
+      <button
+        type="button"
+        onClick={() => setShowRecipient(!showRecipient)}
+        className="flex w-full items-center justify-between gap-3"
+      >
+        <div className="min-w-0 text-left">
+          <div className="section-kicker">Recipient Split</div>
+          <div className="mt-1 text-[13px] text-foreground font-display font-medium">Add recipient</div>
+          <div className="text-[11px] text-muted-foreground">Receives 50% of all funding.</div>
+        </div>
+        <div className="toggle-track shrink-0" data-state={showRecipient ? "on" : "off"}>
+          <div className="toggle-thumb" />
+        </div>
+      </button>
+
+      {showRecipient && (
+        <div className="mt-3 grid gap-2">
+          <input
+            type="text"
+            placeholder="Recipient name"
+            value={recipientName}
+            onChange={(e) => setRecipientName(e.target.value)}
+            className="field-input h-10 text-sm"
+          />
+          <input
+            type="text"
+            placeholder="Wallet address (0x...)"
+            value={recipientAddress}
+            onChange={(e) => setRecipientAddress(e.target.value)}
+            className={`field-input h-10 text-sm font-mono ${recipientAddress.length > 0 && !isValidAddress(recipientAddress) ? "field-input-invalid" : ""}`}
+          />
+          {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
+            <p className="text-[11px] text-loss">Enter a valid Ethereum address</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // Shared links section JSX
+  const linksSection = (
+    <div>
+      <button
+        type="button"
+        onClick={() => {
+          const next = !showLinks;
+          setShowLinks(next);
+          if (next && links.length === 0) setLinks([""]);
+        }}
+        className="flex w-full items-center justify-between gap-3"
+      >
+        <div className="min-w-0 text-left">
+          <div className="section-kicker">Outbound Links</div>
+          <div className="mt-1 text-[13px] text-foreground font-display font-medium">Add links</div>
+          <div className="text-[11px] text-muted-foreground">Website, social profiles, or docs.</div>
+        </div>
+        <div className="toggle-track shrink-0" data-state={showLinks ? "on" : "off"}>
+          <div className="toggle-thumb" />
+        </div>
+      </button>
+
+      {showLinks && (
+        <div className="mt-3 space-y-2">
+          {links.map((link, i) => (
+            <div key={i} className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://..."
+                value={link}
+                onChange={(e) => {
+                  const updated = [...links];
+                  updated[i] = e.target.value;
+                  setLinks(updated);
+                }}
+                className="field-input h-10 flex-1 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (links.length <= 1) {
+                    setLinks([""]);
+                    return;
+                  }
+                  setLinks(links.filter((_, j) => j !== i));
+                }}
+                className="ghost-border flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          {links.length < 5 && (
+            <button
+              type="button"
+              onClick={() => setLinks([...links, ""])}
+              className="text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
+            >
+              + Add another
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // Identity section JSX (shared)
+  const identitySection = (
+    <div className="space-y-3">
+      <div>
+        <div className="section-kicker">Identity</div>
+        <div className="mt-1 text-[13px] text-muted-foreground">
+          Set the coin identity and the message supporters will see.
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3">
+        <label className="cursor-pointer flex-shrink-0">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleLogoChange}
+            className="hidden"
+          />
+          <div className="ghost-border flex h-[88px] w-[88px] items-center justify-center overflow-hidden bg-surface-lowest transition-colors hover:bg-surface-high">
+            {logoPreview ? (
+              <img
+                src={logoPreview}
+                alt="Coin logo"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Upload className="h-6 w-6 text-muted-foreground" />
+            )}
+          </div>
+        </label>
+
+        <div className="flex-1 min-w-0 space-y-2">
+          <input
+            type="text"
+            placeholder="Coin name"
+            value={tokenName}
+            onChange={(e) => setTokenName(e.target.value)}
+            className="field-input h-10 text-sm"
+          />
+          <input
+            type="text"
+            placeholder="SYMBOL"
+            value={tokenSymbol}
+            onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
+            maxLength={10}
+            className="field-input h-10 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-2">
+        <input
+          type="text"
+          placeholder="Description"
+          value={tokenDescription}
+          onChange={(e) => setTokenDescription(e.target.value)}
+          className="field-input h-10 text-sm"
+        />
+        <input
+          type="text"
+          placeholder="Default message"
+          value={donationMessage}
+          onChange={(e) => setDonationMessage(e.target.value)}
+          className="field-input h-10 text-sm"
+        />
+      </div>
+    </div>
+  );
+
   // Main form layout
   return (
     <main className="app-shell">
@@ -319,190 +545,54 @@ export default function LaunchPage() {
       >
         {/* Header */}
         <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1040px]">
+          <div className="mx-auto w-full max-w-[1360px]">
             <h1 className="page-title">Launch</h1>
             <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2 lg:px-8 xl:px-10">
+        {/* Mobile: single column */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2 lg:hidden">
           <div className="mx-auto w-full max-w-[1040px] space-y-4 pb-6">
-            <div className="space-y-3">
-              <div>
-                <div className="section-kicker">Identity</div>
-                <div className="mt-1 text-[13px] text-muted-foreground">
-                  Set the coin identity and the message supporters will see.
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <label className="cursor-pointer flex-shrink-0">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <div className="ghost-border flex h-[88px] w-[88px] items-center justify-center overflow-hidden bg-surface-lowest transition-colors hover:bg-surface-high">
-                    {logoPreview ? (
-                      <img
-                        src={logoPreview}
-                        alt="Coin logo"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Upload className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
-                </label>
-
-                <div className="flex-1 min-w-0 space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Coin name"
-                    value={tokenName}
-                    onChange={(e) => setTokenName(e.target.value)}
-                    className="field-input h-10 text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="SYMBOL"
-                    value={tokenSymbol}
-                    onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    className="field-input h-10 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <input
-                  type="text"
-                  placeholder="Description"
-                  value={tokenDescription}
-                  onChange={(e) => setTokenDescription(e.target.value)}
-                  className="field-input h-10 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Default message"
-                  value={donationMessage}
-                  onChange={(e) => setDonationMessage(e.target.value)}
-                  className="field-input h-10 text-sm"
-                />
-              </div>
-            </div>
-
+            {identitySection}
             <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
-              <button
-                type="button"
-                onClick={() => setShowRecipient(!showRecipient)}
-                className="flex w-full items-center justify-between gap-3"
-              >
-                <div className="min-w-0 text-left">
-                  <div className="section-kicker">Recipient Split</div>
-                  <div className="mt-1 text-[13px] text-foreground font-display font-medium">Add recipient</div>
-                  <div className="text-[11px] text-muted-foreground">Receives 50% of all funding.</div>
-                </div>
-                <div className="toggle-track shrink-0" data-state={showRecipient ? "on" : "off"}>
-                  <div className="toggle-thumb" />
-                </div>
-              </button>
-
-              {showRecipient && (
-                <div className="mt-3 grid gap-2">
-                  <input
-                    type="text"
-                    placeholder="Recipient name"
-                    value={recipientName}
-                    onChange={(e) => setRecipientName(e.target.value)}
-                    className="field-input h-10 text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Wallet address (0x...)"
-                    value={recipientAddress}
-                    onChange={(e) => setRecipientAddress(e.target.value)}
-                    className={`field-input h-10 text-sm font-mono ${recipientAddress.length > 0 && !isValidAddress(recipientAddress) ? "field-input-invalid" : ""}`}
-                  />
-                  {recipientAddress.length > 0 && !isValidAddress(recipientAddress) && (
-                    <p className="text-[11px] text-loss">Enter a valid Ethereum address</p>
-                  )}
-                </div>
-              )}
+              {recipientSection}
             </div>
-
             <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !showLinks;
-                  setShowLinks(next);
-                  if (next && links.length === 0) setLinks([""]);
-                }}
-                className="flex w-full items-center justify-between gap-3"
-              >
-                <div className="min-w-0 text-left">
-                  <div className="section-kicker">Outbound Links</div>
-                  <div className="mt-1 text-[13px] text-foreground font-display font-medium">Add links</div>
-                  <div className="text-[11px] text-muted-foreground">Website, social profiles, or docs.</div>
-                </div>
-                <div className="toggle-track shrink-0" data-state={showLinks ? "on" : "off"}>
-                  <div className="toggle-thumb" />
-                </div>
-              </button>
-
-              {showLinks && (
-                <div className="mt-3 space-y-2">
-                  {links.map((link, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input
-                        type="url"
-                        placeholder="https://..."
-                        value={link}
-                        onChange={(e) => {
-                          const updated = [...links];
-                          updated[i] = e.target.value;
-                          setLinks(updated);
-                        }}
-                        className="field-input h-10 flex-1 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (links.length <= 1) {
-                            setLinks([""]);
-                            return;
-                          }
-                          setLinks(links.filter((_, j) => j !== i));
-                        }}
-                        className="ghost-border flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                  {links.length < 5 && (
-                    <button
-                      type="button"
-                      onClick={() => setLinks([...links, ""])}
-                      className="text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
-                    >
-                      + Add another
-                    </button>
-                  )}
-                </div>
-              )}
+              {linksSection}
             </div>
           </div>
         </div>
 
-        {/* Bottom Action Bar */}
+        {/* Desktop: two-column layout */}
+        <div className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pt-2 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px] space-y-6 pb-10">
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left column — Identity */}
+              <div className="slab-panel px-5 py-5 space-y-4">
+                {identitySection}
+              </div>
+
+              {/* Right column — Recipient, Links */}
+              <div className="slab-panel px-5 py-5 space-y-5">
+                {recipientSection}
+                <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
+                  {linksSection}
+                </div>
+              </div>
+            </div>
+
+            {/* Full-width Launch bar */}
+            <div className="slab-panel px-5 py-5">
+              {launchButtonBlock}
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Mobile Bottom Action Bar */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
+        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center lg:hidden"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}
       >
         <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-3 px-4 py-3">

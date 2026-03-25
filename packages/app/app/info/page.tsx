@@ -82,14 +82,14 @@ export default function InfoPage() {
       >
         {/* Header */}
         <div className="page-header px-5 lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1100px]">
+          <div className="mx-auto w-full max-w-[1360px]">
             <h1 className="page-title">About</h1>
             <p className="page-subtitle">How give.fun works and why it matters.</p>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:px-8 xl:px-10">
+        {/* Mobile: single column */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:hidden">
           <div className="mx-auto w-full max-w-[1100px]">
             {INFO_SECTIONS.map((section, index) => (
               <div
@@ -109,6 +109,36 @@ export default function InfoPage() {
                       className="flex items-start gap-3 text-[14px] leading-snug text-muted-foreground"
                     >
                       <span className="mt-1 h-2 w-2 bg-primary" />
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop: card grid */}
+        <div className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pb-6 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px] grid grid-cols-2 xl:grid-cols-3 gap-5">
+            {INFO_SECTIONS.map((section, index) => (
+              <div
+                key={index}
+                className="slab-panel px-5 py-5"
+              >
+                <h2 className="mb-3 font-display text-[17px] font-semibold uppercase tracking-[-0.03em] text-foreground">
+                  {section.title}
+                </h2>
+                <p className="mb-4 text-[14px] leading-relaxed text-muted-foreground">
+                  {section.content}
+                </p>
+                <ul className="space-y-2">
+                  {section.bullets.map((bullet, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-[13px] leading-snug text-muted-foreground"
+                    >
+                      <span className="mt-1 h-2 w-2 shrink-0 bg-primary" />
                       {bullet}
                     </li>
                   ))}
