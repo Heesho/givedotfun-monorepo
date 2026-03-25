@@ -12,10 +12,10 @@ const menuItems = [
 ] as const;
 
 const blurbs = [
-  "Fund something. Mine its coin.",
-  "Capital as signal.",
-  "Back builders. Earn what you believe in.",
-  "Every dollar mines a token.",
+  "Fund the things you believe in and mine tokens as proof of conviction.",
+  "A crypto GoFundMe where every dollar mines a coin on Base.",
+  "Back builders, fund causes, and let capital become signal.",
+  "Put your money where your values are. Mine the proof.",
 ] as const;
 
 export default function LandingPage() {
@@ -159,15 +159,15 @@ export default function LandingPage() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
           className="flex flex-col gap-6 sm:gap-8"
         >
-          <div className="min-h-[2.5rem] sm:min-h-[3rem]">
+          <div className="min-h-[140px] sm:min-h-[180px] md:min-h-[200px] max-w-[700px]">
             <AnimatePresence mode="wait">
               <motion.p
                 key={blurbIndex}
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -14 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-medium tracking-[0.08em] uppercase text-white/80"
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="text-[1.75rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[3.25rem] font-bold leading-[1.1] tracking-[-0.02em] text-white"
               >
                 {blurbs[blurbIndex]}
               </motion.p>
