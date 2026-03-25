@@ -1,21 +1,19 @@
+import "@fontsource/metropolis/400.css";
+import "@fontsource/metropolis/500.css";
+import "@fontsource/metropolis/600.css";
+import "@fontsource/metropolis/700.css";
 import "@/app/globals.css";
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 
 const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://givedotfun.vercel.app";
 const heroImageUrl = `${appDomain}/media/hero.png`;
 const splashImageUrl = `${appDomain}/media/splash.png`;
 
-const sans = Inter({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const display = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -60,7 +58,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sans.variable} ${display.variable}`}>
+      <body className={`${mono.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
