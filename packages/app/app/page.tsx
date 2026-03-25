@@ -12,10 +12,10 @@ const menuItems = [
 ] as const;
 
 const blurbs = [
-  { headline: "Fund something.", sub: "Mine its coin." },
-  { headline: "Capital as signal.", sub: "On-chain conviction." },
-  { headline: "Back builders.", sub: "Earn what you believe in." },
-  { headline: "Crowdfund on Base.", sub: "Every dollar mines a token." },
+  "Fund something. Mine its coin.",
+  "Capital as signal.",
+  "Back builders. Earn what you believe in.",
+  "Every dollar mines a token.",
 ] as const;
 
 export default function LandingPage() {
@@ -159,23 +159,18 @@ export default function LandingPage() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
           className="flex flex-col gap-6 sm:gap-8"
         >
-          <div className="flex flex-col gap-3 min-h-[120px] sm:min-h-[140px]">
+          <div className="min-h-[2.5rem] sm:min-h-[3rem]">
             <AnimatePresence mode="wait">
-              <motion.div
+              <motion.p
                 key={blurbIndex}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col gap-1.5 sm:gap-2"
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-medium tracking-[0.08em] uppercase text-white/80"
               >
-                <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-bold leading-[0.95] tracking-[-0.02em] text-white">
-                  {blurbs[blurbIndex].headline}
-                </h1>
-                <p className="text-[14px] sm:text-[16px] md:text-[18px] font-medium uppercase tracking-[0.14em] text-white/60">
-                  {blurbs[blurbIndex].sub}
-                </p>
-              </motion.div>
+                {blurbs[blurbIndex]}
+              </motion.p>
             </AnimatePresence>
           </div>
 
