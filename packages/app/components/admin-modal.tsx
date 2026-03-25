@@ -99,29 +99,10 @@ export function AdminModal({
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.overflow = "hidden";
-    } else {
-      const scrollY = Math.abs(parseInt(document.body.style.top || "0", 10));
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.overflow = "";
-      window.scrollTo(0, scrollY);
+      document.documentElement.style.overflow = "hidden";
     }
     return () => {
-      const scrollY = Math.abs(parseInt(document.body.style.top || "0", 10));
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.overflow = "";
-      window.scrollTo(0, scrollY);
+      document.documentElement.style.overflow = "";
     };
   }, [isOpen]);
 
@@ -308,7 +289,7 @@ export function AdminModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[640px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:overflow-y-auto lg:rounded-2xl`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[900px] flex-col h-full lg:h-auto lg:max-h-[85vh] lg:overflow-y-auto lg:rounded-2xl`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
