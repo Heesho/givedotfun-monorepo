@@ -5,20 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap border-0 font-display text-xs font-semibold uppercase tracking-[0.16em] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-display text-xs font-semibold uppercase tracking-[0.16em] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-slab hover:-translate-x-px hover:-translate-y-px hover:bg-primary/95 hover:shadow-[6px_6px_0_hsl(var(--primary-container))]",
+          "bg-primary text-primary-foreground btn-elegant-primary rounded-[var(--radius)]",
         destructive:
-          "bg-loss text-loss-foreground shadow-slab-loss hover:-translate-x-px hover:-translate-y-px hover:bg-loss/90 hover:shadow-[6px_6px_0_hsl(var(--surface-container-high))]",
+          "bg-loss text-loss-foreground btn-elegant-primary rounded-[var(--radius)]",
         outline:
-          "bg-muted text-foreground shadow-none ghost-border hover:bg-surface-high hover:text-foreground",
+          "btn-elegant-secondary rounded-[var(--radius)] text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground ghost-border hover:bg-surface-high",
-        ghost: "bg-transparent text-muted-foreground shadow-none hover:bg-accent hover:text-foreground",
+          "bg-secondary text-secondary-foreground btn-elegant-secondary rounded-[var(--radius)]",
+        ghost: "bg-transparent text-muted-foreground shadow-none hover:bg-[hsl(var(--foreground)/0.06)] hover:text-foreground rounded-[var(--radius)]",
         link: "text-primary underline-offset-4 hover:underline",
+        glass: "btn-liquid-glass rounded-[var(--radius)]",
       },
       size: {
         default: "h-11 px-4 py-2",
