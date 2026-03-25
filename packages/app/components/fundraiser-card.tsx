@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import type { CoinListItem } from "@/hooks/useAllFundraisers";
 import { cn } from "@/lib/utils";
@@ -128,10 +129,16 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
   }, [coin.uri]);
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
     <Link href={`/fundraiser/${coin.address}`} className="block">
       <div
         className={cn(
-          "data-row hover-slab flex items-center gap-3 px-3 py-4",
+          "data-row hover-slab flex items-center gap-3 px-3 py-4 rounded-[var(--radius)]",
           isNewBump && "light-leak animate-bump-in",
           isTopBump && !isNewBump && "light-leak"
         )}
@@ -177,5 +184,6 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
         </div>
       </div>
     </Link>
+    </motion.div>
   );
 }
