@@ -35,6 +35,7 @@ import { getFundraiser, getUserFundraiserTotals } from "@/lib/subgraph-launchpad
 import { truncateAddress, formatPrice, formatNumber, formatMarketCap, timeAgo } from "@/lib/format";
 import { PriceChart, type HoverData } from "@/components/price-chart";
 import { TokenLogo } from "@/components/token-logo";
+import { Particles } from "@/components/ui/particles";
 
 type Timeframe = "1H" | "1D" | "1W" | "1M" | "ALL";
 
@@ -460,6 +461,7 @@ export default function FundraiserDetailPage() {
 
   return (
     <main className="app-shell">
+      <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{

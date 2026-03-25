@@ -10,6 +10,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
 import { Wallet, Rocket, Search, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { TokenLogo } from "@/components/token-logo";
 import { useSparklineData } from "@/hooks/useSparklineData";
@@ -394,13 +395,23 @@ export default function ProfilePage() {
         }}
       >
         {/* Mobile Header */}
-        <div className="page-header lg:hidden">
+        <motion.div
+          className="page-header lg:hidden"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <h1 className="page-title">Profile</h1>
           <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
-        </div>
+        </motion.div>
 
         {/* ── Mobile layout ── */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:hidden">
+        <motion.div
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:hidden"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+        >
           <div className="space-y-3">
             {/* User info */}
             <div className="flex items-center gap-3">
@@ -514,10 +525,15 @@ export default function ProfilePage() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Desktop layout (explore-style) ── */}
-        <div className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide px-8 pb-6 pt-24 xl:px-10">
+        <motion.div
+          className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide px-8 pb-6 pt-24 xl:px-10"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="mx-auto w-full max-w-[1360px]">
             {/* Header row: title left, tabs + search right */}
             <div className="flex items-end justify-between gap-8">
@@ -746,7 +762,7 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
       <NavBar desktopWide />
     </main>

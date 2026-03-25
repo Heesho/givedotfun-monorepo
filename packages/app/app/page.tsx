@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { Particles } from "@/components/ui/particles";
 
 export default function LandingPage() {
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-background">
+      <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={60} size={0.6} />
       <div className="flex flex-col items-center gap-10 px-6 text-center">
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">

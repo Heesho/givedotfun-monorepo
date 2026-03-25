@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, Flame, Clock, TrendingUp, X, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import { useExploreFundraisers, type SortOption } from "@/hooks/useAllFundraisers";
 import { useSparklineData } from "@/hooks/useSparklineData";
 import { useFarcaster } from "@/hooks/useFarcaster";
@@ -227,6 +228,11 @@ export default function ExplorePage() {
 
   return (
     <main className="app-shell">
+      <InteractiveGridPattern
+        className="!fixed inset-0 -z-10 bg-transparent"
+        effectIntensity={0.3}
+        centerGlowOpacity={0.1}
+      />
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{

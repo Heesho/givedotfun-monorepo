@@ -6,6 +6,7 @@ import { Upload, X } from "lucide-react";
 import { parseUnits, formatUnits, parseEventLogs } from "viem";
 import { useReadContract, useWaitForTransactionReceipt } from "wagmi";
 import { NavBar } from "@/components/nav-bar";
+import { Particles } from "@/components/ui/particles";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import {
   useBatchedTransaction,
@@ -536,6 +537,7 @@ export default function LaunchPage() {
   // Main form layout
   return (
     <main className="app-shell">
+      <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
         className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
@@ -569,12 +571,12 @@ export default function LaunchPage() {
           <div className="mx-auto w-full max-w-[1360px] space-y-6 pb-10">
             <div className="grid grid-cols-2 gap-6">
               {/* Left column — Identity */}
-              <div className="slab-panel px-5 py-5 space-y-4">
+              <div className="slab-panel rounded-[var(--radius)] px-5 py-5 space-y-4">
                 {identitySection}
               </div>
 
               {/* Right column — Recipient, Links */}
-              <div className="slab-panel px-5 py-5 space-y-5">
+              <div className="slab-panel rounded-[var(--radius)] px-5 py-5 space-y-5">
                 {recipientSection}
                 <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
                   {linksSection}
@@ -583,7 +585,7 @@ export default function LaunchPage() {
             </div>
 
             {/* Full-width Launch bar */}
-            <div className="slab-panel px-5 py-5">
+            <div className="slab-panel rounded-[var(--radius)] px-5 py-5">
               {launchButtonBlock}
             </div>
           </div>

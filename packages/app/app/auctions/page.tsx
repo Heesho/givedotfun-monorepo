@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Flame, ArrowRight, Check } from "lucide-react";
+import { motion } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
 import { useAuctions, type AuctionItem } from "@/hooks/useAuctions";
 import { TokenLogo } from "@/components/token-logo";
@@ -57,7 +58,12 @@ export default function AuctionsPage() {
         </div>
 
         {/* Auction List */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1 lg:px-8 xl:px-10">
+        <motion.div
+          className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1 lg:px-8 xl:px-10"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="mx-auto w-full max-w-[1180px] space-y-2">
             {isLoading && (
               <>
@@ -125,7 +131,7 @@ export default function AuctionsPage() {
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom Action Bar */}
         {selectedAuction && (
@@ -135,7 +141,7 @@ export default function AuctionsPage() {
               bottom: "calc(env(safe-area-inset-bottom, 0px) + 76px)",
             }}
           >
-            <div className="glass-panel mx-auto max-w-[520px] px-4 py-4">
+            <div className="glass-panel rounded-[var(--radius)] mx-auto max-w-[520px] px-4 py-4">
               {/* Trade Summary */}
               <div className="slab-inset mb-4 p-3">
                 <div className="flex items-center justify-between">

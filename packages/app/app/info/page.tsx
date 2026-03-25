@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
 
 const INFO_SECTIONS = [
@@ -89,7 +90,12 @@ export default function InfoPage() {
         </div>
 
         {/* Mobile: single column */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:hidden">
+        <motion.div
+          className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:hidden"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="mx-auto w-full max-w-[1100px]">
             {INFO_SECTIONS.map((section, index) => (
               <div
@@ -116,10 +122,15 @@ export default function InfoPage() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Desktop: card grid */}
-        <div className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pb-6 xl:px-10">
+        <motion.div
+          className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pb-6 xl:px-10"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="mx-auto w-full max-w-[1360px] grid grid-cols-2 xl:grid-cols-3 gap-5">
             {INFO_SECTIONS.map((section, index) => (
               <div
@@ -146,7 +157,7 @@ export default function InfoPage() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
       <NavBar desktopWide />
     </main>
