@@ -11,9 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "sans-serif"],
-        display: ["var(--font-display)", "Space Grotesk", "sans-serif"],
-        mono: ["var(--font-mono)", "Inter", "sans-serif"],
+        sans: ["'Metropolis'", "var(--font-sans)", "sans-serif"],
+        display: ["'Metropolis'", "var(--font-display)", "sans-serif"],
+        mono: ["'JetBrains Mono'", "var(--font-mono)", "monospace"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -69,11 +69,12 @@ const config: Config = {
         outline: "hsl(var(--outline))",
       },
       boxShadow: {
-        slab: "4px 4px 0 hsl(var(--primary-container))",
-        "slab-loss": "4px 4px 0 hsl(var(--surface-container-high))",
+        glass: "0 8px 32px hsl(var(--primary-foreground) / 0.06)",
+        "glass-hover": "0 12px 40px hsl(var(--primary-foreground) / 0.1)",
         ambient: "0 32px 70px hsl(var(--primary-foreground) / 0.08)",
-        panel:
-          "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18), 0 26px 60px hsl(var(--primary-foreground) / 0.06)",
+        panel: "0 26px 60px hsl(var(--primary-foreground) / 0.06)",
+        slab: "0 8px 24px -8px hsl(var(--primary) / 0.4)",
+        "slab-loss": "0 8px 24px -8px hsl(var(--surface-container-high))",
       },
       borderRadius: {
         none: "0",
@@ -90,6 +91,7 @@ const config: Config = {
         shimmer: "shimmer 1.5s linear infinite",
         "fade-in": "fade-in 0.2s ease-out",
         "slide-up": "slide-up 0.3s ease-out",
+        "glass-in": "glass-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
       keyframes: {
         "pulse-glow": {
@@ -125,6 +127,10 @@ const config: Config = {
             opacity: "1",
             transform: "translateY(0)",
           },
+        },
+        "glass-in": {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
     },
