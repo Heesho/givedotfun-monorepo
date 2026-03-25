@@ -90,7 +90,7 @@ export function NavBar({
     { href: "/launch", label: "Launch" },
     { href: "/info", label: "About" },
     { href: "/profile", label: "Profile" },
-  ];
+  ] as const;
 
   return (
     <>
