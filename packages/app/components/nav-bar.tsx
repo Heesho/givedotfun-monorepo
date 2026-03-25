@@ -111,9 +111,9 @@ export function NavBar({
           <div className="mx-auto flex w-full max-w-[1360px] items-center gap-10 py-3.5">
             <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
               <img
-                src="/media/icon.png"
+                src="/media/logo-transparent.png"
                 alt="give.fun"
-                className="ghost-border h-9 w-9 bg-surface-lowest object-cover"
+                className="h-9 w-9 object-contain"
               />
               <div className="font-display text-[17px] font-semibold tracking-[-0.03em] text-primary">
                 give.fun
@@ -275,9 +275,9 @@ export function NavBar({
                 <div className="max-w-[320px]">
                   <div className="flex items-center gap-2">
                     <img
-                      src="/media/icon.png"
+                      src="/media/logo-transparent.png"
                       alt="give.fun"
-                      className="ghost-border h-8 w-8 bg-surface-lowest object-cover"
+                      className="h-8 w-8 object-contain"
                     />
                     <div className="font-display text-[16px] font-semibold tracking-[-0.03em] text-primary">
                       give.fun
