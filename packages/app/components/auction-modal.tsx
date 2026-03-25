@@ -62,6 +62,16 @@ export function AuctionModal({
     },
   });
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   // Reset transaction state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
@@ -151,7 +161,7 @@ export function AuctionModal({
   const isError = status === "error";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[220] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

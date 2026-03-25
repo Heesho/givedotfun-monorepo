@@ -96,6 +96,16 @@ export function AdminModal({
   const [team, setTeam] = useState(initialTeam);
   const [recipient, setRecipient] = useState(initialRecipient);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   // Transaction state
   const { execute, status: txStatus, reset: resetTx } = useBatchedTransaction();
   const [pendingField, setPendingField] = useState<string | null>(null);
@@ -273,13 +283,13 @@ export function AdminModal({
     }`;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[220] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:overflow-y-auto lg:rounded-2xl`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[640px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:overflow-y-auto lg:rounded-2xl`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",

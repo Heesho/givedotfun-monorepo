@@ -85,6 +85,16 @@ export function MineModal({
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   // Reset input when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -243,7 +253,7 @@ export function MineModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center"
+      className="fixed inset-0 z-[220] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div

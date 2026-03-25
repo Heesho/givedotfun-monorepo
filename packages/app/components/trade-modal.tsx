@@ -108,6 +108,16 @@ export function TradeModal({
   const isBuy = mode === "buy";
   const usdcAddress = CONTRACT_ADDRESSES.usdc as `0x${string}`;
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isOpen]);
+
   // Reset input when modal opens / mode changes
   useEffect(() => {
     if (isOpen) {
@@ -387,7 +397,7 @@ export function TradeModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center"
+      className="fixed inset-0 z-[220] flex items-end justify-center bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
