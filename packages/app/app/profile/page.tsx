@@ -183,16 +183,16 @@ function LaunchedRow({
 
 function ProfileSkeleton() {
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
+        <div className="page-header lg:pt-24">
+          <div className="mx-auto w-full">
             <div className="mb-3">
               <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
               <div className="mb-2 h-10 w-32 bg-secondary animate-pulse" />
@@ -224,8 +224,8 @@ function ProfileSkeleton() {
             </div>
           </div>
         </div>
-        <div className="flex-1 space-y-2 px-4 lg:px-8 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px] space-y-2">
+        <div className="flex-1 space-y-2">
+          <div className="mx-auto w-full space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="slab-inset flex items-center gap-3 px-3 py-3">
                 <div className="h-10 w-10 bg-secondary animate-pulse" />
@@ -254,9 +254,9 @@ function NotConnected() {
   const { isInFrame, isConnecting, connect } = useFarcaster();
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
@@ -383,9 +383,9 @@ export default function ProfilePage() {
       : address.slice(-2).toUpperCase();
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
@@ -404,7 +404,7 @@ export default function ProfilePage() {
 
         {/* ── Mobile layout ── */}
         <motion.div
-          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:hidden"
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 lg:hidden"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
@@ -526,12 +526,12 @@ export default function ProfilePage() {
 
         {/* ── Desktop layout (explore-style) ── */}
         <motion.div
-          className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide px-8 pb-6 pt-24 xl:px-10"
+          className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-6 pt-24"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto w-full max-w-[1360px]">
+          <div className="mx-auto w-full">
             {/* Header row: title left, tabs + search right */}
             <div className="flex items-end justify-between gap-8">
               <div>

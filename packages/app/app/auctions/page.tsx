@@ -38,17 +38,17 @@ export default function AuctionsPage() {
   const selectedAuction: AuctionItem | undefined = auctions[selectedIndex];
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
         }}
       >
         {/* Header */}
-        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1180px]">
+        <div className="page-header lg:pt-24">
+          <div className="mx-auto w-full">
             <h1 className="page-title">Auctions</h1>
             <p className="page-subtitle">
               Trade LP tokens for USDC rewards
@@ -58,12 +58,12 @@ export default function AuctionsPage() {
 
         {/* Auction List */}
         <motion.div
-          className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1 lg:px-8 xl:px-10"
+          className="flex-1 overflow-y-auto scrollbar-hide pt-1"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto w-full max-w-[1180px] space-y-2">
+          <div className="mx-auto w-full space-y-2">
             {isLoading && (
               <>
                 <SkeletonRow />

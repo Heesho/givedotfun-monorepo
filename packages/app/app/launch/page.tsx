@@ -535,25 +535,25 @@ export default function LaunchPage() {
 
   // Main form layout
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
         {/* Header */}
-        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
+        <div className="page-header lg:pt-24">
+          <div className="mx-auto w-full">
             <h1 className="page-title">Launch</h1>
             <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>
           </div>
         </div>
 
         {/* Mobile: single column */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2 lg:hidden">
+        <div className="flex-1 overflow-y-auto scrollbar-hide pt-2 lg:hidden">
           <div className="mx-auto w-full max-w-[1040px] space-y-4 pb-6">
             {identitySection}
             <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
@@ -566,8 +566,8 @@ export default function LaunchPage() {
         </div>
 
         {/* Desktop: two-column layout */}
-        <div className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pt-2 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px] space-y-6 pb-10">
+        <div className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide pt-2">
+          <div className="mx-auto w-full space-y-6 pb-10">
             <div className="grid grid-cols-2 gap-6">
               {/* Left column — Identity */}
               <div className="slab-panel rounded-[var(--radius)] px-5 py-5 space-y-4">

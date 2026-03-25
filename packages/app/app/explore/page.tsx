@@ -226,21 +226,21 @@ export default function ExplorePage() {
   const showEmpty = !isLoading && coins.length === 0;
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <InteractiveGridPattern
         className="!fixed inset-0 -z-10 bg-transparent"
         effectIntensity={0.3}
         centerGlowOpacity={0.1}
       />
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 lg:px-8 lg:pb-0 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide lg:pb-0 lg:pt-24">
+          <div className="mx-auto w-full">
             {/* ── Mobile: sticky header with title + search + sort ── */}
             <div className="sticky top-0 z-10 -mx-4 px-4 pb-3 lg:hidden"
               style={{ background: "linear-gradient(180deg, hsl(var(--background)) 80%, transparent 100%)" }}

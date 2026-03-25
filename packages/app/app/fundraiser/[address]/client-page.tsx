@@ -94,16 +94,16 @@ function formatCountdown(seconds: number): string {
 // Loading skeleton for the page
 function LoadingSkeleton() {
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
+        <div className="flex items-center justify-between pb-2">
           <Link
             href="/explore"
             className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
@@ -119,7 +119,7 @@ function LoadingSkeleton() {
         </div>
 
         {/* Content skeleton */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
           {/* Token info skeleton */}
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
@@ -459,10 +459,10 @@ export default function FundraiserDetailPage() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
@@ -472,8 +472,8 @@ export default function FundraiserDetailPage() {
         <div className="hidden lg:block lg:pt-[72px]" />
 
         {/* Scroll container */}
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-12 pb-4 lg:pt-0 lg:px-8 lg:pb-16 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-12 pb-4 lg:pt-0 lg:pb-16">
+          <div className="mx-auto w-full">
 
             {/* Two-column flex layout */}
             <div className="lg:flex lg:gap-6">

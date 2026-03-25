@@ -72,17 +72,17 @@ const INFO_SECTIONS = [
 
 export default function InfoPage() {
   return (
-    <main className="app-shell">
+    <main className="min-h-screen bg-background">
       <div
-        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         {/* Header */}
-        <div className="page-header px-5 lg:px-8 lg:pt-24 xl:px-10">
-          <div className="mx-auto w-full max-w-[1360px]">
+        <div className="page-header lg:pt-24">
+          <div className="mx-auto w-full">
             <h1 className="page-title">About</h1>
             <p className="page-subtitle">How give.fun works and why it matters.</p>
           </div>
@@ -90,12 +90,12 @@ export default function InfoPage() {
 
         {/* Mobile: single column */}
         <motion.div
-          className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:hidden"
+          className="flex-1 overflow-y-auto scrollbar-hide pb-3 lg:hidden"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto w-full max-w-[1100px]">
+          <div className="mx-auto w-full">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
@@ -125,12 +125,12 @@ export default function InfoPage() {
 
         {/* Desktop: card grid */}
         <motion.div
-          className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide px-8 pb-6 xl:px-10"
+          className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide pb-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto w-full max-w-[1360px] grid grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="mx-auto w-full grid grid-cols-2 xl:grid-cols-3 gap-5">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
