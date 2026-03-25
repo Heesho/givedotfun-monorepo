@@ -11,8 +11,24 @@ const menuItems = [
   { href: "/profile", label: "Profile" },
 ] as const;
 
+const blurbs = [
+  { headline: "Fund something.", sub: "Mine its coin." },
+  { headline: "Capital as signal.", sub: "On-chain conviction." },
+  { headline: "Back builders.", sub: "Earn what you believe in." },
+  { headline: "Crowdfund on Base.", sub: "Every dollar mines a token." },
+] as const;
+
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [blurbIndex, setBlurbIndex] = useState(0);
+
+  // Rotate blurbs every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBlurbIndex((prev) => (prev + 1) % blurbs.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Body scroll lock when menu is open
   useEffect(() => {
@@ -143,18 +159,24 @@ export default function LandingPage() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
           className="flex flex-col gap-6 sm:gap-8"
         >
-          <div className="flex flex-col gap-3">
-            <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-bold leading-[0.95] tracking-[-0.02em] text-white">
-              give.fun
-            </h1>
-            <div className="flex flex-col gap-1.5 sm:gap-2">
-              <p className="text-[14px] sm:text-[16px] font-medium uppercase tracking-[0.18em] text-white/90">
-                Fund something. Mine its coin.
-              </p>
-              <p className="text-[13px] sm:text-[15px] uppercase tracking-[0.16em] text-white/50">
-                Capital as signal.
-              </p>
-            </div>
+          <div className="flex flex-col gap-3 min-h-[120px] sm:min-h-[140px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={blurbIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col gap-1.5 sm:gap-2"
+              >
+                <h1 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-bold leading-[0.95] tracking-[-0.02em] text-white">
+                  {blurbs[blurbIndex].headline}
+                </h1>
+                <p className="text-[14px] sm:text-[16px] md:text-[18px] font-medium uppercase tracking-[0.14em] text-white/60">
+                  {blurbs[blurbIndex].sub}
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* CTA button — liquid glass style */}
