@@ -77,17 +77,17 @@ export function GlobalNav() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
           >
-            <span className="relative w-7 sm:w-8 h-6 flex flex-col justify-center items-center">
+            <span className="relative w-8 sm:w-9 h-6 flex flex-col justify-center items-center">
               <span
-                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300 origin-center"
+                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300 origin-center"
                 style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-7px)" }}
               />
               <span
-                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300"
+                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300"
                 style={{ opacity: menuOpen ? 0 : 1 }}
               />
               <span
-                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300 origin-center"
+                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300 origin-center"
                 style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(7px)" }}
               />
             </span>
