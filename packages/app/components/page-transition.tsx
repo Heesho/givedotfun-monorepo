@@ -30,10 +30,10 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="transition-all duration-500 ease-out"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(24px)",
+        transform: visible ? "translateY(0)" : "translateY(40px)",
+        transition: "opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
       {children}
