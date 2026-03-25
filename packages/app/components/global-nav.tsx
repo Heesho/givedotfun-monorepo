@@ -40,61 +40,52 @@ export function GlobalNav() {
 
   // Text color: white on landing (over video), normal on other pages
   const textColor = isLanding && !menuOpen ? "text-white" : "text-foreground";
-  const logoColor = "text-primary";
 
   return (
     <>
-      {/* Fixed top bar — always visible */}
+      {/* Fixed top bar — always visible, no entrance animation */}
       <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${isLanding ? "" : "bg-background"}`}>
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-3 sm:py-4 flex items-center justify-between">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            className="pointer-events-auto"
-          >
-            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-4 sm:py-5 flex items-center justify-between">
+          {/* Logo — bigger */}
+          <div className="pointer-events-auto">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img
                 src="/media/logo-transparent.png"
                 alt="give.fun"
-                className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
+                className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
               />
               <span
-                className={`font-semibold tracking-[-0.03em] text-lg sm:text-xl md:text-2xl transition-colors duration-300 ${logoColor}`}
+                className="font-semibold tracking-[-0.03em] text-xl sm:text-2xl md:text-[1.75rem] text-primary"
                 style={{ fontFamily: '"Metropolis", sans-serif' }}
               >
                 give.fun
               </span>
             </Link>
-          </motion.div>
+          </div>
 
-          {/* Hamburger / X */}
-          <motion.button
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          {/* Hamburger / X — bigger */}
+          <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`pointer-events-auto w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${textColor}`}
+            className={`pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${textColor}`}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
           >
-            <span className="relative w-6 sm:w-7 h-5 flex flex-col justify-center items-center">
+            <span className="relative w-7 sm:w-8 h-6 flex flex-col justify-center items-center">
               <span
-                className="absolute block w-6 sm:w-7 h-[2px] bg-current transition-all duration-300 origin-center"
-                style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-6px)" }}
+                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300 origin-center"
+                style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-7px)" }}
               />
               <span
-                className="absolute block w-6 sm:w-7 h-[2px] bg-current transition-all duration-300"
+                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300"
                 style={{ opacity: menuOpen ? 0 : 1 }}
               />
               <span
-                className="absolute block w-6 sm:w-7 h-[2px] bg-current transition-all duration-300 origin-center"
-                style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(6px)" }}
+                className="absolute block w-7 sm:w-8 h-[2.5px] bg-current transition-all duration-300 origin-center"
+                style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(7px)" }}
               />
             </span>
-          </motion.button>
+          </button>
         </div>
       </div>
 

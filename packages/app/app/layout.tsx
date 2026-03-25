@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { GlobalNav } from "@/components/global-nav";
+import { PageTransition } from "@/components/page-transition";
 
 const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://givedotfun.vercel.app";
 const heroImageUrl = `${appDomain}/media/hero.png`;
@@ -62,7 +63,7 @@ export default function RootLayout({
       <body className={`${mono.variable}`}>
         <Providers>
           <GlobalNav />
-          {children}
+          <PageTransition>{children}</PageTransition>
         </Providers>
       </body>
     </html>
