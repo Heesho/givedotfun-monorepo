@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LayoutGrid, Plus, Info } from "lucide-react";
 import { useFarcaster } from "@/hooks/useFarcaster";
+import { motion, AnimatePresence } from "framer-motion";
 
 function ProfileIcon({ isActive }: { isActive: boolean }) {
   const { user, address } = useFarcaster();
@@ -14,7 +16,7 @@ function ProfileIcon({ isActive }: { isActive: boolean }) {
   return (
     <div
       className={cn(
-        "ghost-border flex h-8 w-8 items-center justify-center overflow-hidden transition-all",
+        "border border-[hsl(var(--outline-variant)/0.12)] rounded-full flex h-8 w-8 items-center justify-center overflow-hidden transition-all",
         pfpUrl
           ? isActive ? "bg-surface-high shadow-slab" : "bg-surface-low opacity-70 hover:opacity-100"
           : isActive
@@ -39,6 +41,30 @@ export function NavBar({
   desktopWide?: boolean;
 }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Body scroll lock when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  // Escape key to close menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
 
   const isFundraiserPage = pathname.startsWith("/fundraiser/");
 
@@ -59,13 +85,27 @@ export function NavBar({
     { href: "/info", label: "About", isActive: pathname === "/info" },
   ] as const;
 
+  const mobileMenuItems = [
+    { href: "/explore", label: "Explore" },
+    { href: "/launch", label: "Launch" },
+    { href: "/info", label: "About" },
+    { href: "/profile", label: "Profile" },
+  ];
+
   return (
     <>
+      {/* Desktop header with glass background */}
       {desktopWide && (
-        <header className="fixed inset-x-0 top-0 z-50 hidden lg:block"
+        <motion.header
+          className="fixed inset-x-0 top-0 z-50 hidden lg:block border-b border-[hsl(var(--outline-variant)/0.08)]"
           style={{
-            background: "hsl(var(--background))",
+            background: "hsl(var(--background) / 0.7)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
           }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="mx-auto w-full lg:max-w-[1360px] xl:max-w-[1480px] px-8 xl:px-10">
           <div className="mx-auto flex w-full max-w-[1360px] items-center gap-10 py-3.5">
@@ -88,13 +128,9 @@ export function NavBar({
                   className={cn(
                     "px-3.5 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.14em] transition-all",
                     item.isActive
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "text-foreground bg-[hsl(var(--primary)/0.1)] rounded-[var(--radius)] border border-[hsl(var(--primary)/0.15)]"
+                      : "text-muted-foreground hover:text-foreground link-underline"
                   )}
-                  style={item.isActive ? {
-                    background: "hsl(var(--primary) / 0.1)",
-                    boxShadow: "inset 0 0 0 1px hsl(var(--primary) / 0.15)",
-                  } : undefined}
                 >
                   {item.label}
                 </Link>
@@ -114,57 +150,122 @@ export function NavBar({
             </Link>
           </div>
           </div>
-        </header>
+        </motion.header>
       )}
 
-      <nav
-        className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 flex justify-center",
-          desktopWide && "lg:hidden"
-        )}
-      >
-        <div
-          className={cn(
-            "dock-panel flex w-full max-w-[520px] items-center justify-around px-6",
-            attachedTop && "dock-panel-attached"
-          )}
-          style={{
-            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
-            paddingTop: "14px",
-          }}
+      {/* Hamburger button — mobile only */}
+      {desktopWide && (
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="fixed top-4 right-4 z-[210] flex h-10 w-10 flex-col items-center justify-center gap-0 lg:hidden"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
         >
-          <div className="flex flex-1 items-center justify-around">
-            {iconItems.map((item) => (
-              <Link
+          <span
+            className="block h-[2px] w-5 bg-foreground transition-all duration-300 ease-out"
+            style={{
+              transform: menuOpen ? "rotate(45deg) translateY(1px)" : "translateY(-6px)",
+            }}
+          />
+          <span
+            className="block h-[2px] w-5 bg-foreground transition-all duration-300 ease-out"
+            style={{
+              opacity: menuOpen ? 0 : 1,
+            }}
+          />
+          <span
+            className="block h-[2px] w-5 bg-foreground transition-all duration-300 ease-out"
+            style={{
+              transform: menuOpen ? "rotate(-45deg) translateY(-1px)" : "translateY(6px)",
+            }}
+          />
+        </button>
+      )}
+
+      {/* Full-screen mobile overlay menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="fixed inset-0 z-[200] bg-background flex flex-col items-center justify-center"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            {mobileMenuItems.map((item, i) => (
+              <motion.div
                 key={item.href}
-                href={item.href}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Link
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block py-3 text-4xl sm:text-5xl md:text-6xl font-bold text-foreground transition-colors hover:text-primary"
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom dock — mobile, hidden when overlay menu is open */}
+      {!menuOpen && (
+        <nav
+          className={cn(
+            "fixed bottom-0 left-0 right-0 z-50 flex justify-center",
+            desktopWide && "lg:hidden"
+          )}
+        >
+          <div
+            className={cn(
+              "dock-panel flex w-full max-w-[520px] items-center justify-around px-6",
+              attachedTop && "dock-panel-attached"
+            )}
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+              paddingTop: "14px",
+            }}
+          >
+            <div className="flex flex-1 items-center justify-around">
+              {iconItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex min-h-[48px] flex-1 items-center justify-center transition-colors"
+                >
+                  <item.icon
+                    className={cn(
+                      "h-6 w-6 transition-colors",
+                      item.isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    strokeWidth={1.5}
+                  />
+                </Link>
+              ))}
+              <Link
+                href="/profile"
                 className="flex min-h-[48px] flex-1 items-center justify-center transition-colors"
               >
-                <item.icon
-                  className={cn(
-                    "h-6 w-6 transition-colors",
-                    item.isActive
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                  strokeWidth={1.5}
-                />
+                <ProfileIcon isActive={isProfileActive} />
               </Link>
-            ))}
-            <Link
-              href="/profile"
-              className="flex min-h-[48px] flex-1 items-center justify-center transition-colors"
-            >
-              <ProfileIcon isActive={isProfileActive} />
-            </Link>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
 
+      {/* Desktop footer with glass style */}
       {desktopWide && (
-        <footer className="hidden lg:block"
+        <footer
+          className="hidden lg:block"
           style={{
-            background: "linear-gradient(180deg, hsl(var(--surface-container-lowest) / 0.5) 0%, hsl(var(--background) / 0.8) 100%)",
+            background: "linear-gradient(180deg, hsl(var(--surface-container-lowest) / 0.3) 0%, hsl(var(--background) / 0.6) 100%)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
             boxShadow: "inset 0 1px 0 hsl(var(--outline-variant) / 0.12)",
           }}
         >
