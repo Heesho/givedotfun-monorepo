@@ -40,24 +40,25 @@ export default function AuctionsPage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 180px)",
         }}
       >
         {/* Header */}
-        <div className="page-header">
-          <div className="section-kicker">Treasury Mechanism</div>
-          <h1 className="page-title mt-2">Auctions</h1>
-          <p className="page-subtitle">
-            Trade LP tokens for USDC rewards
-          </p>
+        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1180px]">
+            <h1 className="page-title">Auctions</h1>
+            <p className="page-subtitle">
+              Trade LP tokens for USDC rewards
+            </p>
+          </div>
         </div>
 
         {/* Auction List */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1">
-          <div className="space-y-2">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-1 lg:px-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1180px] space-y-2">
             {isLoading && (
               <>
                 <SkeletonRow />
@@ -190,7 +191,7 @@ export default function AuctionsPage() {
           </div>
         )}
       </div>
-      <NavBar />
+      <NavBar desktopWide />
     </main>
   );
 }

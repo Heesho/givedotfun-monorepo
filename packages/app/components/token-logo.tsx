@@ -8,6 +8,7 @@ const sizeClasses = {
   md: { container: "w-7 h-7 text-xs", img: "w-7 h-7" },
   "md-lg": { container: "w-12 h-12 text-base", img: "w-12 h-12" },
   lg: { container: "w-12 h-12 text-base", img: "w-12 h-12" },
+  xl: { container: "w-24 h-24 text-[30px]", img: "w-24 h-24" },
 } as const;
 
 export type TokenLogoSize = keyof typeof sizeClasses;

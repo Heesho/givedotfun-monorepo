@@ -74,28 +74,28 @@ export default function InfoPage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
         {/* Header */}
-        <div className="page-header px-5">
-          <div className="section-kicker">Protocol Anatomy</div>
-          <h1 className="page-title mt-2">About</h1>
-          <p className="page-subtitle">How give.fun works and why it matters.</p>
+        <div className="page-header px-5 lg:px-8 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1100px]">
+            <h1 className="page-title">About</h1>
+            <p className="page-subtitle">How give.fun works and why it matters.</p>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3">
-          <div className="space-y-3">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 lg:px-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1100px]">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
-                className={`slab-panel px-4 py-5 ${index % 2 === 0 ? "light-leak" : ""}`}
+                className={`py-5 ${index > 0 ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""}`}
               >
-                <div className="section-kicker mb-2">Section {index + 1}</div>
                 <h2 className="mb-3 font-display text-[17px] font-semibold uppercase tracking-[-0.03em] text-foreground">
                   {section.title}
                 </h2>
@@ -118,7 +118,7 @@ export default function InfoPage() {
           </div>
         </div>
       </div>
-      <NavBar />
+      <NavBar desktopWide />
     </main>
   );
 }

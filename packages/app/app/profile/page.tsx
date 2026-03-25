@@ -78,8 +78,8 @@ function HoldingRow({
   return (
     <Link
       href={`/fundraiser/${holding.address}`}
-      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 transition-colors duration-200 ${
-        isAlt ? "data-row data-row-alt" : "data-row"
+      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
+        isAlt ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
       } hover-slab`}
     >
       <div className="flex items-center gap-3">
@@ -136,8 +136,8 @@ function LaunchedRow({
   return (
     <Link
       href={`/fundraiser/${fundraiser.address}`}
-      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 transition-colors duration-200 ${
-        isAlt ? "data-row data-row-alt" : "data-row"
+      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
+        isAlt ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
       } hover-slab`}
     >
       <div className="flex items-center gap-3">
@@ -184,59 +184,63 @@ function ProfileSkeleton() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
-        <div className="page-header">
-          <div className="mb-3">
-            <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
-            <div className="mb-2 h-10 w-32 bg-secondary animate-pulse" />
-            <div className="h-4 w-56 bg-secondary animate-pulse" />
-          </div>
-          <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-secondary animate-pulse" />
-              <div className="flex-1">
-                <div className="mb-1 h-5 w-28 bg-secondary animate-pulse" />
+        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
+            <div className="mb-3">
+              <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
+              <div className="mb-2 h-10 w-32 bg-secondary animate-pulse" />
+              <div className="h-4 w-56 bg-secondary animate-pulse" />
+            </div>
+            <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-secondary animate-pulse" />
+                <div className="flex-1">
+                  <div className="mb-1 h-5 w-28 bg-secondary animate-pulse" />
+                  <div className="h-4 w-20 bg-secondary animate-pulse" />
+                </div>
                 <div className="h-4 w-20 bg-secondary animate-pulse" />
               </div>
-              <div className="h-4 w-20 bg-secondary animate-pulse" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="slab-inset px-3 py-3">
-                <div className="mb-1 h-3 w-20 bg-secondary animate-pulse" />
-                <div className="h-8 w-24 bg-secondary animate-pulse" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="slab-inset px-3 py-3">
+                  <div className="mb-1 h-3 w-20 bg-secondary animate-pulse" />
+                  <div className="h-8 w-24 bg-secondary animate-pulse" />
+                </div>
+                <div className="slab-inset px-3 py-3">
+                  <div className="mb-1 h-3 w-16 bg-secondary animate-pulse" />
+                  <div className="h-8 w-24 bg-secondary animate-pulse" />
+                </div>
               </div>
-              <div className="slab-inset px-3 py-3">
-                <div className="mb-1 h-3 w-16 bg-secondary animate-pulse" />
-                <div className="h-8 w-24 bg-secondary animate-pulse" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-9 bg-secondary animate-pulse" />
+                <div className="h-9 bg-secondary animate-pulse" />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="h-9 bg-secondary animate-pulse" />
-              <div className="h-9 bg-secondary animate-pulse" />
             </div>
           </div>
         </div>
-        <div className="flex-1 space-y-2 px-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="slab-inset flex items-center gap-3 px-3 py-3">
-              <div className="h-10 w-10 bg-secondary animate-pulse" />
-              <div className="flex-1">
-                <div className="mb-1 h-4 w-24 bg-secondary animate-pulse" />
-                <div className="h-3 w-16 bg-secondary animate-pulse" />
+        <div className="flex-1 space-y-2 px-4 lg:px-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px] space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="slab-inset flex items-center gap-3 px-3 py-3">
+                <div className="h-10 w-10 bg-secondary animate-pulse" />
+                <div className="flex-1">
+                  <div className="mb-1 h-4 w-24 bg-secondary animate-pulse" />
+                  <div className="h-3 w-16 bg-secondary animate-pulse" />
+                </div>
+                <div className="text-right">
+                  <div className="mb-1 h-4 w-16 bg-secondary animate-pulse" />
+                  <div className="h-3 w-12 bg-secondary animate-pulse" />
+                </div>
               </div>
-              <div className="text-right">
-                <div className="mb-1 h-4 w-16 bg-secondary animate-pulse" />
-                <div className="h-3 w-12 bg-secondary animate-pulse" />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        <NavBar />
+        <NavBar desktopWide />
       </div>
     </main>
   );
@@ -252,7 +256,7 @@ function NotConnected() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
@@ -301,7 +305,7 @@ function NotConnected() {
             </>
           )}
         </div>
-        <NavBar />
+        <NavBar desktopWide />
       </div>
     </main>
   );
@@ -381,112 +385,114 @@ export default function ProfilePage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
         {/* Header */}
-        <div className="page-header">
-          <div className="mb-3">
-            <div className="section-kicker">Holdings Ledger</div>
-            <h1 className="page-title mt-2">Profile</h1>
-            <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
-          </div>
-          <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
-            <div className="flex items-center gap-3">
-              {pfpUrl ? (
-                <img
-                  src={pfpUrl}
-                  alt={displayName}
-                  className="ghost-border h-10 w-10 object-cover"
-                />
-              ) : (
-                <div
-                  className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${
-                    isAddressFallbackAvatar
-                      ? "bg-surface-lowest font-mono text-[14px] tracking-wide"
-                      : "bg-surface-lowest text-base font-semibold"
+        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
+            <div className="mb-3">
+              <h1 className="page-title">Profile</h1>
+              <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                {pfpUrl ? (
+                  <img
+                    src={pfpUrl}
+                    alt={displayName}
+                    className="ghost-border h-10 w-10 object-cover"
+                  />
+                ) : (
+                  <div
+                    className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${
+                      isAddressFallbackAvatar
+                        ? "bg-surface-lowest font-mono text-[14px] tracking-wide"
+                        : "bg-surface-lowest text-base font-semibold"
+                    }`}
+                  >
+                    {avatarFallback}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
+                  <div className="truncate text-[12px] text-muted-foreground">
+                    {username || shortAddress}
+                  </div>
+                </div>
+                <div className="hidden text-right sm:block">
+                  <div className="section-kicker">Wallet</div>
+                  <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="slab-inset px-3 py-3">
+                  <div className="section-kicker">Portfolio</div>
+                  <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
+                    {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
+                  </div>
+                </div>
+                <div className="slab-inset px-3 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="section-kicker">Cash</div>
+                      <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
+                        ${formattedUsdc}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        mintUsdc({
+                          address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
+                          abi: MOCK_MINT_ABI,
+                          functionName: "mint",
+                          args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
+                        })
+                      }
+                      disabled={isUsdcMinting}
+                      className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                    >
+                      {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setActiveTab("holdings")}
+                  className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                    activeTab === "holdings"
+                      ? "bg-primary text-primary-foreground shadow-slab"
+                      : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
                   }`}
                 >
-                  {avatarFallback}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
-                <div className="truncate text-[12px] text-muted-foreground">
-                  {username || shortAddress}
-                </div>
+                  <Wallet className="w-3.5 h-3.5" />
+                  Coins
+                </button>
+                <button
+                  onClick={() => setActiveTab("launched")}
+                  className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                    activeTab === "launched"
+                      ? "bg-primary text-primary-foreground shadow-slab"
+                      : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                  }`}
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  Fundraisers
+                </button>
               </div>
-              <div className="hidden text-right sm:block">
-                <div className="section-kicker">Wallet</div>
-                <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <div className="slab-inset px-3 py-3">
-                <div className="section-kicker">Portfolio</div>
-                <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
-                  {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
-                </div>
-              </div>
-              <div className="slab-inset px-3 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="section-kicker">Cash</div>
-                    <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
-                      ${formattedUsdc}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() =>
-                      mintUsdc({
-                        address: CONTRACT_ADDRESSES.usdc as `0x${string}`,
-                        abi: MOCK_MINT_ABI,
-                        functionName: "mint",
-                        args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)],
-                      })
-                    }
-                    disabled={isUsdcMinting}
-                    className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
-                  >
-                    {isUsdcMinting ? "Minting..." : "Mint 1000"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setActiveTab("holdings")}
-                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
-                  activeTab === "holdings"
-                    ? "bg-primary text-primary-foreground shadow-slab"
-                    : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                }`}
-              >
-                <Wallet className="w-3.5 h-3.5" />
-                Coins
-              </button>
-              <button
-                onClick={() => setActiveTab("launched")}
-                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
-                  activeTab === "launched"
-                    ? "bg-primary text-primary-foreground shadow-slab"
-                    : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                }`}
-              >
-                <Rocket className="w-3.5 h-3.5" />
-                Fundraisers
-              </button>
             </div>
           </div>
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-2 lg:px-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
           {activeTab === "holdings" && (
             <>
               {holdings.length === 0 ? (
@@ -592,9 +598,10 @@ export default function ProfilePage() {
               )}
             </>
           )}
+          </div>
         </div>
 
-        <NavBar />
+        <NavBar desktopWide />
       </div>
     </main>
   );

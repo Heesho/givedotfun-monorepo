@@ -461,23 +461,950 @@ export default function FundraiserDetailPage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
+        {/* Desktop spacer for fixed header */}
+        <div className="hidden lg:block lg:pt-[72px]" />
+
+        {/* Scroll container */}
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-12 pb-4 lg:pt-0 lg:px-8 lg:pb-16 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
+
+            {/* Two-column flex layout */}
+            <div className="lg:flex lg:gap-6">
+
+              {/* LEFT COLUMN */}
+              <div className="lg:flex-1 lg:min-w-0">
+
+                {/* Desktop: back + ticker left, price right */}
+                <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
+                  <div className="flex items-center gap-2">
+                    <Link href="/explore" className="p-1 transition-colors hover:bg-surface-high">
+                      <ArrowLeft className="w-4 h-4" />
+                    </Link>
+                    <div>
+                      <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
+                      <div className="text-[13px] text-muted-foreground">{tokenName}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-[26px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
+                      {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-end gap-3 text-[13px]">
+                      <span className={`font-medium font-mono ${movementClass}`}>
+                        {hoverData
+                          ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
+                      </span>
+                      <span className="text-muted-foreground/40">|</span>
+                      <span className="text-muted-foreground">Mcap <span className="text-foreground font-mono">{formatMarketCap(marketCapUsd)}</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile: token info slab */}
+                <div className="lg:hidden">
+                  <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel mb-3 flex items-center justify-between px-3 py-3`}>
+                    <div className="flex items-center gap-3">
+                      <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
+                      <div ref={tokenIdentityRef}>
+                        <div className="text-[13px] text-muted-foreground">{tokenName}</div>
+                        <div className="font-display text-[15px] font-medium uppercase tracking-[-0.02em]">{tokenSymbol}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="price-large">
+                        {hoverData && hoverData.value > 0
+                          ? formatPrice(hoverData.value)
+                          : formatPrice(priceUsd)}
+                      </div>
+                      {hoverData ? (
+                        <div className="text-[13px] font-medium font-mono text-muted-foreground">
+                          {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      ) : (
+                        <div className={`text-[13px] font-medium font-mono ${movementClass}`}>
+                          {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile chart */}
+                <div className="mb-2 -mx-4 lg:hidden">
+                  <PriceChart
+                    data={chartData}
+                    height={176}
+                    color={movementColor}
+                    onHover={handleChartHover}
+                    tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
+                    initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
+                  />
+                </div>
+
+                {/* Desktop chart */}
+                <div className="hidden lg:block lg:mb-0">
+                  <PriceChart
+                    data={chartData}
+                    height={280}
+                    color={movementColor}
+                    onHover={handleChartHover}
+                    tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
+                    initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
+                  />
+                </div>
+
+                {/* Timeframe buttons + desktop buy/sell */}
+                <div className="mb-5 grid grid-cols-5 gap-2 lg:flex lg:items-center lg:justify-between lg:gap-4">
+                  <div className="contents lg:flex lg:gap-2">
+                    {(["1H", "1D", "1W", "1M", "ALL"] as Timeframe[]).map((tf) => (
+                      <button
+                        key={tf}
+                        onClick={() => setTimeframe(tf)}
+                        className={`ghost-border px-2 py-2 text-[12px] font-medium font-mono transition-all ${
+                          timeframe === tf
+                            ? displayChange >= 0
+                              ? "bg-primary text-primary-foreground shadow-slab"
+                              : "bg-loss text-loss-foreground shadow-slab-loss"
+                            : "bg-secondary text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                        }`}
+                      >
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Desktop: Buy/Sell inline */}
+                  <div className="hidden lg:flex lg:gap-2">
+                    {isConnected ? (
+                      <>
+                        <button onClick={() => { setTradeMode("buy"); setShowTradeModal(true); }} className="slab-button px-6 text-[11px]">Buy</button>
+                        <button onClick={() => { setTradeMode("sell"); setShowTradeModal(true); }} disabled={userCoinBalance <= 0} className={`slab-button slab-button-loss px-6 text-[11px] ${userCoinBalance <= 0 ? "opacity-50" : ""}`}>Sell</button>
+                      </>
+                    ) : (
+                      <button onClick={() => connect()} disabled={isConnecting || isInFrame === true} className="slab-button px-8 text-[11px] disabled:opacity-50">{isConnecting ? "Connecting..." : "Connect Wallet"}</button>
+                    )}
+                  </div>
+                </div>
+
+                {/* MOBILE ONLY sections */}
+                <div className="lg:hidden">
+
+                  {/* Mining Pool Section — mobile */}
+                  <div className="slab-panel mb-6 px-3 py-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
+                      </div>
+                      <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
+                        {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-[11px] text-muted-foreground mb-1">Funded</div>
+                        <div className="text-[22px] font-bold tabular-nums font-mono">
+                          ${currentEpochTotalDonated.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
+                          {costPerToken > 0 ? `$${costPerToken.toFixed(4)}/token` : ""}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[11px] text-muted-foreground mb-1">Emission</div>
+                        <div className="text-[22px] font-bold tabular-nums font-mono flex items-center justify-end gap-1.5">
+                          <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" variant="circle" />
+                          {currentEpochEmission >= 1_000_000 ? `${(currentEpochEmission / 1_000_000).toFixed(2)}M`
+                            : currentEpochEmission >= 1_000 ? `${(currentEpochEmission / 1_000).toFixed(0)}K`
+                            : currentEpochEmission.toFixed(0)}
+                        </div>
+                        <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
+                          {priceUsd > 0 ? `~$${formatNumber(currentEpochEmission * priceUsd)} value` : `${tokenSymbol}`}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowMineModal(true)}
+                      className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
+                    >
+                      Mine
+                    </button>
+                  </div>
+
+                  {/* Your Position Section — mobile */}
+                  {hasPosition && (
+                    <div className="slab-panel mb-6 px-3 py-4">
+                      <div className="mb-3">
+                        <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
+                      </div>
+                      {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
+                        <div className="mb-4">
+                          <div className="ledger-list">
+                            {userCurrentEpochDonation > 0 && (
+                              <div className="flex items-center gap-3 px-0 py-2.5">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium">Day {currentEpoch}</span>
+                                    <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                                  <div>
+                                    <div className="text-[12px] text-muted-foreground">Funded</div>
+                                    <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[12px] text-muted-foreground">Mined</div>
+                                    <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                                      <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                                      {estimatedTokensFromEpoch >= 1000
+                                        ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
+                                        : formatNumber(estimatedTokensFromEpoch, 0)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {claimableEpochs.map((ep) => {
+                              const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
+                              const epReward = Number(formatEther(ep.pendingReward));
+                              return (
+                                <div key={ep.epoch.toString()} className="flex items-center gap-3 px-0 py-2.5">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
+                                      <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                                    <div>
+                                      <div className="text-[12px] text-muted-foreground">Funded</div>
+                                      <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-[12px] text-muted-foreground">Mined</div>
+                                      <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                                        <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                                        {epReward >= 1000
+                                          ? `${(epReward / 1000).toFixed(1)}K`
+                                          : formatNumber(epReward, 0)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {unclaimedEpochCount > 0 && (
+                            <button
+                              onClick={handleClaim}
+                              disabled={claimStatus === "pending" || claimStatus === "success"}
+                              className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
+                                claimStatus === "success"
+                                  ? `${coinActionButtonClass} opacity-70`
+                                  : claimStatus === "error"
+                                  ? "slab-button-ghost text-loss"
+                                  : claimStatus === "pending"
+                                  ? `${coinActionButtonClass} opacity-50`
+                                  : coinActionButtonClass
+                              }`}
+                            >
+                              {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                              {claimStatus === "success" && <CheckCircle className="w-3.5 h-3.5" />}
+                              {claimStatus === "pending"
+                                ? "Claiming..."
+                                : claimStatus === "success"
+                                ? "Claimed!"
+                                : claimStatus === "error"
+                                ? claimError?.message?.includes("cancelled") ? "Rejected" : "Failed"
+                                : `Claim all · ${unclaimedEpochCount} day${unclaimedEpochCount !== 1 ? "s" : ""}`}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
+                          <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                            <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
+                            <span>{formatNumber(userCoinBalance)}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-1">Value</div>
+                          <div className="text-[15px] font-semibold tabular-nums font-mono text-foreground">
+                            ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                        {userTotals && userTotals.totalFunded > 0 && (
+                          <>
+                            <div>
+                              <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
+                              <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                                <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
+                                <span>{formatNumber(userTotals.totalMined)}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
+                              <div className="font-semibold text-[15px] tabular-nums font-mono">
+                                ${formatNumber(userTotals.totalFunded)}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* About Section — mobile */}
+                  <div className="slab-panel mb-6 px-3 py-4">
+                    <div className="mb-3">
+                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
+                      <span>Deployed by</span>
+                      {launcherAddress ? (
+                        <span className="text-foreground font-medium font-mono">
+                          <AddressLink address={launcherAddress} />
+                        </span>
+                      ) : (
+                        <span className="text-foreground font-medium">--</span>
+                      )}
+                      <span className="text-muted-foreground/60">·</span>
+                      <span className="text-muted-foreground/60">{launchDateStr}</span>
+                    </div>
+                    {metadata?.description && (
+                      <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                        {metadata.description}
+                      </p>
+                    )}
+                    {!metadata?.description && (
+                      <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                        A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {coinAddress && (
+                        <a
+                          href={`https://basescan.org/token/${coinAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                        >
+                          {tokenSymbol}
+                        </a>
+                      )}
+                      {subgraphFundraiser?.coin?.lpPair && (
+                        <a
+                          href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                        >
+                          {tokenSymbol}-USDC LP
+                        </a>
+                      )}
+                      {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
+                        let label: string;
+                        try {
+                          const hostname = new URL(link).hostname.replace("www.", "");
+                          if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
+                          else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
+                          else if (hostname.includes("discord")) label = "Discord";
+                          else if (hostname.includes("github.com")) label = "GitHub";
+                          else if (hostname.includes("warpcast.com")) label = "Warpcast";
+                          else label = hostname;
+                        } catch {
+                          label = link;
+                        }
+                        return (
+                          <a
+                            key={i}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                          >
+                            {label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                    {isConnected && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setShowLiquidityModal(true)}
+                          className={`${coinActionButtonClass} text-[11px]`}
+                        >
+                          Liquidity
+                        </button>
+                        <button
+                          onClick={() => setShowAuctionModal(true)}
+                          className={`${coinActionButtonClass} text-[11px]`}
+                        >
+                          Auction
+                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={() => setShowAdminModal(true)}
+                            className={`${coinActionButtonClass} col-span-2 text-[11px]`}
+                          >
+                            Admin
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stats Section — mobile */}
+                  <div className="slab-panel mb-6 px-3 py-4">
+                    <div className="mb-3">
+                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">{formatMarketCap(marketCapUsd)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">{formatNumber(totalSupply)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">${formatNumber(liquidityUsd)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">${formatNumber(volume24h)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">
+                          ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono">
+                          ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+                      {subgraphFundraiser && (
+                        <>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (start)</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.initialEmission)}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (min)</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.minEmission)}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono">
+                              {formatPeriod(
+                                String(
+                                  parseInt(subgraphFundraiser.halvingPeriod) *
+                                  parseInt(subgraphFundraiser.epochDuration)
+                                )
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
+                          </div>
+                          {metadata?.recipientName && (
+                            <div>
+                              <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
+                              <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">
+                              {metadata?.recipientName ? "Recipient address" : "Recipient"}
+                            </div>
+                            <div className="font-semibold text-[15px] font-mono">
+                              <AddressLink address={fundraiserState?.recipient ?? null} />
+                            </div>
+                          </div>
+                          {fundraiserState?.treasury && (
+                            <div>
+                              <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                              <div className="font-semibold text-[15px] font-mono">
+                                <AddressLink address={fundraiserState.treasury} />
+                              </div>
+                            </div>
+                          )}
+                          {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
+                            <div>
+                              <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                              <div className="font-semibold text-[15px] font-mono">
+                                <AddressLink address={fundraiserState.team} />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                </div>{/* end mobile-only sections */}
+
+                {/* Recent Funding */}
+                <div className="slab-panel mb-6 px-3 py-3">
+                  <div className="mb-2.5">
+                    <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
+                    <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
+                  </div>
+                  {isHistoryLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : donations.length === 0 ? (
+                    <div className="py-4 text-center text-[13px] text-muted-foreground">
+                      No funding yet
+                    </div>
+                  ) : (
+                    <div className="ledger-list">
+                      {donations.map((donation, index) => (
+                        <DonationHistoryItem
+                          key={`${donation.donor}-${donation.timestamp}-${index}`}
+                          donation={{
+                            id: `${donation.donor}-${donation.timestamp}-${index}`,
+                            donor: donation.donor,
+                            uri: donation.uri,
+                            amount: donation.amount,
+                            estimatedTokens: currentEpochEmission > 0
+                              ? BigInt(Math.floor((Number(formatUnits(donation.amount, QUOTE_TOKEN_DECIMALS)) / (currentEpochTotalDonated || 1)) * currentEpochEmission * 1e18))
+                              : 0n,
+                            timestamp: Number(donation.timestamp),
+                          }}
+                          timeAgo={timeAgo}
+                          tokenSymbol={tokenSymbol}
+                          logoUrl={logoUrl ?? undefined}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Leaderboard */}
+                <Leaderboard
+                  entries={leaderboardEntries ?? []}
+                  userRank={userRank ?? null}
+                  tokenSymbol={tokenSymbol}
+                  tokenName={tokenName}
+                  fundraiserUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${fundraiserAddress}` : ""}
+                  isLoading={isLeaderboardLoading}
+                />
+
+              </div>{/* end left column */}
+
+              {/* RIGHT COLUMN — desktop sidebar */}
+              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-[72px] lg:self-start">
+
+                {/* Fundraiser image — desktop only */}
+                {logoUrl && (
+                  <div className="slab-panel mb-4 overflow-hidden">
+                    <img src={logoUrl} alt={tokenName} className="w-full h-auto object-cover" style={{ maxHeight: "220px" }} />
+                  </div>
+                )}
+
+                {/* Mining Pool Section */}
+                <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
+                    </div>
+                    <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
+                      {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
+                    </div>
+                  </div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-[11px] text-muted-foreground mb-1">Funded</div>
+                      <div className="text-[22px] font-bold tabular-nums font-mono">
+                        ${currentEpochTotalDonated.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                      </div>
+                      <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
+                        {costPerToken > 0 ? `$${costPerToken.toFixed(4)}/token` : ""}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[11px] text-muted-foreground mb-1">Emission</div>
+                      <div className="text-[22px] font-bold tabular-nums font-mono flex items-center justify-end gap-1.5">
+                        <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" variant="circle" />
+                        {currentEpochEmission >= 1_000_000 ? `${(currentEpochEmission / 1_000_000).toFixed(2)}M`
+                          : currentEpochEmission >= 1_000 ? `${(currentEpochEmission / 1_000).toFixed(0)}K`
+                          : currentEpochEmission.toFixed(0)}
+                      </div>
+                      <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
+                        {priceUsd > 0 ? `~$${formatNumber(currentEpochEmission * priceUsd)} value` : `${tokenSymbol}`}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowMineModal(true)}
+                    className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
+                  >
+                    Mine
+                  </button>
+                </div>
+
+                {/* Your Position Section */}
+                {hasPosition && (
+                  <div className="slab-panel mb-6 px-3 py-4">
+                    <div className="mb-3">
+                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
+                    </div>
+                    {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
+                      <div className="mb-4">
+                        <div className="ledger-list">
+                          {userCurrentEpochDonation > 0 && (
+                            <div className="flex items-center gap-3 px-0 py-2.5">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">Day {currentEpoch}</span>
+                                  <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                                <div>
+                                  <div className="text-[12px] text-muted-foreground">Funded</div>
+                                  <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                </div>
+                                <div>
+                                  <div className="text-[12px] text-muted-foreground">Mined</div>
+                                  <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                                    <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                                    {estimatedTokensFromEpoch >= 1000
+                                      ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
+                                      : formatNumber(estimatedTokensFromEpoch, 0)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {claimableEpochs.map((ep) => {
+                            const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
+                            const epReward = Number(formatEther(ep.pendingReward));
+                            return (
+                              <div key={ep.epoch.toString()} className="flex items-center gap-3 px-0 py-2.5">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
+                                    <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                                  <div>
+                                    <div className="text-[12px] text-muted-foreground">Funded</div>
+                                    <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[12px] text-muted-foreground">Mined</div>
+                                    <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                                      <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                                      {epReward >= 1000
+                                        ? `${(epReward / 1000).toFixed(1)}K`
+                                        : formatNumber(epReward, 0)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {unclaimedEpochCount > 0 && (
+                          <button
+                            onClick={handleClaim}
+                            disabled={claimStatus === "pending" || claimStatus === "success"}
+                            className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
+                              claimStatus === "success"
+                                ? `${coinActionButtonClass} opacity-70`
+                                : claimStatus === "error"
+                                ? "slab-button-ghost text-loss"
+                                : claimStatus === "pending"
+                                ? `${coinActionButtonClass} opacity-50`
+                                : coinActionButtonClass
+                            }`}
+                          >
+                            {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                            {claimStatus === "success" && <CheckCircle className="w-3.5 h-3.5" />}
+                            {claimStatus === "pending"
+                              ? "Claiming..."
+                              : claimStatus === "success"
+                              ? "Claimed!"
+                              : claimStatus === "error"
+                              ? claimError?.message?.includes("cancelled") ? "Rejected" : "Failed"
+                              : `Claim all · ${unclaimedEpochCount} day${unclaimedEpochCount !== 1 ? "s" : ""}`}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
+                        <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                          <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
+                          <span>{formatNumber(userCoinBalance)}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-[12px] mb-1">Value</div>
+                        <div className="text-[15px] font-semibold tabular-nums font-mono text-foreground">
+                          ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+                      {userTotals && userTotals.totalFunded > 0 && (
+                        <>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
+                              <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
+                              <span>{formatNumber(userTotals.totalMined)}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
+                            <div className="font-semibold text-[15px] tabular-nums font-mono">
+                              ${formatNumber(userTotals.totalFunded)}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* About Section */}
+                <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="mb-3">
+                    <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
+                    <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
+                    <span>Deployed by</span>
+                    {launcherAddress ? (
+                      <span className="text-foreground font-medium font-mono">
+                        <AddressLink address={launcherAddress} />
+                      </span>
+                    ) : (
+                      <span className="text-foreground font-medium">--</span>
+                    )}
+                    <span className="text-muted-foreground/60">·</span>
+                    <span className="text-muted-foreground/60">{launchDateStr}</span>
+                  </div>
+                  {metadata?.description && (
+                    <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                      {metadata.description}
+                    </p>
+                  )}
+                  {!metadata?.description && (
+                    <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
+                      A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {coinAddress && (
+                      <a
+                        href={`https://basescan.org/token/${coinAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                      >
+                        {tokenSymbol}
+                      </a>
+                    )}
+                    {subgraphFundraiser?.coin?.lpPair && (
+                      <a
+                        href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                      >
+                        {tokenSymbol}-USDC LP
+                      </a>
+                    )}
+                    {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
+                      let label: string;
+                      try {
+                        const hostname = new URL(link).hostname.replace("www.", "");
+                        if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
+                        else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
+                        else if (hostname.includes("discord")) label = "Discord";
+                        else if (hostname.includes("github.com")) label = "GitHub";
+                        else if (hostname.includes("warpcast.com")) label = "Warpcast";
+                        else label = hostname;
+                      } catch {
+                        label = link;
+                      }
+                      return (
+                        <a
+                          key={i}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                        >
+                          {label}
+                        </a>
+                      );
+                    })}
+                  </div>
+                  {isConnected && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setShowLiquidityModal(true)}
+                        className={`${coinActionButtonClass} text-[11px]`}
+                      >
+                        Liquidity
+                      </button>
+                      <button
+                        onClick={() => setShowAuctionModal(true)}
+                        className={`${coinActionButtonClass} text-[11px]`}
+                      >
+                        Auction
+                      </button>
+                      {isOwner && (
+                        <button
+                          onClick={() => setShowAdminModal(true)}
+                          className={`${coinActionButtonClass} col-span-2 text-[11px]`}
+                        >
+                          Admin
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Stats Section */}
+                <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="mb-3">
+                    <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
+                    <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">{formatMarketCap(marketCapUsd)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">{formatNumber(totalSupply)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">${formatNumber(liquidityUsd)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">${formatNumber(volume24h)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">
+                        ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                      <div className="font-semibold text-[15px] tabular-nums font-mono">
+                        ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                    {subgraphFundraiser && (
+                      <>
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (start)</div>
+                          <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.initialEmission)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (min)</div>
+                          <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.minEmission)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
+                          <div className="font-semibold text-[15px] tabular-nums font-mono">
+                            {formatPeriod(
+                              String(
+                                parseInt(subgraphFundraiser.halvingPeriod) *
+                                parseInt(subgraphFundraiser.epochDuration)
+                              )
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
+                          <div className="font-semibold text-[15px] tabular-nums font-mono">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
+                        </div>
+                        {metadata?.recipientName && (
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
+                            <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-muted-foreground text-[12px] mb-0.5">
+                            {metadata?.recipientName ? "Recipient address" : "Recipient"}
+                          </div>
+                          <div className="font-semibold text-[15px] font-mono">
+                            <AddressLink address={fundraiserState?.recipient ?? null} />
+                          </div>
+                        </div>
+                        {fundraiserState?.treasury && (
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
+                            <div className="font-semibold text-[15px] font-mono">
+                              <AddressLink address={fundraiserState.treasury} />
+                            </div>
+                          </div>
+                        )}
+                        {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
+                          <div>
+                            <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
+                            <div className="font-semibold text-[15px] font-mono">
+                              <AddressLink address={fundraiserState.team} />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+              </div>{/* end right column / desktop sidebar */}
+
+            </div>{/* end two-column flex */}
+
+          </div>{/* end max-width wrapper */}
+        </div>{/* end scroll container */}
+
+        {/* Mobile header — back arrow, ticker plaque, share */}
+        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)", background: "hsl(var(--background))" }}>
           <Link
             href="/explore"
-            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
+            className="-ml-2 p-2 transition-colors hover:bg-surface-high"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div
-            className={`pointer-events-none min-w-[144px] transition-all duration-200 ${
-              showHeaderPrice ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+            className={`pointer-events-none min-w-[144px] transition-opacity duration-500 ${
+              showHeaderPrice ? "opacity-100" : "opacity-0"
             }`}
           >
             <div className={`px-3 py-1.5 ${displayChange >= 0 ? "ticker-plaque-positive" : "ticker-plaque-negative"}`}>
@@ -496,518 +1423,14 @@ export default function FundraiserDetailPage() {
               const url = typeof window !== "undefined" ? window.location.href : "";
               composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
             }}
-            className="ghost-border -mr-2 p-2 transition-colors hover:bg-surface-high"
+            className="-mr-2 p-2 transition-colors hover:bg-surface-high"
           >
             <Share2 className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pb-4">
-          {/* Token Info Section */}
-          <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel mb-3 flex items-center justify-between px-3 py-3`}>
-            <div className="flex items-center gap-3">
-              <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
-              <div ref={tokenIdentityRef}>
-                <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                <div className="font-display text-[15px] font-medium uppercase tracking-[-0.02em]">{tokenSymbol}</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="price-large">
-                {hoverData && hoverData.value > 0
-                  ? formatPrice(hoverData.value)
-                  : formatPrice(priceUsd)}
-              </div>
-              {hoverData ? (
-                <div className="text-[13px] font-medium font-mono text-muted-foreground">
-                  {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                </div>
-              ) : (
-                <div className={`text-[13px] font-medium font-mono ${movementClass}`}>
-                  {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Chart */}
-          <div className="mb-2 -mx-4">
-            <PriceChart
-              data={chartData}
-              height={176}
-              color={movementColor}
-              onHover={handleChartHover}
-              tokenFirstActiveTime={timeframe !== "ALL" ? createdAtTimestamp : undefined}
-              initialPrice={timeframe !== "ALL" ? initialPrice : undefined}
-            />
-          </div>
-
-          {/* Timeframe Selector */}
-          <div className="mb-5 grid grid-cols-5 gap-2">
-            {(["1H", "1D", "1W", "1M", "ALL"] as Timeframe[]).map((tf) => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`ghost-border px-2 py-2 text-[12px] font-medium font-mono transition-all ${
-                  timeframe === tf
-                    ? displayChange >= 0
-                      ? "bg-primary text-primary-foreground shadow-slab"
-                      : "bg-loss text-loss-foreground shadow-slab-loss"
-                    : "bg-secondary text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
-          </div>
-
-          {/* Mining Pool Section */}
-          <div className="slab-panel mb-6 px-3 py-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
-              </div>
-              <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
-                {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-[11px] text-muted-foreground mb-1">Funded</div>
-                <div className="text-[22px] font-bold tabular-nums font-mono">
-                  ${currentEpochTotalDonated.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                </div>
-                <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
-                  {costPerToken > 0 ? `$${costPerToken.toFixed(4)}/token` : ""}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px] text-muted-foreground mb-1">Emission</div>
-                <div className="text-[22px] font-bold tabular-nums font-mono flex items-center justify-end gap-1.5">
-                  <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" variant="circle" />
-                  {currentEpochEmission >= 1_000_000 ? `${(currentEpochEmission / 1_000_000).toFixed(2)}M`
-                    : currentEpochEmission >= 1_000 ? `${(currentEpochEmission / 1_000).toFixed(0)}K`
-                    : currentEpochEmission.toFixed(0)}
-                </div>
-                <div className="text-[13px] text-muted-foreground tabular-nums font-mono mt-0.5">
-                  {priceUsd > 0 ? `~$${formatNumber(currentEpochEmission * priceUsd)} value` : `${tokenSymbol}`}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowMineModal(true)}
-              className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
-            >
-              Mine
-            </button>
-          </div>
-
-          {/* Your Position Section */}
-          {hasPosition && (
-            <div className="slab-panel mb-6 px-3 py-4">
-              <div className="mb-3">
-                <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
-              </div>
-
-              {/* Mining epochs */}
-              {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
-                <div className="mb-4">
-                  <div className="ledger-list">
-                    {/* Current epoch - active */}
-                    {userCurrentEpochDonation > 0 && (
-                      <div className="flex items-center gap-3 px-0 py-2.5">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Day {currentEpoch}</span>
-                            <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 flex-shrink-0 text-right">
-                          <div>
-                            <div className="text-[12px] text-muted-foreground">Funded</div>
-                            <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                          </div>
-                          <div>
-                            <div className="text-[12px] text-muted-foreground">Mined</div>
-                            <div className="text-[13px] font-medium flex items-center justify-end gap-1">
-                              <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
-                              {estimatedTokensFromEpoch >= 1000
-                                ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
-                                : formatNumber(estimatedTokensFromEpoch, 0)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Past unclaimed epochs */}
-                    {claimableEpochs.map((ep) => {
-                      const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
-                      const epReward = Number(formatEther(ep.pendingReward));
-                      return (
-                        <div key={ep.epoch.toString()} className="flex items-center gap-3 px-0 py-2.5">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                              <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 flex-shrink-0 text-right">
-                            <div>
-                              <div className="text-[12px] text-muted-foreground">Funded</div>
-                              <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                            </div>
-                            <div>
-                              <div className="text-[12px] text-muted-foreground">Mined</div>
-                              <div className="text-[13px] font-medium flex items-center justify-end gap-1">
-                                <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
-                                {epReward >= 1000
-                                  ? `${(epReward / 1000).toFixed(1)}K`
-                                  : formatNumber(epReward, 0)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Claim all button */}
-                  {unclaimedEpochCount > 0 && (
-                    <button
-                      onClick={handleClaim}
-                      disabled={claimStatus === "pending" || claimStatus === "success"}
-                      className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
-                        claimStatus === "success"
-                          ? `${coinActionButtonClass} opacity-70`
-                          : claimStatus === "error"
-                          ? "slab-button-ghost text-loss"
-                          : claimStatus === "pending"
-                          ? `${coinActionButtonClass} opacity-50`
-                          : coinActionButtonClass
-                      }`}
-                    >
-                      {claimStatus === "pending" && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                      {claimStatus === "success" && <CheckCircle className="w-3.5 h-3.5" />}
-                      {claimStatus === "pending"
-                        ? "Claiming..."
-                        : claimStatus === "success"
-                        ? "Claimed!"
-                        : claimStatus === "error"
-                        ? claimError?.message?.includes("cancelled") ? "Rejected" : "Failed"
-                        : `Claim all · ${unclaimedEpochCount} day${unclaimedEpochCount !== 1 ? "s" : ""}`}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                <div>
-                  <div className="text-muted-foreground text-[12px] mb-1">Balance</div>
-                  <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
-                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
-                    <span>{formatNumber(userCoinBalance)}</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-[12px] mb-1">Value</div>
-                  <div className="text-[15px] font-semibold tabular-nums font-mono text-foreground">
-                    ${positionBalanceUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                </div>
-                {userTotals && userTotals.totalFunded > 0 && (
-                  <>
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-1">Total mined</div>
-                      <div className="font-semibold text-[15px] tabular-nums font-mono flex items-center gap-1.5">
-                        <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" variant="circle" />
-                        <span>{formatNumber(userTotals.totalMined)}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-1">Total funded</div>
-                      <div className="font-semibold text-[15px] tabular-nums font-mono">
-                        ${formatNumber(userTotals.totalFunded)}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* About Section */}
-          <div className="slab-panel mb-6 px-3 py-4">
-            <div className="mb-3">
-              <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
-            </div>
-
-            {/* Deployed by row */}
-            <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-              <span>Deployed by</span>
-              {launcherAddress ? (
-                <span className="text-foreground font-medium font-mono">
-                  <AddressLink address={launcherAddress} />
-                </span>
-              ) : (
-                <span className="text-foreground font-medium">--</span>
-              )}
-              <span className="text-muted-foreground/60">·</span>
-              <span className="text-muted-foreground/60">{launchDateStr}</span>
-            </div>
-
-            {/* Description from metadata */}
-            {metadata?.description && (
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                {metadata.description}
-              </p>
-            )}
-            {!metadata?.description && (
-              <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
-              </p>
-            )}
-
-            {/* Address + link buttons */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {coinAddress && (
-                <a
-                  href={`https://basescan.org/token/${coinAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
-                >
-                  {tokenSymbol}
-                </a>
-              )}
-              {subgraphFundraiser?.coin?.lpPair && (
-                <a
-                  href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
-                >
-                  {tokenSymbol}-USDC LP
-                </a>
-              )}
-              {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
-                let label: string;
-                try {
-                  const hostname = new URL(link).hostname.replace("www.", "");
-                  if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
-                  else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
-                  else if (hostname.includes("discord")) label = "Discord";
-                  else if (hostname.includes("github.com")) label = "GitHub";
-                  else if (hostname.includes("warpcast.com")) label = "Warpcast";
-                  else label = hostname;
-                } catch {
-                  label = link;
-                }
-                return (
-                  <a
-                    key={i}
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
-                  >
-                    {label}
-                  </a>
-                );
-              })}
-            </div>
-
-            {/* Action buttons */}
-            {isConnected && (
-              <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setShowLiquidityModal(true)}
-                    className={`${coinActionButtonClass} text-[11px]`}
-                  >
-                    Liquidity
-                  </button>
-                  <button
-                    onClick={() => setShowAuctionModal(true)}
-                    className={`${coinActionButtonClass} text-[11px]`}
-                  >
-                    Auction
-                  </button>
-                {isOwner && (
-                  <button
-                    onClick={() => setShowAdminModal(true)}
-                    className={`${coinActionButtonClass} col-span-2 text-[11px]`}
-                  >
-                    Admin
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Recent Donations */}
-          <div className="slab-panel mb-6 px-3 py-3">
-            <div className="mb-2.5">
-              <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
-            </div>
-            {isHistoryLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : donations.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground text-[13px]">
-                No funding yet
-              </div>
-            ) : (
-              <div className="ledger-list">
-                {donations.map((donation, index) => (
-                  <DonationHistoryItem
-                    key={`${donation.donor}-${donation.timestamp}-${index}`}
-                    donation={{
-                      id: `${donation.donor}-${donation.timestamp}-${index}`,
-                      donor: donation.donor,
-                      uri: donation.uri,
-                      amount: donation.amount,
-                      estimatedTokens: currentEpochEmission > 0
-                        ? BigInt(Math.floor((Number(formatUnits(donation.amount, QUOTE_TOKEN_DECIMALS)) / (currentEpochTotalDonated || 1)) * currentEpochEmission * 1e18))
-                        : 0n,
-                      timestamp: Number(donation.timestamp),
-                    }}
-                    timeAgo={timeAgo}
-                    tokenSymbol={tokenSymbol}
-                    logoUrl={logoUrl ?? undefined}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Leaderboard */}
-          <Leaderboard
-            entries={leaderboardEntries ?? []}
-            userRank={userRank ?? null}
-            tokenSymbol={tokenSymbol}
-            tokenName={tokenName}
-            fundraiserUrl={typeof window !== "undefined" ? `${window.location.origin}/fundraiser/${fundraiserAddress}` : ""}
-            isLoading={isLeaderboardLoading}
-          />
-
-          {/* Global Stats Grid */}
-          <div className="slab-panel mb-6 px-3 py-4">
-            <div className="mb-3">
-              <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
-            </div>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Market cap</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  {formatMarketCap(marketCapUsd)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Total supply</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  {formatNumber(totalSupply)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Liquidity</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  ${formatNumber(liquidityUsd)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">24h volume</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  ${formatNumber(volume24h)}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  ${treasuryRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                <div className="font-semibold text-[15px] tabular-nums font-mono">
-                  ${teamRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
-              {/* Fundraiser Parameters */}
-              {subgraphFundraiser && (
-                <>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (start)</div>
-                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.initialEmission)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Daily coins (min)</div>
-                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatEmission(subgraphFundraiser.minEmission)}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Halving</div>
-                    <div className="font-semibold text-[15px] tabular-nums font-mono">
-                      {formatPeriod(
-                        String(
-                          parseInt(subgraphFundraiser.halvingPeriod) *
-                          parseInt(subgraphFundraiser.epochDuration)
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">Epoch duration</div>
-                    <div className="font-semibold text-[15px] tabular-nums font-mono">{formatPeriod(subgraphFundraiser.epochDuration)}</div>
-                  </div>
-                  {metadata?.recipientName && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Recipient</div>
-                      <div className="font-semibold text-[15px]">{metadata.recipientName}</div>
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-muted-foreground text-[12px] mb-0.5">
-                      {metadata?.recipientName ? "Recipient address" : "Recipient"}
-                    </div>
-                    <div className="font-semibold text-[15px] font-mono">
-                      <AddressLink address={fundraiserState?.recipient ?? null} />
-                    </div>
-                  </div>
-                  {fundraiserState?.treasury && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Treasury</div>
-                      <div className="font-semibold text-[15px] font-mono">
-                        <AddressLink address={fundraiserState.treasury} />
-                      </div>
-                    </div>
-                  )}
-                  {fundraiserState?.team && fundraiserState.team !== "0x0000000000000000000000000000000000000000" && (
-                    <div>
-                      <div className="text-muted-foreground text-[12px] mb-0.5">Team</div>
-                      <div className="font-semibold text-[15px] font-mono">
-                        <AddressLink address={fundraiserState.team} />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
+        {/* Mobile bottom action bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center lg:hidden" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
           <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-2 px-4 py-3">
             {isConnected ? (
               <>
@@ -1045,7 +1468,7 @@ export default function FundraiserDetailPage() {
         </div>
 
       </div>
-      <NavBar attachedTop />
+      <NavBar attachedTop desktopWide />
 
       {/* Mine Modal */}
       <MineModal

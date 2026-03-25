@@ -385,15 +385,18 @@ export function TradeModal({
   const isSuccess = status === "success";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
+    <div
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-background/80 backdrop-blur-xl lg:items-center lg:bg-background/50 lg:backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:rounded-none`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
+        <div className="flex items-center justify-between px-4 pb-2 lg:px-5 lg:pb-3 lg:pt-2">
           <button
             onClick={onClose}
             className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
@@ -405,10 +408,10 @@ export function TradeModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-h-0 flex flex-col px-4">
+        <div className="flex-1 min-h-0 flex flex-col px-4 lg:px-5 lg:flex-initial">
           {/* Title */}
-          <div className="mt-4 mb-6">
-            <h1 className="text-2xl font-semibold font-display tracking-tight">
+          <div className="mt-4 mb-6 lg:mt-2 lg:mb-4">
+            <h1 className="text-2xl font-semibold font-display tracking-tight lg:text-xl">
               {isBuy ? "Buy" : "Sell"} {tokenSymbol}
             </h1>
             <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
@@ -416,8 +419,39 @@ export function TradeModal({
             </p>
           </div>
 
-          {/* Amount input display */}
-          <div className="slab-inset px-3 py-4">
+          {/* Desktop: text input for amount */}
+          <div className="hidden lg:block mb-4">
+            <div className="slab-inset px-3 py-3">
+              <label className="text-[12px] text-muted-foreground font-display mb-1.5 block">
+                {isBuy ? "Amount (USD)" : `Amount (${tokenSymbol})`}
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-[15px] text-muted-foreground">{isBuy ? "$" : ""}</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount === "0" ? "" : amount}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, "");
+                    // Enforce decimal limits
+                    const maxDecimals = isBuy ? 2 : 6;
+                    const parts = val.split(".");
+                    if (parts.length > 2) return;
+                    if (parts[1] && parts[1].length > maxDecimals) return;
+                    if (val.length > 12) return;
+                    setAmount(val || "0");
+                  }}
+                  placeholder="0"
+                  className="flex-1 bg-transparent text-[20px] font-mono font-semibold tabular-nums text-foreground outline-none placeholder:text-muted-foreground/40"
+                  autoFocus
+                />
+                {!isBuy && <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="sm" variant="circle" />}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: amount display (driven by numpad) */}
+          <div className="lg:hidden slab-inset px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums flex items-center gap-1.5">
@@ -432,7 +466,7 @@ export function TradeModal({
           </div>
 
           {/* Market price */}
-          <div className="slab-inset mt-2 px-3 py-4">
+          <div className="slab-inset mt-2 px-3 py-4 lg:py-3">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Market price</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -442,7 +476,7 @@ export function TradeModal({
           </div>
 
           {/* Estimated output */}
-          <div className="slab-inset mt-2 px-3 py-4">
+          <div className="slab-inset mt-2 px-3 py-4 lg:py-3">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Est. received</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -493,14 +527,14 @@ export function TradeModal({
             </div>
           )}
 
-          {/* Spacer */}
-          <div className="flex-1" />
+          {/* Spacer — mobile only */}
+          <div className="flex-1 lg:hidden" />
 
           {/* Action button */}
           <button
             disabled={buttonDisabled}
             onClick={handleConfirm}
-            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 ${
+            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 lg:mt-2 ${
               buttonDisabled
                 ? isBuy ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
                 : isSuccess
@@ -513,9 +547,9 @@ export function TradeModal({
             {buttonLabel}
           </button>
 
-          {/* Number pad */}
+          {/* Number pad — mobile only */}
           <div
-            className="pb-4"
+            className="pb-4 lg:hidden"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
           >
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
@@ -532,6 +566,9 @@ export function TradeModal({
               )}
             </div>
           </div>
+
+          {/* Desktop: bottom padding */}
+          <div className="hidden lg:block lg:pb-5" />
         </div>
       </div>
     </div>

@@ -311,23 +311,24 @@ export default function LaunchPage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
         }}
       >
         {/* Header */}
-        <div className="page-header">
-          <div className="section-kicker">Launch Engine</div>
-          <h1 className="page-title mt-2">Launch</h1>
-          <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>
+        <div className="page-header lg:px-8 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1040px]">
+            <h1 className="page-title">Launch</h1>
+            <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2">
-          <div className="space-y-4 pb-6">
-            <div className="slab-panel light-leak space-y-3 px-3 py-3">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2 lg:px-8 xl:px-10">
+          <div className="mx-auto w-full max-w-[1040px] space-y-4 pb-6">
+            <div className="space-y-3">
               <div>
                 <div className="section-kicker">Identity</div>
                 <div className="mt-1 text-[13px] text-muted-foreground">
@@ -393,7 +394,7 @@ export default function LaunchPage() {
               </div>
             </div>
 
-            <div className="slab-panel px-3 py-3">
+            <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
               <button
                 type="button"
                 onClick={() => setShowRecipient(!showRecipient)}
@@ -432,7 +433,7 @@ export default function LaunchPage() {
               )}
             </div>
 
-            <div className="slab-panel px-3 py-3">
+            <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
               <button
                 type="button"
                 onClick={() => {
@@ -552,7 +553,7 @@ export default function LaunchPage() {
       </div>
 
       {/* Nav Bar */}
-      <NavBar attachedTop />
+      <NavBar attachedTop desktopWide />
 
       {/* Success */}
       {txStatus === "success" && txHash && (

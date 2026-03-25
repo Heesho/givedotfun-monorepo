@@ -214,9 +214,9 @@ export function LiquidityModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-background/80 backdrop-blur-xl lg:items-center lg:bg-background/50 lg:backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh]`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -243,8 +243,31 @@ export function LiquidityModal({
             </p>
           </div>
 
-          {/* Token Input */}
-          <div className="slab-inset px-3 py-4">
+          {/* Desktop: text input */}
+          <div className="hidden lg:block mb-4">
+            <div className="slab-inset px-3 py-3">
+              <label className="text-[12px] text-muted-foreground font-display mb-1.5 block">Amount ({tokenSymbol})</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={tokenAmount === "0" ? "" : tokenAmount}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, "");
+                  const parts = val.split(".");
+                  if (parts.length > 2) return;
+                  if (parts[1] && parts[1].length > 6) return;
+                  if (val.length > 12) return;
+                  setTokenAmount(val || "0");
+                }}
+                placeholder="0"
+                className="w-full bg-transparent text-[20px] font-mono font-semibold tabular-nums text-foreground outline-none placeholder:text-muted-foreground/40"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Mobile: Token Input */}
+          <div className="lg:hidden slab-inset px-3 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">You provide</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -294,14 +317,14 @@ export function LiquidityModal({
             </div>
           )}
 
-          {/* Spacer */}
-          <div className="flex-1" />
+          {/* Spacer — mobile only */}
+          <div className="flex-1 lg:hidden" />
 
           {/* Action button */}
           <button
             onClick={handleAddLiquidity}
             disabled={!canCreate || isPending || isSuccess}
-            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 ${
+            className={`mb-3 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] sm:mb-4 lg:mt-2 ${
               isSuccess
                 ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
                 : isError
@@ -330,9 +353,9 @@ export function LiquidityModal({
               : "Add Liquidity"}
           </button>
 
-          {/* Number pad */}
+          {/* Number pad — mobile only */}
           <div
-            className="pb-4"
+            className="pb-4 lg:hidden"
             style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
           >
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
@@ -349,6 +372,8 @@ export function LiquidityModal({
               )}
             </div>
           </div>
+          {/* Desktop: bottom padding */}
+          <div className="hidden lg:block lg:pb-5" />
         </div>
       </div>
     </div>

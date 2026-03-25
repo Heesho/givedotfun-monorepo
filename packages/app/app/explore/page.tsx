@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Flame, Clock, TrendingUp, X } from "lucide-react";
+import { Search, Flame, Clock, TrendingUp, X, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavBar } from "@/components/nav-bar";
 import { useExploreFundraisers, type SortOption } from "@/hooks/useAllFundraisers";
@@ -10,10 +10,22 @@ import { useSparklineData } from "@/hooks/useSparklineData";
 import { useFarcaster } from "@/hooks/useFarcaster";
 import { formatMarketCap } from "@/lib/format";
 import { TokenLogo } from "@/components/token-logo";
+import { cn } from "@/lib/utils";
+
+type ExploreCoin = ReturnType<typeof useExploreFundraisers>["coins"][number];
 
 
 /** Mini sparkline chart */
-function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }) {
+function Sparkline({
+  data,
+  isPositive,
+  className,
+}: {
+  data: number[];
+  isPositive: boolean;
+  className?: string;
+}) {
+  if (!data || !Array.isArray(data) || data.length === 0) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min;
@@ -28,16 +40,39 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
     })
     .join(" ");
 
+  // Build fill polygon: same points but closed at bottom
+  const fillPoints = data
+    .map((value, i) => {
+      const x = pad + (i / divisor) * (300 - pad * 2);
+      const y = range === 0 ? 50 : pad + (1 - (value - min) / range) * (100 - pad * 2);
+      return `${x},${y}`;
+    });
+  const fillPath = [...fillPoints, `${pad + ((data.length - 1) / divisor) * (300 - pad * 2)},100`, `${pad},100`].join(" ");
+
   return (
     <svg
       viewBox="0 0 300 100"
-      className={`h-8 w-24 ${isPositive ? "positive-value" : "negative-value"}`}
-      preserveAspectRatio="xMidYMid meet"
+      className={cn(
+        "h-8 w-24 lg:h-10 lg:w-32",
+        isPositive ? "positive-value" : "negative-value",
+        className
+      )}
+      preserveAspectRatio="none"
     >
+      <defs>
+        <linearGradient id={`fill-${isPositive ? "pos" : "neg"}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        fill={`url(#fill-${isPositive ? "pos" : "neg"})`}
+        points={fillPath}
+      />
       <polyline
         fill="none"
         stroke="currentColor"
-        strokeWidth="3"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         points={points}
@@ -46,9 +81,32 @@ function Sparkline({ data, isPositive }: { data: number[]; isPositive: boolean }
   );
 }
 
+function SkeletonCard() {
+  return (
+    <div className="slab-panel flex flex-col gap-3 p-5">
+      <div className="flex items-center gap-3">
+        <div className="h-11 w-11 shrink-0 bg-secondary animate-pulse" />
+        <div className="flex-1 space-y-2">
+          <div className="h-5 w-20 bg-secondary animate-pulse" />
+          <div className="h-3.5 w-28 bg-secondary animate-pulse" />
+        </div>
+        <div className="h-5 w-16 bg-secondary animate-pulse" />
+      </div>
+      <div className="slab-inset h-28 animate-pulse" />
+      <div className="flex items-end justify-between">
+        <div className="space-y-1.5">
+          <div className="h-3 w-16 bg-secondary animate-pulse" />
+          <div className="h-6 w-20 bg-secondary animate-pulse" />
+        </div>
+        <div className="h-4 w-12 bg-secondary animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 function SkeletonRow() {
   return (
-    <div className="slab-inset grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4">
+    <div className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(140px,0.8fr)_120px] lg:gap-6 lg:px-4">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 bg-secondary animate-pulse" />
         <div className="space-y-2">
@@ -67,10 +125,96 @@ function SkeletonRow() {
   );
 }
 
+function CoinCard({ coin, sparklineData }: { coin: ExploreCoin; sparklineData: number[] }) {
+  const isPositive = coin.change24h >= 0;
+  const changeStr = coin.marketCapUsd > 0
+    ? `${isPositive ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+    : "--";
+
+  return (
+    <Link
+      href={`/fundraiser/${coin.address}`}
+      className={`group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${
+        isPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative"
+      }`}
+      style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "";
+      }}
+    >
+      {/* Hero image */}
+      <div className="relative h-[172px] w-full overflow-hidden bg-[hsl(var(--surface-container-lowest))]">
+        {coin.logoUrl ? (
+          <img
+            src={coin.logoUrl}
+            alt={coin.tokenName}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center"
+            style={{ background: "linear-gradient(135deg, hsl(var(--surface-container-high)) 0%, hsl(var(--surface-container-lowest)) 100%)" }}
+          >
+            <span className="font-display text-[56px] font-bold uppercase tracking-[-0.04em] text-muted-foreground/15">
+              {coin.tokenSymbol.slice(0, 4)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content: 2x2 grid — name/chart top, mcap/change bottom */}
+      <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 p-4">
+        {/* Top left: name */}
+        <div className="min-w-0">
+          <div className="truncate font-display text-[18px] font-semibold uppercase leading-none tracking-[-0.03em]">
+            {coin.tokenSymbol.length > 10
+              ? `${coin.tokenSymbol.slice(0, 10)}...`
+              : coin.tokenSymbol}
+          </div>
+          <div className="mt-1 truncate text-[13px] text-muted-foreground">
+            {coin.tokenName}
+          </div>
+        </div>
+
+        {/* Top right: sparkline */}
+        <div className="flex items-center">
+          <Sparkline
+            data={sparklineData}
+            isPositive={isPositive}
+            className="h-9 w-[100px]"
+          />
+        </div>
+
+        {/* Bottom left: market cap */}
+        <div>
+          <div className="font-mono text-[20px] font-semibold tabular-nums leading-none">
+            {coin.marketCapUsd > 0 ? formatMarketCap(coin.marketCapUsd) : "--"}
+          </div>
+        </div>
+
+        {/* Bottom right: % change */}
+        <div className={cn(
+          "flex items-center justify-end font-mono text-[15px] font-semibold tabular-nums",
+          isPositive ? "positive-value" : "negative-value"
+        )}>
+          {changeStr}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("bump");
   const { address: account } = useFarcaster();
+  const sortLabels: Record<SortOption, string> = {
+    bump: "Recently bumped",
+    new: "Newest launches",
+    top: "Highest market cap",
+  };
 
   const { coins, isLoading } = useExploreFundraisers(sortBy, searchQuery, account);
 
@@ -84,170 +228,297 @@ export default function ExplorePage() {
   return (
     <main className="app-shell">
       <div
-        className="app-frame"
+        className="app-frame lg:max-w-[1360px] xl:max-w-[1480px]"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 80px)",
         }}
       >
-        {/* Header */}
-        <div className="page-header">
-          <div className="mb-4">
-            <div className="section-kicker">Financial Intelligence</div>
-            <h1 className="page-title mt-2">Explore</h1>
-            <p className="page-subtitle">Discover fundraisers and mine coins by funding causes you care about.</p>
-          </div>
-
-          {/* Search + Sort */}
-          <div className="slab-panel signal-slab-positive space-y-3 px-3 py-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="field-input h-11 pl-10 pr-10"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { key: "bump" as const, label: "Bump", icon: Flame },
-                { key: "new" as const, label: "New", icon: Clock },
-                { key: "top" as const, label: "Top", icon: TrendingUp },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setSortBy(tab.key)}
-                  className={`ghost-border flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
-                    sortBy === tab.key
-                      ? "bg-primary text-primary-foreground shadow-slab"
-                      : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
-                  }`}
-                >
-                  <tab.icon className="h-3 w-3" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Token List */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3">
-          {/* Loading state */}
-          {isLoading && (
-            <div className="space-y-2">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <SkeletonRow key={i} />
-              ))}
-            </div>
-          )}
-
-          {/* Loaded - render coin rows */}
-          {!isLoading && coins.length > 0 && (
-            <div>
-              <AnimatePresence initial={false}>
-                {coins.map((coin, index) => (
-                  <motion.div
-                    key={coin.address}
-                    layout
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 lg:px-8 lg:pb-0 lg:pt-24 xl:px-10">
+          <div className="mx-auto w-full max-w-[1360px]">
+            {/* ── Mobile: sticky header with title + search + sort ── */}
+            <div className="sticky top-0 z-10 -mx-4 px-4 pb-3 lg:hidden"
+              style={{ background: "linear-gradient(180deg, hsl(var(--background)) 80%, transparent 100%)" }}
+            >
+              <h1 className="page-title mb-2">Explore</h1>
+              <p className="page-subtitle mb-3">
+                Discover fundraisers and mine coins by funding causes you care about.
+              </p>
+              <div className="relative mb-2">
+                <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search by ticker or name"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="field-input h-11 pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
                   >
-                    <Link
-                      href={`/fundraiser/${coin.address}`}
-                      className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 transition-colors duration-200 ${
-                        index % 2 === 0 ? "data-row" : "data-row data-row-alt"
-                      } hover-slab`}
-                    >
-                      {/* Left side - Logo, Symbol, Name */}
-                      <div className="flex items-center gap-3">
-                        <TokenLogo
-                          name={coin.tokenName}
-                          logoUrl={coin.logoUrl}
-                          size="md-lg"
-                        />
-                        <div className="min-w-0">
-                          <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
-                            {coin.tokenSymbol.length > 6
-                              ? `${coin.tokenSymbol.slice(0, 6)}...`
-                              : coin.tokenSymbol}
-                          </div>
-                          <div className="truncate text-[13px] text-muted-foreground">
-                            {coin.tokenName.length > 12
-                              ? `${coin.tokenName.slice(0, 12)}...`
-                              : coin.tokenName}
-                          </div>
-                        </div>
-                      </div>
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { key: "bump" as const, label: "Bump", icon: Flame },
+                  { key: "new" as const, label: "New", icon: Clock },
+                  { key: "top" as const, label: "Top", icon: TrendingUp },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setSortBy(tab.key)}
+                    className={`ghost-border flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                      sortBy === tab.key
+                        ? "bg-primary text-primary-foreground shadow-slab"
+                        : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                    }`}
+                  >
+                    <tab.icon className="h-3 w-3" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                      {/* Middle - Sparkline */}
-                      <div className="flex justify-end">
-                        <Sparkline
-                          data={(() => {
+            {/* ── Desktop header — compact, single band ── */}
+            <section className="hidden lg:block">
+              <div className="flex items-end justify-between gap-8">
+                <div>
+                  <h1 className="font-display text-[2.75rem] font-semibold uppercase leading-[0.9] tracking-[-0.04em]">
+                    Explore
+                  </h1>
+                  <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+                    Discover fundraisers and mine coins by funding causes you care about.
+                  </p>
+                </div>
+
+                {/* Inline search + sort */}
+                <div className="flex shrink-0 items-center gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Search fundraisers..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-10 w-[260px] bg-[hsl(var(--surface-container-lowest))] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 transition-all focus:outline-none focus:w-[320px]"
+                      style={{
+                        boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)",
+                        transition: "width 200ms ease, box-shadow 150ms ease",
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--primary) / 0.4)";
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)";
+                      }}
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-1">
+                    {[
+                      { key: "bump" as const, label: "Bump", icon: Flame },
+                      { key: "new" as const, label: "New", icon: Clock },
+                      { key: "top" as const, label: "Top", icon: TrendingUp },
+                    ].map((tab) => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setSortBy(tab.key)}
+                        className={cn(
+                          "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all",
+                          sortBy === tab.key
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-container-high))]"
+                        )}
+                        style={sortBy === tab.key ? {
+                          boxShadow: "3px 3px 0 hsl(var(--primary-container))",
+                        } : {
+                          boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.15)",
+                        }}
+                      >
+                        <tab.icon className="h-3 w-3" />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {isSearching && (
+                <div className="mt-5 text-[13px] text-muted-foreground">
+                  Showing results for &ldquo;{searchQuery}&rdquo;
+                </div>
+              )}
+            </section>
+
+            {/* ── Mobile: fundraiser rows ── */}
+            <section className="overflow-hidden lg:hidden">
+              {/* Mobile rows */}
+              {isLoading && (
+                <div>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))}
+                </div>
+              )}
+
+              {!isLoading && coins.length > 0 && (
+                <div>
+                  <AnimatePresence initial={false}>
+                    {coins.map((coin, index) => (
+                      <motion.div
+                        key={coin.address}
+                        layout
+                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <Link
+                          href={`/fundraiser/${coin.address}`}
+                          className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
+                            index > 0 ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
+                          } hover-slab`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <TokenLogo
+                              name={coin.tokenName}
+                              logoUrl={coin.logoUrl}
+                              size="md-lg"
+                            />
+                            <div className="min-w-0">
+                              <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
+                                {coin.tokenSymbol.length > 10
+                                  ? `${coin.tokenSymbol.slice(0, 10)}...`
+                                  : coin.tokenSymbol}
+                              </div>
+                              <div className="truncate text-[13px] text-muted-foreground">
+                                {coin.tokenName}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end">
+                            <Sparkline
+                              data={(() => {
+                                const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
+                                if (hourly.length > 1) return hourly;
+                                if (coin.sparklinePrices.length > 1) return coin.sparklinePrices;
+                                return [coin.priceUsd, coin.priceUsd];
+                              })()}
+                              isPositive={coin.change24h >= 0}
+                            />
+                          </div>
+
+                          <div className="text-right">
+                            <div className="font-medium text-[15px] tabular-nums font-mono">
+                              {coin.marketCapUsd > 0
+                                ? formatMarketCap(coin.marketCapUsd)
+                                : "--"}
+                            </div>
+                            <div className={`text-[13px] tabular-nums font-mono ${
+                              coin.marketCapUsd > 0
+                                ? coin.change24h >= 0 ? "positive-value" : "negative-value"
+                                : "text-muted-foreground"
+                            }`}>
+                              {coin.marketCapUsd > 0
+                                ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+                                : "--"}
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+
+              {showEmpty && isSearching && (
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                  <Search className="mb-3 h-10 w-10 opacity-30" />
+                  <p className="text-[15px] font-medium">No coins found</p>
+                  <p className="mt-1 text-[13px] opacity-70">Try a different search term</p>
+                </div>
+              )}
+
+              {showEmpty && !isSearching && (
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                  <Flame className="mb-3 h-10 w-10 opacity-30" />
+                  <p className="text-[15px] font-medium">No fundraisers yet</p>
+                  <p className="mt-1 text-[13px] opacity-70">Be the first to launch a fundraiser</p>
+                </div>
+              )}
+            </section>
+
+            {/* ── Desktop card grid ── */}
+            <div className="mt-5 hidden lg:block">
+              {isLoading && (
+                <div className="grid grid-cols-2 gap-5 xl:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))}
+                </div>
+              )}
+
+              {!isLoading && coins.length > 0 && (
+                <div className="grid auto-rows-min grid-cols-2 gap-5 xl:grid-cols-3">
+                  <AnimatePresence initial={false}>
+                    {coins.map((coin) => (
+                      <motion.div
+                        key={coin.address}
+                        layout
+                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <CoinCard
+                          coin={coin}
+                          sparklineData={(() => {
                             const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
                             if (hourly.length > 1) return hourly;
                             if (coin.sparklinePrices.length > 1) return coin.sparklinePrices;
                             return [coin.priceUsd, coin.priceUsd];
                           })()}
-                          isPositive={coin.change24h >= 0}
                         />
-                      </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
 
-                      {/* Right side - Market cap and 24h change */}
-                      <div className="text-right">
-                        <div className="font-medium text-[15px] tabular-nums font-mono">
-                          {coin.marketCapUsd > 0
-                            ? formatMarketCap(coin.marketCapUsd)
-                            : "--"}
-                        </div>
-                        <div className={`text-[13px] tabular-nums font-mono ${
-                          coin.marketCapUsd > 0
-                            ? coin.change24h >= 0 ? "positive-value" : "negative-value"
-                            : "text-muted-foreground"
-                        }`}>
-                          {coin.marketCapUsd > 0
-                            ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
-                            : "--"}
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
+              {showEmpty && isSearching && (
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                  <Search className="mb-3 h-10 w-10 opacity-30" />
+                  <p className="text-[15px] font-medium">No coins found</p>
+                  <p className="mt-1 text-[13px] opacity-70">Try a different search term</p>
+                </div>
+              )}
 
-          {/* Empty states */}
-          {showEmpty && isSearching && (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Search className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-[15px] font-medium">No coins found</p>
-              <p className="text-[13px] mt-1 opacity-70">Try a different search term</p>
+              {showEmpty && !isSearching && (
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                  <Flame className="mb-3 h-10 w-10 opacity-30" />
+                  <p className="text-[15px] font-medium">No fundraisers yet</p>
+                  <p className="mt-1 text-[13px] opacity-70">Be the first to launch a fundraiser</p>
+                </div>
+              )}
             </div>
-          )}
-
-          {showEmpty && !isSearching && (
-            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-              <Flame className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-[15px] font-medium">No fundraisers yet</p>
-              <p className="text-[13px] mt-1 opacity-70">Be the first to launch a fundraiser</p>
-            </div>
-          )}
+          </div>
         </div>
       </div>
-      <NavBar />
+      <NavBar desktopWide />
     </main>
   );
 }

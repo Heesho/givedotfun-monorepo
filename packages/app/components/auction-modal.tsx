@@ -150,9 +150,9 @@ export function AuctionModal({
   const isError = status === "error";
 
   return (
-    <div className="fixed inset-0 z-[100] flex h-screen w-screen justify-center bg-background/80 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-background/80 backdrop-blur-xl lg:items-center lg:bg-background/50 lg:backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex h-full w-full max-w-[520px] flex-col`}
+        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh]`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
