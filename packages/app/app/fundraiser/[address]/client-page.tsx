@@ -617,63 +617,65 @@ export default function FundraiserDetailPage() {
               {/* Mining epochs */}
               {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
                 <div className="mb-4">
-                  {/* Current epoch - active */}
-                  {userCurrentEpochDonation > 0 && (
-                    <div className="data-row mb-2 flex items-center gap-3 px-3 py-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">Day {currentEpoch}</span>
-                          <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 flex-shrink-0 text-right">
-                        <div>
-                          <div className="text-[12px] text-muted-foreground">Funded</div>
-                          <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                        </div>
-                        <div>
-                          <div className="text-[12px] text-muted-foreground">Mining</div>
-                          <div className="text-[13px] font-medium flex items-center justify-end gap-1">
-                            <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
-                            {estimatedTokensFromEpoch >= 1000
-                              ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
-                              : formatNumber(estimatedTokensFromEpoch, 0)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Past unclaimed epochs */}
-                  {claimableEpochs.map((ep) => {
-                    const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
-                    const epReward = Number(formatEther(ep.pendingReward));
-                    return (
-                      <div key={ep.epoch.toString()} className="data-row data-row-alt mb-2 flex items-center gap-3 px-3 py-3">
+                  <div className="ledger-list">
+                    {/* Current epoch - active */}
+                    {userCurrentEpochDonation > 0 && (
+                      <div className="flex items-center gap-3 px-0 py-2.5">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                            <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                            <span className="text-sm font-medium">Day {currentEpoch}</span>
+                            <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0 text-right">
                           <div>
                             <div className="text-[12px] text-muted-foreground">Funded</div>
-                            <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            <div className="text-[13px] font-medium">${userCurrentEpochDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                           </div>
                           <div>
                             <div className="text-[12px] text-muted-foreground">Mined</div>
                             <div className="text-[13px] font-medium flex items-center justify-end gap-1">
                               <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
-                              {epReward >= 1000
-                                ? `${(epReward / 1000).toFixed(1)}K`
-                                : formatNumber(epReward, 0)}
+                              {estimatedTokensFromEpoch >= 1000
+                                ? `${(estimatedTokensFromEpoch / 1000).toFixed(1)}K`
+                                : formatNumber(estimatedTokensFromEpoch, 0)}
                             </div>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    )}
+
+                    {/* Past unclaimed epochs */}
+                    {claimableEpochs.map((ep) => {
+                      const epDonation = Number(formatUnits(ep.donation, QUOTE_TOKEN_DECIMALS));
+                      const epReward = Number(formatEther(ep.pendingReward));
+                      return (
+                        <div key={ep.epoch.toString()} className="flex items-center gap-3 px-0 py-2.5">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
+                              <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                            <div>
+                              <div className="text-[12px] text-muted-foreground">Funded</div>
+                              <div className="text-[13px] font-medium">${epDonation.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            </div>
+                            <div>
+                              <div className="text-[12px] text-muted-foreground">Mined</div>
+                              <div className="text-[13px] font-medium flex items-center justify-end gap-1">
+                                <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
+                                {epReward >= 1000
+                                  ? `${(epReward / 1000).toFixed(1)}K`
+                                  : formatNumber(epReward, 0)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
 
                   {/* Claim all button */}
                   {unclaimedEpochCount > 0 && (
