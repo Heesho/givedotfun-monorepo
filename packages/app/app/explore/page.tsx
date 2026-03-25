@@ -235,7 +235,7 @@ export default function ExplorePage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 68px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >

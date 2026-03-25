@@ -45,8 +45,8 @@ export function GlobalNav() {
   return (
     <>
       {/* Fixed top bar — always visible */}
-      <div className="fixed top-0 left-0 right-0 z-[210] pointer-events-none">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-4 sm:py-5 md:py-6 flex items-center justify-between">
+      <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${isLanding ? "" : "bg-background"}`}>
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-3 sm:py-4 flex items-center justify-between">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
