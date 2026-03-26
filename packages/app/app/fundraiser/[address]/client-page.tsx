@@ -106,7 +106,7 @@ function LoadingSkeleton() {
         <div className="flex items-center justify-between pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-[var(--radius)] hover:bg-secondary transition-colors"
+            className="p-1.5 -ml-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] hover:bg-[hsl(var(--foreground)/0.06)] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -484,7 +484,7 @@ export default function FundraiserDetailPage() {
                 {/* Desktop: back + ticker left, price right */}
                 <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
                   <div className="flex items-center gap-2">
-                    <Link href="/explore" className="p-1 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]">
+                    <Link href="/explore" className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
                       <ArrowLeft className="w-4 h-4" />
                     </Link>
                     <div>
@@ -510,7 +510,7 @@ export default function FundraiserDetailPage() {
 
                 {/* Mobile: token info slab */}
                 <div className="lg:hidden">
-                  <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel mb-3 flex items-center justify-between px-3 py-3`}>
+                  <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel rounded-2xl mb-3 flex items-center justify-between px-3 py-3`}>
                     <div className="flex items-center gap-3">
                       <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
                       <div ref={tokenIdentityRef}>
@@ -584,11 +584,11 @@ export default function FundraiserDetailPage() {
                   <div className="hidden lg:flex lg:gap-2">
                     {isConnected ? (
                       <>
-                        <button onClick={() => { setTradeMode("buy"); setShowTradeModal(true); }} className="slab-button px-6 text-[11px]">Buy</button>
-                        <button onClick={() => { setTradeMode("sell"); setShowTradeModal(true); }} disabled={userCoinBalance <= 0} className={`slab-button slab-button-loss px-6 text-[11px] ${userCoinBalance <= 0 ? "opacity-50" : ""}`}>Sell</button>
+                        <button onClick={() => { setTradeMode("buy"); setShowTradeModal(true); }} className="slab-button rounded-[var(--radius)] px-6 text-[11px]">Buy</button>
+                        <button onClick={() => { setTradeMode("sell"); setShowTradeModal(true); }} disabled={userCoinBalance <= 0} className={`slab-button slab-button-loss rounded-[var(--radius)] px-6 text-[11px] ${userCoinBalance <= 0 ? "opacity-50" : ""}`}>Sell</button>
                       </>
                     ) : (
-                      <button onClick={() => connect()} disabled={isConnecting || isInFrame === true} className="slab-button px-8 text-[11px] disabled:opacity-50">{isConnecting ? "Connecting..." : "Connect Wallet"}</button>
+                      <button onClick={() => connect()} disabled={isConnecting || isInFrame === true} className="slab-button rounded-[var(--radius)] px-8 text-[11px] disabled:opacity-50">{isConnecting ? "Connecting..." : "Connect Wallet"}</button>
                     )}
                   </div>
                 </div>
@@ -597,7 +597,7 @@ export default function FundraiserDetailPage() {
                 <div className="lg:hidden">
 
                   {/* Mining Pool Section — mobile */}
-                  <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
@@ -632,7 +632,7 @@ export default function FundraiserDetailPage() {
                     </div>
                     <button
                       onClick={() => setShowMineModal(true)}
-                      className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
+                      className={`${coinActionButtonClass} rounded-[var(--radius)] mt-4 w-full text-[11px]`}
                     >
                       Mine
                     </button>
@@ -640,7 +640,7 @@ export default function FundraiserDetailPage() {
 
                   {/* Your Position Section — mobile */}
                   {hasPosition && (
-                    <div className="slab-panel mb-6 px-3 py-4">
+                    <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                       <div className="mb-3">
                         <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
                         <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
@@ -707,7 +707,7 @@ export default function FundraiserDetailPage() {
                             <button
                               onClick={handleClaim}
                               disabled={claimStatus === "pending" || claimStatus === "success"}
-                              className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
+                              className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 rounded-[var(--radius)] text-[11px] ${
                                 claimStatus === "success"
                                   ? `${coinActionButtonClass} opacity-70`
                                   : claimStatus === "error"
@@ -766,7 +766,7 @@ export default function FundraiserDetailPage() {
                   )}
 
                   {/* About Section — mobile */}
-                  <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
@@ -844,20 +844,20 @@ export default function FundraiserDetailPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           onClick={() => setShowLiquidityModal(true)}
-                          className={`${coinActionButtonClass} text-[11px]`}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
                         >
                           Liquidity
                         </button>
                         <button
                           onClick={() => setShowAuctionModal(true)}
-                          className={`${coinActionButtonClass} text-[11px]`}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
                         >
                           Auction
                         </button>
                         {isOwner && (
                           <button
                             onClick={() => setShowAdminModal(true)}
-                            className={`${coinActionButtonClass} col-span-2 text-[11px]`}
+                            className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
                           >
                             Admin
                           </button>
@@ -867,7 +867,7 @@ export default function FundraiserDetailPage() {
                   </div>
 
                   {/* Stats Section — mobile */}
-                  <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
@@ -964,7 +964,7 @@ export default function FundraiserDetailPage() {
                 </div>{/* end mobile-only sections */}
 
                 {/* Recent Funding */}
-                <div className="slab-panel mb-6 px-3 py-3">
+                <div className="slab-panel rounded-2xl mb-6 px-3 py-3">
                   <div className="mb-2.5">
                     <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
@@ -1018,13 +1018,13 @@ export default function FundraiserDetailPage() {
 
                 {/* Fundraiser image — desktop only */}
                 {logoUrl && (
-                  <div className="slab-panel mb-4 overflow-hidden">
+                  <div className="slab-panel rounded-2xl mb-4 overflow-hidden">
                     <img src={logoUrl} alt={tokenName} className="w-full h-auto object-cover" style={{ maxHeight: "220px" }} />
                   </div>
                 )}
 
                 {/* Mining Pool Section */}
-                <div className="slab-panel mb-6 px-3 py-4">
+                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
@@ -1059,7 +1059,7 @@ export default function FundraiserDetailPage() {
                   </div>
                   <button
                     onClick={() => setShowMineModal(true)}
-                    className={`${coinActionButtonClass} mt-4 w-full text-[11px]`}
+                    className={`${coinActionButtonClass} rounded-[var(--radius)] mt-4 w-full text-[11px]`}
                   >
                     Mine
                   </button>
@@ -1067,7 +1067,7 @@ export default function FundraiserDetailPage() {
 
                 {/* Your Position Section */}
                 {hasPosition && (
-                  <div className="slab-panel mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
@@ -1134,7 +1134,7 @@ export default function FundraiserDetailPage() {
                           <button
                             onClick={handleClaim}
                             disabled={claimStatus === "pending" || claimStatus === "success"}
-                            className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 text-[11px] ${
+                            className={`mt-1 flex h-11 w-full items-center justify-center gap-1.5 px-4 rounded-[var(--radius)] text-[11px] ${
                               claimStatus === "success"
                                 ? `${coinActionButtonClass} opacity-70`
                                 : claimStatus === "error"
@@ -1193,7 +1193,7 @@ export default function FundraiserDetailPage() {
                 )}
 
                 {/* About Section */}
-                <div className="slab-panel mb-6 px-3 py-4">
+                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="mb-3">
                     <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
@@ -1271,20 +1271,20 @@ export default function FundraiserDetailPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => setShowLiquidityModal(true)}
-                        className={`${coinActionButtonClass} text-[11px]`}
+                        className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
                       >
                         Liquidity
                       </button>
                       <button
                         onClick={() => setShowAuctionModal(true)}
-                        className={`${coinActionButtonClass} text-[11px]`}
+                        className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
                       >
                         Auction
                       </button>
                       {isOwner && (
                         <button
                           onClick={() => setShowAdminModal(true)}
-                          className={`${coinActionButtonClass} col-span-2 text-[11px]`}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
                         >
                           Admin
                         </button>
@@ -1294,7 +1294,7 @@ export default function FundraiserDetailPage() {
                 </div>
 
                 {/* Stats Section */}
-                <div className="slab-panel mb-6 px-3 py-4">
+                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="mb-3">
                     <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
@@ -1399,7 +1399,7 @@ export default function FundraiserDetailPage() {
         <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)", background: "hsl(var(--background))" }}>
           <Link
             href="/explore"
-            className="-ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
+            className="-ml-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -1424,7 +1424,7 @@ export default function FundraiserDetailPage() {
               const url = typeof window !== "undefined" ? window.location.href : "";
               composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
             }}
-            className="-mr-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
+            className="-mr-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
           >
             <Share2 className="w-5 h-5" />
           </button>
@@ -1441,7 +1441,7 @@ export default function FundraiserDetailPage() {
                       setTradeMode("sell");
                       setShowTradeModal(true);
                     }}
-                    className="slab-button slab-button-loss flex-1 text-[11px]"
+                    className="slab-button slab-button-loss rounded-[var(--radius)] flex-1 text-[11px]"
                   >
                     Sell
                   </button>
@@ -1451,7 +1451,7 @@ export default function FundraiserDetailPage() {
                     setTradeMode("buy");
                     setShowTradeModal(true);
                   }}
-                  className="slab-button flex-1 text-[11px]"
+                  className="slab-button rounded-[var(--radius)] flex-1 text-[11px]"
                 >
                   Buy
                 </button>
@@ -1460,7 +1460,7 @@ export default function FundraiserDetailPage() {
               <button
                 onClick={() => connect()}
                 disabled={isConnecting || isInFrame === true}
-                className="slab-button flex-1 text-[11px] disabled:opacity-50"
+                className="slab-button rounded-[var(--radius)] flex-1 text-[11px] disabled:opacity-50"
               >
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </button>
