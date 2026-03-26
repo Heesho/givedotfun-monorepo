@@ -404,7 +404,7 @@ export function TradeModal({
 
   return (
     <div
-      className="fixed inset-0 z-[220] flex items-end justify-center overflow-hidden overscroll-none bg-[hsl(var(--background)/0.6)] backdrop-blur-sm lg:items-center"
+      className="fixed inset-0 z-[220] flex items-center justify-center overflow-hidden overscroll-none bg-[hsl(var(--background)/0.6)] backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <motion.div
