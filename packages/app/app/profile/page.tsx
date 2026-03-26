@@ -187,7 +187,7 @@ function ProfileSkeleton() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -258,7 +258,7 @@ function NotConnected() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -387,7 +387,7 @@ export default function ProfilePage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -410,48 +410,45 @@ export default function ProfilePage() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
           <div className="space-y-3">
-            {/* User info */}
-            <div className="flex items-center gap-3">
-              {pfpUrl ? (
-                <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-10 w-10 object-cover" />
-              ) : (
-                <div className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[14px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-base font-semibold"}`}>
-                  {avatarFallback}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
-                <div className="truncate text-[12px] text-muted-foreground">{username || shortAddress}</div>
-              </div>
-              <div className="hidden text-right sm:block">
-                <div className="section-kicker">Wallet</div>
-                <div className="mt-1 font-mono text-[12px] text-muted-foreground">{shortAddress}</div>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <div className="slab-inset px-3 py-3">
-                <div className="section-kicker">Portfolio</div>
-                <div className="mt-1 text-[22px] font-bold tabular-nums font-mono leading-none sm:text-[24px]">
-                  {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
-                </div>
-              </div>
-              <div className="slab-inset px-3 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="section-kicker">Cash</div>
-                    <div className="mt-1 text-[20px] font-semibold tabular-nums font-mono leading-none sm:text-[22px]">
-                      ${formattedUsdc}
-                    </div>
+            {/* User card — consolidated */}
+            <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
+              {/* User info */}
+              <div className="flex items-center gap-3">
+                {pfpUrl ? (
+                  <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] h-10 w-10 object-cover" />
+                ) : (
+                  <div className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[14px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-base font-semibold"}`}>
+                    {avatarFallback}
                   </div>
-                  <button
-                    onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
-                    disabled={isUsdcMinting}
-                    className="mt-0.5 text-right text-[10px] font-display tracking-[0.02em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
-                  >
-                    {isUsdcMinting ? "Minting..." : "Mint 1000"}
-                  </button>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[16px] font-semibold font-display">{displayName}</div>
+                  <div className="truncate text-[12px] text-muted-foreground">{username || shortAddress}</div>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="flex items-end justify-between border-t border-[hsl(var(--foreground)/0.06)] pt-3">
+                <div>
+                  <div className="text-xs text-muted-foreground">Portfolio</div>
+                  <div className="mt-0.5 text-[22px] font-bold tabular-nums font-mono leading-none">
+                    {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2 justify-end">
+                    <div className="text-xs text-muted-foreground">Cash</div>
+                    <button
+                      onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
+                      disabled={isUsdcMinting}
+                      className="text-[10px] font-display tracking-[0.02em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                    >
+                      {isUsdcMinting ? "Minting..." : "Mint 1000"}
+                    </button>
+                  </div>
+                  <div className="mt-0.5 text-[20px] font-semibold tabular-nums font-mono leading-none">
+                    ${formattedUsdc}
+                  </div>
                 </div>
               </div>
             </div>
