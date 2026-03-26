@@ -602,12 +602,12 @@ export default function FundraiserDetailPage() {
 
                   {/* Mining Pool Section — mobile */}
                   <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-start justify-between mb-4">
                       <div>
-                        <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Today&apos;s Mining Pool</div>
-                        <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
+                        <div className="font-semibold text-[16px] font-display tracking-[-0.02em]">Today's Mining Pool</div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today's coin rewards</div>
                       </div>
-                      <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
+                      <div className="text-[12px] tabular-nums font-mono text-muted-foreground text-right shrink-0">
                         {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
                       </div>
                     </div>
