@@ -266,7 +266,7 @@ export function MineModal({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:rounded-[var(--radius)]`}
+        className={`${colorPositive ? "signal-theme-positive" : "signal-theme-negative"} relative flex w-full max-w-[520px] flex-col h-full lg:h-auto lg:max-h-[90vh] lg:rounded-[var(--radius)] bg-background lg:glass-panel ${colorPositive ? "lg:glass-panel-positive" : "lg:glass-panel-negative"}`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -322,7 +322,7 @@ export function MineModal({
           </div>
 
           {/* Mobile: amount display */}
-          <div className="lg:hidden slab-inset px-3 py-4">
+          <div className="lg:hidden slab-inset px-3 py-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -332,7 +332,7 @@ export function MineModal({
           </div>
 
           {/* Cost per coin */}
-          <div className="slab-inset mt-2 px-3 py-4 lg:py-3">
+          <div className="slab-inset mt-2 px-3 py-2.5 lg:py-3">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Cost per coin</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
@@ -342,7 +342,7 @@ export function MineModal({
           </div>
 
           {/* Estimated coins */}
-          <div className="slab-inset mt-2 px-3 py-4 lg:py-3">
+          <div className="slab-inset mt-2 px-3 py-2.5 lg:py-3">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Est. coins</span>
               <span className="text-[13px] font-medium font-mono tabular-nums">
