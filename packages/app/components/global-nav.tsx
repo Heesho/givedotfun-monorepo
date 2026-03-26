@@ -69,24 +69,18 @@ export function GlobalNav() {
       <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${headerBg}`}>
         {/* Mobile header — compact: logo left, page name center, hamburger right */}
         <div className="flex lg:hidden items-center justify-between px-4 py-2">
-          {/* Logo or back arrow on fundraiser pages */}
+          {/* Logo icon */}
           <div className="pointer-events-auto w-9 h-9 flex items-center justify-center">
-            {isFundraiser && !menuOpen ? (
-              <button onClick={() => router.back()} className="hover:opacity-80 transition-opacity">
-                <ArrowLeft className="w-5 h-5 text-black" />
-              </button>
-            ) : (
-              <Link href="/" onClick={() => setMenuOpen(false)} className="hover:opacity-80 transition-opacity">
-                <img
-                  src="/media/logo-transparent.png"
-                  alt="give.fun"
-                  className="h-7 w-7 object-contain"
-                />
-              </Link>
-            )}
+            <Link href="/" onClick={() => setMenuOpen(false)} className="hover:opacity-80 transition-opacity">
+              <img
+                src="/media/logo-transparent.png"
+                alt="give.fun"
+                className="h-7 w-7 object-contain"
+              />
+            </Link>
           </div>
 
-          {/* Page name — centered, bigger */}
+          {/* Page name or ticker center slot */}
           {!isLanding && !menuOpen && pageName && (
             <span
               className="absolute left-1/2 -translate-x-1/2 font-bold text-[17px] tracking-[-0.02em] text-black"
@@ -94,6 +88,10 @@ export function GlobalNav() {
             >
               {pageName}
             </span>
+          )}
+          {/* Portal target for fundraiser ticker */}
+          {isFundraiser && !menuOpen && (
+            <div id="nav-center-slot" className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-auto" />
           )}
 
           {/* Landing: show give.fun text centered instead of page name */}

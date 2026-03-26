@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
@@ -458,8 +459,23 @@ export default function FundraiserDetailPage() {
     return <LoadingSkeleton />;
   }
 
+  // Portal: inject ticker + price into GlobalNav center slot on mobile
+  const [navSlot, setNavSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const el = document.getElementById("nav-center-slot");
+    if (el) setNavSlot(el);
+  }, []);
+
   return (
     <main className="min-h-screen bg-background">
+      {/* Ticker in nav center slot */}
+      {navSlot && createPortal(
+        <div className="text-center">
+          <div className="font-display text-[13px] font-bold uppercase tracking-[-0.01em] text-black leading-none">{tokenSymbol}</div>
+          <div className="font-mono text-[11px] font-medium tabular-nums text-black/60 leading-none mt-0.5">{formatPrice(priceUsd)}</div>
+        </div>,
+        navSlot
+      )}
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
