@@ -207,9 +207,10 @@ export function GlobalNav() {
                       setMenuOpen(false);
                       router.push(href);
                     }}
-                    className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold transition-colors touch-manipulation ${
-                      pathname === href ? "text-primary" : "text-black hover:text-primary"
+                    className={`block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black transition-colors touch-manipulation ${
+                      pathname === href ? "text-primary" : "hover:text-primary"
                     }`}
+                    style={{ color: pathname === href ? undefined : "#000000" }}
                   >
                     {label}
                   </button>
