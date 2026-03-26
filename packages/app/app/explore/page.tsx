@@ -273,13 +273,13 @@ export default function ExplorePage() {
                   <button
                     key={tab.key}
                     onClick={() => setSortBy(tab.key)}
-                    className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${
+                    className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-11 items-center justify-center gap-1.5 px-2.5 font-display text-[12px] font-semibold tracking-[0.02em] transition-all ${
                       sortBy === tab.key
                         ? "bg-primary text-primary-foreground shadow-glass"
-                        : "bg-[hsl(var(--foreground)/0.04)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                        : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                     }`}
                   >
-                    <tab.icon className="h-3 w-3" />
+                    <tab.icon className="h-3.5 w-3.5" />
                     {tab.label}
                   </button>
                 ))}
