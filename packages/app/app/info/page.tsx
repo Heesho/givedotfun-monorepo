@@ -76,44 +76,44 @@ export default function InfoPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
         }}
       >
         {/* Header */}
-        <div className="page-header lg:pt-[88px]">
+        <div className="page-header pt-2 lg:pt-[88px]">
           <div className="mx-auto w-full">
             <h1 className="page-title hidden lg:block">About</h1>
             <p className="page-subtitle hidden lg:block">How give.fun works and why it matters.</p>
           </div>
         </div>
 
-        {/* Mobile: single column */}
+        {/* Mobile: glass cards stacked */}
         <motion.div
-          className="flex-1 overflow-y-auto scrollbar-hide pb-3 lg:hidden"
+          className="flex-1 scrollbar-hide pb-3 pt-2 lg:hidden"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="mx-auto w-full">
+          <div className="mx-auto w-full space-y-4">
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
-                className={`py-5 ${index > 0 ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""}`}
+                className="slab-panel rounded-[var(--radius)] px-4 py-4"
               >
-                <h2 className="mb-3 font-display text-[17px] font-semibold tracking-[-0.03em] text-foreground">
+                <h2 className="mb-2 font-display text-[16px] font-semibold tracking-[-0.02em] text-foreground">
                   {section.title}
                 </h2>
-                <p className="mb-4 text-[15px] leading-relaxed text-muted-foreground">
+                <p className="mb-3 text-[14px] leading-relaxed text-muted-foreground">
                   {section.content}
                 </p>
                 <ul className="space-y-2">
                   {section.bullets.map((bullet, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 text-[14px] leading-snug text-muted-foreground"
+                      className="flex items-start gap-3 text-[13px] leading-snug text-muted-foreground"
                     >
-                      <span className="mt-1 h-2 w-2 bg-primary" />
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                       {bullet}
                     </li>
                   ))}
@@ -125,7 +125,7 @@ export default function InfoPage() {
 
         {/* Desktop: card grid */}
         <motion.div
-          className="hidden lg:block flex-1 overflow-y-auto scrollbar-hide pb-6"
+          className="hidden lg:block flex-1 scrollbar-hide pb-6 pt-2"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -134,9 +134,9 @@ export default function InfoPage() {
             {INFO_SECTIONS.map((section, index) => (
               <div
                 key={index}
-                className="slab-panel px-5 py-5"
+                className="slab-panel rounded-[var(--radius)] px-5 py-5"
               >
-                <h2 className="mb-3 font-display text-[17px] font-semibold tracking-[-0.03em] text-foreground">
+                <h2 className="mb-3 font-display text-[17px] font-semibold tracking-[-0.02em] text-foreground">
                   {section.title}
                 </h2>
                 <p className="mb-4 text-[14px] leading-relaxed text-muted-foreground">
@@ -148,7 +148,7 @@ export default function InfoPage() {
                       key={i}
                       className="flex items-start gap-3 text-[13px] leading-snug text-muted-foreground"
                     >
-                      <span className="mt-1 h-2 w-2 shrink-0 bg-primary" />
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                       {bullet}
                     </li>
                   ))}
