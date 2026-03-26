@@ -254,16 +254,16 @@ function NotConnected() {
   const { isInFrame, isConnecting, connect } = useFarcaster();
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background flex flex-col">
       <div
-        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
+        className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 flex-1 flex flex-col"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="slab-panel mb-4 flex h-16 w-16 items-center justify-center">
+          <div className="slab-panel rounded-[var(--radius)] mb-4 flex h-16 w-16 items-center justify-center">
             <svg
               className="h-8 w-8 text-muted-foreground"
               fill="none"
