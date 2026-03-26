@@ -12,11 +12,23 @@ const menuItems = [
   { href: "/profile", label: "Profile" },
 ] as const;
 
+// Map pathname to display name for mobile header
+function getPageName(pathname: string): string | null {
+  if (pathname === "/explore") return "Explore";
+  if (pathname === "/launch") return "Launch";
+  if (pathname === "/info") return "About";
+  if (pathname === "/profile") return "Profile";
+  if (pathname.startsWith("/fundraiser/")) return null; // fundraiser has its own header
+  if (pathname === "/auctions") return "Auctions";
+  return null;
+}
+
 export function GlobalNav() {
   const pathname = usePathname();
   const router = useRouter();
   const isLanding = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
+  const pageName = getPageName(pathname);
 
   // Close menu on route change
   useEffect(() => {
@@ -49,17 +61,76 @@ export function GlobalNav() {
     <>
       {/* Fixed top bar — always visible */}
       <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${headerBg}`}>
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16 py-4 sm:py-5 flex items-center justify-between">
-          {/* Logo — bigger */}
+        {/* Mobile header — compact: logo left, page name center, hamburger right */}
+        <div className="flex lg:hidden items-center justify-between px-4 py-2">
+          {/* Logo icon only — no text, matches hamburger size */}
+          <div className="pointer-events-auto w-9 h-9 flex items-center justify-center">
+            <Link href="/" onClick={() => setMenuOpen(false)} className="hover:opacity-80 transition-opacity">
+              <img
+                src="/media/logo-transparent.png"
+                alt="give.fun"
+                className="h-7 w-7 object-contain"
+              />
+            </Link>
+          </div>
+
+          {/* Page name — centered, bigger */}
+          {!isLanding && !menuOpen && pageName && (
+            <span
+              className="absolute left-1/2 -translate-x-1/2 font-bold text-[17px] tracking-[-0.02em] text-black"
+              style={{ fontFamily: '"Metropolis", sans-serif' }}
+            >
+              {pageName}
+            </span>
+          )}
+
+          {/* Landing: show give.fun text centered instead of page name */}
+          {isLanding && !menuOpen && (
+            <span
+              className="absolute left-1/2 -translate-x-1/2 font-bold text-[17px] tracking-[-0.02em] text-white"
+              style={{ fontFamily: '"Metropolis", sans-serif' }}
+            >
+              give.fun
+            </span>
+          )}
+
+          {/* Hamburger — same size as logo for visual balance */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`pointer-events-auto w-9 h-9 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${hamburgerColor}`}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            <span className="relative w-5 h-4 flex flex-col justify-center items-center">
+              <span
+                className="absolute block w-5 h-[2px] bg-current transition-all duration-300 origin-center"
+                style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)" }}
+              />
+              <span
+                className="absolute block w-5 h-[2px] bg-current transition-all duration-300"
+                style={{ opacity: menuOpen ? 0 : 1 }}
+              />
+              <span
+                className="absolute block w-5 h-[2px] bg-current transition-all duration-300 origin-center"
+                style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)" }}
+              />
+            </span>
+          </button>
+        </div>
+
+        {/* Desktop header — larger with more breathing room */}
+        <div className="hidden lg:flex items-center justify-between mx-auto max-w-[1400px] px-8 xl:px-16 py-4">
+          {/* Logo — bigger on desktop */}
           <div className="pointer-events-auto">
             <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img
                 src="/media/logo-transparent.png"
                 alt="give.fun"
-                className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
+                className="h-12 w-12 object-contain"
               />
               <span
-                className={`font-bold tracking-[-0.02em] text-2xl sm:text-3xl md:text-[2rem] transition-colors duration-300 ${
+                className={`font-bold tracking-[-0.02em] text-[1.75rem] transition-colors duration-300 ${
                   isLanding && !menuOpen ? "text-white" : "text-black"
                 }`}
                 style={{ fontFamily: '"Metropolis", sans-serif' }}
@@ -69,25 +140,25 @@ export function GlobalNav() {
             </Link>
           </div>
 
-          {/* Hamburger / X — bigger */}
+          {/* Hamburger — bigger on desktop */}
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`pointer-events-auto w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${hamburgerColor}`}
+            className={`pointer-events-auto w-14 h-14 flex items-center justify-center hover:opacity-70 transition-all touch-manipulation ${hamburgerColor}`}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
           >
-            <span className="relative w-8 sm:w-9 h-6 flex flex-col justify-center items-center">
+            <span className="relative w-9 h-6 flex flex-col justify-center items-center">
               <span
-                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300 origin-center"
+                className="absolute block w-9 h-[3px] bg-current transition-all duration-300 origin-center"
                 style={{ transform: menuOpen ? "rotate(45deg)" : "translateY(-7px)" }}
               />
               <span
-                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300"
+                className="absolute block w-9 h-[3px] bg-current transition-all duration-300"
                 style={{ opacity: menuOpen ? 0 : 1 }}
               />
               <span
-                className="absolute block w-8 sm:w-9 h-[3px] bg-current transition-all duration-300 origin-center"
+                className="absolute block w-9 h-[3px] bg-current transition-all duration-300 origin-center"
                 style={{ transform: menuOpen ? "rotate(-45deg)" : "translateY(7px)" }}
               />
             </span>
