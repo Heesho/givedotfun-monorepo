@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -175,6 +175,7 @@ function LoadingSkeleton() {
 
 export default function FundraiserDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const address = (params?.address as string)?.toLowerCase() || "";
   const fundraiserAddress = address as `0x${string}`;
 
@@ -500,9 +501,9 @@ export default function FundraiserDetailPage() {
                 {/* Desktop: back + ticker left, price right */}
                 <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
                   <div className="flex items-center gap-2">
-                    <Link href="/explore" className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
+                    <button onClick={() => router.back()} className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
                       <ArrowLeft className="w-4 h-4" />
-                    </Link>
+                    </button>
                     <div>
                       <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
                       <div className="text-[13px] text-muted-foreground">{tokenName}</div>
@@ -527,9 +528,9 @@ export default function FundraiserDetailPage() {
                 {/* Mobile: back arrow + token + price in one row */}
                 <div className="lg:hidden flex items-center justify-between mb-2 py-1" ref={tokenIdentityRef}>
                   <div className="flex items-center gap-2.5">
-                    <Link href="/explore" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <button onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors">
                       <ArrowLeft className="w-5 h-5" />
-                    </Link>
+                    </button>
                     <TokenLogo name={tokenName} logoUrl={logoUrl} size="md" />
                     <div>
                       <div className="font-display text-[15px] font-semibold uppercase tracking-[-0.02em] leading-none">{tokenSymbol}</div>
