@@ -106,7 +106,7 @@ function LoadingSkeleton() {
         <div className="flex items-center justify-between pb-2">
           <Link
             href="/explore"
-            className="p-2 -ml-2 rounded-none hover:bg-secondary transition-colors"
+            className="p-2 -ml-2 rounded-[var(--radius)] hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -123,7 +123,7 @@ function LoadingSkeleton() {
           {/* Token info skeleton */}
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-none bg-secondary animate-pulse" />
+              <div className="w-12 h-12 rounded-[var(--radius)] bg-secondary animate-pulse" />
               <div>
                 <div className="w-16 h-4 bg-secondary rounded animate-pulse mb-1" />
                 <div className="w-24 h-5 bg-secondary rounded animate-pulse" />
@@ -141,7 +141,7 @@ function LoadingSkeleton() {
           {/* Timeframe selector skeleton */}
           <div className="flex justify-between mb-5 px-2">
             {["1H", "1D", "1W", "1M", "ALL"].map((tf) => (
-              <div key={tf} className="px-3.5 py-1.5 rounded-none bg-secondary/50 text-[13px] text-muted-foreground">
+              <div key={tf} className="px-3.5 py-1.5 rounded-[var(--radius)] bg-secondary/50 text-[13px] text-muted-foreground">
                 {tf}
               </div>
             ))}
@@ -484,7 +484,7 @@ export default function FundraiserDetailPage() {
                 {/* Desktop: back + ticker left, price right */}
                 <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
                   <div className="flex items-center gap-2">
-                    <Link href="/explore" className="p-1 transition-colors hover:bg-surface-high">
+                    <Link href="/explore" className="p-1 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]">
                       <ArrowLeft className="w-4 h-4" />
                     </Link>
                     <div>
@@ -568,12 +568,12 @@ export default function FundraiserDetailPage() {
                       <button
                         key={tf}
                         onClick={() => setTimeframe(tf)}
-                        className={`ghost-border px-2 py-2 text-[12px] font-medium font-mono transition-all ${
+                        className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] px-2 py-2 text-[12px] font-medium font-mono transition-all ${
                           timeframe === tf
                             ? displayChange >= 0
-                              ? "bg-primary text-primary-foreground shadow-slab"
-                              : "bg-loss text-loss-foreground shadow-slab-loss"
-                            : "bg-secondary text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                              ? "bg-primary text-primary-foreground shadow-glass"
+                              : "bg-loss text-loss-foreground shadow-glass"
+                            : "bg-secondary text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         }`}
                       >
                         {tf}
@@ -799,7 +799,7 @@ export default function FundraiserDetailPage() {
                           href={`https://basescan.org/token/${coinAddress}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {tokenSymbol}
                         </a>
@@ -809,7 +809,7 @@ export default function FundraiserDetailPage() {
                           href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {tokenSymbol}-USDC LP
                         </a>
@@ -833,7 +833,7 @@ export default function FundraiserDetailPage() {
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                            className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                           >
                             {label}
                           </a>
@@ -1226,7 +1226,7 @@ export default function FundraiserDetailPage() {
                         href={`https://basescan.org/token/${coinAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                        className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                       >
                         {tokenSymbol}
                       </a>
@@ -1236,7 +1236,7 @@ export default function FundraiserDetailPage() {
                         href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                        className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                       >
                         {tokenSymbol}-USDC LP
                       </a>
@@ -1260,7 +1260,7 @@ export default function FundraiserDetailPage() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="ghost-border flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {label}
                         </a>
@@ -1399,7 +1399,7 @@ export default function FundraiserDetailPage() {
         <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)", background: "hsl(var(--background))" }}>
           <Link
             href="/explore"
-            className="-ml-2 p-2 transition-colors hover:bg-surface-high"
+            className="-ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -1424,7 +1424,7 @@ export default function FundraiserDetailPage() {
               const url = typeof window !== "undefined" ? window.location.href : "";
               composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
             }}
-            className="-mr-2 p-2 transition-colors hover:bg-surface-high"
+            className="-mr-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
           >
             <Share2 className="w-5 h-5" />
           </button>

@@ -261,7 +261,7 @@ export default function ExplorePage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:bg-surface-high hover:text-foreground"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -276,10 +276,10 @@ export default function ExplorePage() {
                   <button
                     key={tab.key}
                     onClick={() => setSortBy(tab.key)}
-                    className={`ghost-border flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                    className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
                       sortBy === tab.key
-                        ? "bg-primary text-primary-foreground shadow-slab"
-                        : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-glass"
+                        : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                     }`}
                   >
                     <tab.icon className="h-3 w-3" />

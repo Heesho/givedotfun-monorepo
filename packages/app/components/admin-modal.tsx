@@ -304,7 +304,7 @@ export function AdminModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
+            className="border border-[hsl(var(--outline-variant)/0.12)] rounded-full -ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -324,7 +324,7 @@ export function AdminModal({
               <div className="mt-3 flex items-start gap-3">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="ghost-border relative flex h-[88px] w-[88px] flex-shrink-0 items-center justify-center overflow-hidden bg-surface-lowest transition-colors hover:bg-surface-high"
+                  className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] relative flex h-[88px] w-[88px] flex-shrink-0 items-center justify-center overflow-hidden bg-[hsl(var(--foreground)/0.04)] transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
                 >
                   {currentLogoUrl ? (
                     <img src={currentLogoUrl} alt="Logo" className="h-full w-full object-cover" />
@@ -415,7 +415,7 @@ export function AdminModal({
                         <button
                           type="button"
                           onClick={() => setLinks(links.filter((_, j) => j !== i))}
-                          className="ghost-border flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
+                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
                         >
                           <X className="w-4 h-4" />
                         </button>

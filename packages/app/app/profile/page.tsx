@@ -413,9 +413,9 @@ export default function ProfilePage() {
             {/* User info */}
             <div className="flex items-center gap-3">
               {pfpUrl ? (
-                <img src={pfpUrl} alt={displayName} className="ghost-border h-10 w-10 object-cover" />
+                <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-10 w-10 object-cover" />
               ) : (
-                <div className={`ghost-border flex h-10 w-10 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-surface-lowest font-mono text-[14px] tracking-wide" : "bg-surface-lowest text-base font-semibold"}`}>
+                <div className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[14px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-base font-semibold"}`}>
                   {avatarFallback}
                 </div>
               )}
@@ -460,13 +460,13 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setActiveTab("holdings")}
-                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-slab" : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"}`}
+                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Wallet className="w-3.5 h-3.5" /> Coins
               </button>
               <button
                 onClick={() => setActiveTab("launched")}
-                className={`ghost-border flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-slab" : "bg-muted text-muted-foreground hover:bg-surface-high hover:text-foreground"}`}
+                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Rocket className="w-3.5 h-3.5" /> Fundraisers
               </button>
@@ -598,9 +598,9 @@ export default function ProfilePage() {
             <div className="mt-5 flex items-center gap-6 slab-panel px-5 py-4">
               <div className="flex items-center gap-3">
                 {pfpUrl ? (
-                  <img src={pfpUrl} alt={displayName} className="ghost-border h-9 w-9 object-cover" />
+                  <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-9 w-9 object-cover" />
                 ) : (
-                  <div className={`ghost-border flex h-9 w-9 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-surface-lowest font-mono text-[13px] tracking-wide" : "bg-surface-lowest text-sm font-semibold"}`}>
+                  <div className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 w-9 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[13px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-sm font-semibold"}`}>
                     {avatarFallback}
                   </div>
                 )}

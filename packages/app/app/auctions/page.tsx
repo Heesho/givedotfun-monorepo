@@ -94,7 +94,7 @@ export default function AuctionsPage() {
                           size="md-lg"
                         />
                         {selectedIndex === index && (
-                          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center bg-primary text-primary-foreground shadow-slab">
+                          <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center bg-primary text-primary-foreground shadow-glass">
                             <Check className="h-3 w-3" />
                           </div>
                         )}
@@ -164,7 +164,7 @@ export default function AuctionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="ghost-border flex h-8 w-8 items-center justify-center bg-surface-lowest">
+                  <div className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-8 w-8 items-center justify-center bg-[hsl(var(--foreground)/0.04)]">
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="text-right">

@@ -444,7 +444,7 @@ export default function LaunchPage() {
                   }
                   setLinks(links.filter((_, j) => j !== i));
                 }}
-                className="ghost-border flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
+                className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -482,7 +482,7 @@ export default function LaunchPage() {
             onChange={handleLogoChange}
             className="hidden"
           />
-          <div className="ghost-border flex h-[88px] w-[88px] items-center justify-center overflow-hidden bg-surface-lowest transition-colors hover:bg-surface-high">
+          <div className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-[88px] w-[88px] items-center justify-center overflow-hidden bg-[hsl(var(--foreground)/0.04)] transition-colors hover:bg-[hsl(var(--foreground)/0.08)]">
             {logoPreview ? (
               <img
                 src={logoPreview}
@@ -656,7 +656,7 @@ export default function LaunchPage() {
               {/* Token preview */}
               {logoPreview && (
                 <div className="flex justify-center">
-                  <img src={logoPreview} alt={tokenName} className="ghost-border h-24 w-24 object-cover" />
+                  <img src={logoPreview} alt={tokenName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-24 w-24 object-cover" />
                 </div>
               )}
 

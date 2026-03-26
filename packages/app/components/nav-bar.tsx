@@ -18,10 +18,10 @@ function ProfileIcon({ isActive }: { isActive: boolean }) {
       className={cn(
         "border border-[hsl(var(--outline-variant)/0.12)] rounded-full flex h-8 w-8 items-center justify-center overflow-hidden transition-all",
         pfpUrl
-          ? isActive ? "bg-surface-high shadow-slab" : "bg-surface-low opacity-70 hover:opacity-100"
+          ? isActive ? "bg-[hsl(var(--foreground)/0.06)] shadow-glass" : "bg-[hsl(var(--foreground)/0.03)] opacity-70 hover:opacity-100"
           : isActive
-            ? "bg-primary text-primary-foreground shadow-slab"
-            : "bg-surface-low text-muted-foreground hover:bg-surface-high hover:text-foreground"
+            ? "bg-primary text-primary-foreground shadow-glass"
+            : "bg-[hsl(var(--foreground)/0.03)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
       )}
     >
       {pfpUrl ? (

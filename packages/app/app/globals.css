@@ -11,9 +11,9 @@
 
 @layer base {
   :root {
-    --font-sans: "Inter", "Avenir Next", "Segoe UI", sans-serif;
-    --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-    --font-mono: "Inter", "Avenir Next", "Segoe UI", sans-serif;
+    --font-sans: "Metropolis", "Avenir Next", "Segoe UI", sans-serif;
+    --font-display: "Metropolis", "Avenir Next", "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
     --background: 50 12% 4%;
     --foreground: 30 9% 89%;

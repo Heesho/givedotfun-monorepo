@@ -181,7 +181,7 @@ export function AuctionModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
+            className="border border-[hsl(var(--outline-variant)/0.12)] rounded-full -ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
           >
             <X className="w-5 h-5" />
           </button>

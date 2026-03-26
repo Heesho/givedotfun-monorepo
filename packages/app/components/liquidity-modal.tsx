@@ -44,7 +44,7 @@ function NumPadButton({
   return (
     <button
       onClick={() => onClick(value)}
-      className="ghost-border flex h-12 flex-1 items-center justify-center text-lg font-mono font-medium text-foreground transition-colors hover:bg-surface-high active:bg-surface-high sm:h-14 sm:text-xl"
+      className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-12 flex-1 items-center justify-center text-lg font-mono font-medium text-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] active:bg-[hsl(var(--foreground)/0.08)] sm:h-14 sm:text-xl"
     >
       {children}
     </button>
@@ -245,7 +245,7 @@ export function LiquidityModal({
         <div className="flex items-center justify-between px-4 pb-2">
           <button
             onClick={onClose}
-            className="ghost-border -ml-2 p-2 transition-colors hover:bg-surface-high"
+            className="border border-[hsl(var(--outline-variant)/0.12)] rounded-full -ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
           >
             <X className="w-5 h-5" />
           </button>
