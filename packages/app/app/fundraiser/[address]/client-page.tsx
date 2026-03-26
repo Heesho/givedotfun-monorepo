@@ -98,8 +98,8 @@ function LoadingSkeleton() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)",
         }}
       >
         {/* Header */}
@@ -464,8 +464,8 @@ export default function FundraiserDetailPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 100px)",
         }}
       >
         {/* Desktop spacer for fixed header */}
@@ -508,9 +508,28 @@ export default function FundraiserDetailPage() {
                   </div>
                 </div>
 
-                {/* Mobile: token info slab */}
+                {/* Mobile: compact header with back, token info, share */}
                 <div className="lg:hidden">
-                  <div className={`${isCoinPositive ? "signal-slab-positive" : "signal-slab-negative"} slab-panel rounded-2xl mb-3 flex items-center justify-between px-3 py-3`}>
+                  {/* Back + Share row */}
+                  <div className="flex items-center justify-between mb-2">
+                    <Link
+                      href="/explore"
+                      className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => {
+                        const url = typeof window !== "undefined" ? window.location.href : "";
+                        composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
+                      }}
+                      className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {/* Token info card */}
+                  <div className={`slab-panel rounded-[var(--radius)] mb-3 flex items-center justify-between px-3 py-3`}>
                     <div className="flex items-center gap-3">
                       <TokenLogo name={tokenName} logoUrl={logoUrl} size="lg" />
                       <div ref={tokenIdentityRef}>
@@ -519,17 +538,17 @@ export default function FundraiserDetailPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="price-large">
+                      <div className="font-mono text-[22px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
                         {hoverData && hoverData.value > 0
                           ? formatPrice(hoverData.value)
                           : formatPrice(priceUsd)}
                       </div>
                       {hoverData ? (
-                        <div className="text-[13px] font-medium font-mono text-muted-foreground">
+                        <div className="text-[12px] font-medium font-mono text-muted-foreground mt-0.5">
                           {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </div>
                       ) : (
-                        <div className={`text-[13px] font-medium font-mono ${movementClass}`}>
+                        <div className={`text-[12px] font-medium font-mono mt-0.5 ${movementClass}`}>
                           {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
                         </div>
                       )}
@@ -1395,44 +1414,14 @@ export default function FundraiserDetailPage() {
           </div>{/* end max-width wrapper */}
         </div>{/* end scroll container */}
 
-        {/* Mobile header — back arrow, ticker plaque, share */}
-        <div className="flex items-center justify-between px-4 pb-2 lg:hidden" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)", background: "hsl(var(--background))" }}>
-          <Link
-            href="/explore"
-            className="-ml-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div
-            className={`pointer-events-none min-w-[144px] transition-opacity duration-500 ${
-              showHeaderPrice ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <div className={`px-3 py-1.5 ${displayChange >= 0 ? "ticker-plaque-positive" : "ticker-plaque-negative"}`}>
-              <div className="text-center text-current">
-                <div className="font-display text-[11px] font-semibold uppercase leading-none tracking-[0.08em]">
-                  {tokenSymbol}
-                </div>
-                <div className="mt-0.5 font-mono text-[13px] font-semibold leading-none tabular-nums">
-                  {formatPrice(priceUsd)}
-                </div>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              const url = typeof window !== "undefined" ? window.location.href : "";
-              composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
-            }}
-            className="-mr-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
-          >
-            <Share2 className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Mobile header is now handled by GlobalNav — ticker shown in page title slot */}
 
         {/* Mobile bottom action bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center lg:hidden" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}>
-          <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-2 px-4 py-3">
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 bg-background lg:hidden"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+        >
+          <div className="flex w-full mx-auto items-center gap-2 px-4 py-3">
             {isConnected ? (
               <>
                 {userCoinBalance > 0 && (
