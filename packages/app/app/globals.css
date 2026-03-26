@@ -69,17 +69,22 @@
 
   html {
     background: hsl(var(--background));
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
   }
 
   body {
     min-height: 100vh;
+    height: auto;
     color: hsl(var(--foreground));
     font-family: 'Metropolis', var(--font-sans);
     background: hsl(var(--background));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: visible;
     letter-spacing: -0.01em;
   }
 }
@@ -134,7 +139,7 @@
   }
 
   .section-kicker {
-    @apply font-display text-[10px] tracking-[0.12em] text-muted-foreground;
+    @apply font-display text-xs font-medium tracking-[0.04em] text-muted-foreground;
   }
 
   .slab-panel {

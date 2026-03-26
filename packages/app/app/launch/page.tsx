@@ -482,7 +482,7 @@ export default function LaunchPage() {
             onChange={handleLogoChange}
             className="hidden"
           />
-          <div className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-[88px] w-[88px] items-center justify-center overflow-hidden bg-[hsl(var(--foreground)/0.04)] transition-colors hover:bg-[hsl(var(--foreground)/0.08)]">
+          <div className="field-input !p-0 flex h-[88px] w-[88px] items-center justify-center overflow-hidden transition-colors hover:bg-[hsl(var(--foreground)/0.08)]">
             {logoPreview ? (
               <img
                 src={logoPreview}
@@ -555,11 +555,13 @@ export default function LaunchPage() {
         {/* Mobile: single column */}
         <div className="flex-1 overflow-y-auto scrollbar-hide pt-2 lg:hidden">
           <div className="mx-auto w-full max-w-[1040px] space-y-4 pb-6">
-            {identitySection}
-            <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
+            <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
+              {identitySection}
+            </div>
+            <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
               {recipientSection}
             </div>
-            <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-4">
+            <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
               {linksSection}
             </div>
           </div>
