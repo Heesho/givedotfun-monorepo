@@ -14,11 +14,11 @@ const blurbs = [
 export default function LandingPage() {
   const [blurbIndex, setBlurbIndex] = useState(0);
 
-  // Rotate blurbs every 4 seconds
+  // Rotate blurbs every 8 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setBlurbIndex((prev) => (prev + 1) % blurbs.length);
-    }, 4000);
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
