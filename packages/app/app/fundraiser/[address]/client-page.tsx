@@ -468,7 +468,14 @@ export default function FundraiserDetailPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* No ticker in nav — it's shown in the content row below */}
+      {/* Ticker + price in nav center slot */}
+      {navSlot && createPortal(
+        <div className="text-center">
+          <div className="font-display text-[14px] font-bold uppercase tracking-[-0.01em] text-black leading-none">{tokenSymbol}</div>
+          <div className="font-mono text-[11px] font-medium tabular-nums text-black/50 leading-none mt-0.5">{formatPrice(priceUsd)}</div>
+        </div>,
+        navSlot
+      )}
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
