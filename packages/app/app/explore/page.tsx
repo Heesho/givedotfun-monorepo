@@ -279,7 +279,7 @@ export default function ExplorePage() {
                     className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
                       sortBy === tab.key
                         ? "bg-primary text-primary-foreground shadow-glass"
-                        : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                        : "bg-[hsl(var(--foreground)/0.04)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                     }`}
                   >
                     <tab.icon className="h-3 w-3" />
@@ -310,17 +310,7 @@ export default function ExplorePage() {
                       placeholder="Search fundraisers..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-10 w-[260px] bg-[hsl(var(--surface-container-lowest))] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 transition-all focus:outline-none focus:w-[320px]"
-                      style={{
-                        boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)",
-                        transition: "width 200ms ease, box-shadow 150ms ease",
-                      }}
-                      onFocus={(e) => {
-                        e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--primary) / 0.4)";
-                      }}
-                      onBlur={(e) => {
-                        e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)";
-                      }}
+                      className="h-10 w-[260px] rounded-[var(--radius)] bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--outline-variant)/0.12)] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 backdrop-blur-sm transition-all focus:outline-none focus:w-[320px] focus:border-[hsl(var(--primary)/0.4)] focus:bg-[hsl(var(--foreground)/0.06)]"
                     />
                     {searchQuery && (
                       <button
@@ -342,16 +332,11 @@ export default function ExplorePage() {
                         key={tab.key}
                         onClick={() => setSortBy(tab.key)}
                         className={cn(
-                          "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all",
+                          "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.1em] transition-all rounded-[var(--radius)] border",
                           sortBy === tab.key
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-container-high))]"
+                            ? "bg-primary text-primary-foreground border-transparent shadow-glass"
+                            : "bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--outline-variant)/0.12)] text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)]"
                         )}
-                        style={sortBy === tab.key ? {
-                          boxShadow: "3px 3px 0 hsl(var(--primary-container))",
-                        } : {
-                          boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.15)",
-                        }}
                       >
                         <tab.icon className="h-3 w-3" />
                         {tab.label}
