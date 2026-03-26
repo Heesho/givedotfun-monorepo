@@ -45,7 +45,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
-          className="flex flex-col gap-6 sm:gap-8"
+          className="flex flex-col gap-3 sm:gap-4"
         >
           <div className="min-h-[140px] sm:min-h-[180px] md:min-h-[200px] max-w-[700px]">
             <AnimatePresence mode="wait">
