@@ -1,34 +1,32 @@
-# give.fun — Design System
+# give.fun — Design System v2
 
 > Canonical visual design reference for give.fun. All design and implementation decisions should reference this document.
 
 ## Direction
 
-**give.fun should feel like a permanent concrete market for living communities.**
+**give.fun should feel like a premium, glass-forward financial interface with organic character.**
 
 ### Creative Thesis
 
-**Core idea:** _Concrete infrastructure overgrown with community._
+**Core idea:** _Liquid glass over dark earth._
 
-Pure ecobrutalism. No glass, no blur, no translucency. Every surface is matte, structural, and opaque. The app is built from slabs, borders, and earth tones.
+Every surface uses glassmorphism — frosted blur, transparency, and soft luminous borders. The app sits on a deep dark-brown canvas with cream text and green accents. It feels like a premium trading terminal designed by someone who loves nature.
 
 ### Product Personality
 
-The app should feel like public infrastructure, living capital, shared construction — credible but not sterile.
-
 Emotional mix:
-- 50% raw / industrial
-- 50% organic / regenerative
+- 60% premium / refined / glassy
+- 40% organic / alive / green
 
 ### Design Principles
 
 1. Make value movement obvious in under one second.
 2. Funding and mining come before speculation.
-3. Use bold structure, not decorative clutter.
-4. Reserve bright semantic color for meaning, not general decoration.
-5. Every surface is opaque and matte. No glass, no blur.
-6. Keep the app dense, but never cramped.
-7. Straight edges everywhere. Only avatars remain circular.
+3. Every surface is glass — blur, transparency, soft borders.
+4. Reserve bright semantic color for meaning, not decoration.
+5. Use rounded corners (0.625rem) everywhere — nothing is sharp.
+6. Animations are smooth, spring-based, and purposeful.
+7. Typography is clean, modern, and uses title case (not ALL CAPS).
 
 ---
 
@@ -36,57 +34,68 @@ Emotional mix:
 
 ### Base Palette
 
-| Role | Name | Hex | Usage |
+| Role | Token | Value | Usage |
 |---|---|---|---|
-| App background | Basalt | `#151712` | Main background, deep surfaces |
-| Primary text / light fill | Fog | `#E9E4DA` | Primary text, bright cards, primary CTA fill |
-| Secondary surface | Wet Concrete | `#B7B0A2` | Separators, muted blocks, card accents |
-| Brand accent | Moss | `#708B45` | Badges, active accents, supportive highlights |
-| Cool secondary accent | Pond | `#5D7A73` | Depth, cool contrast, restrained chart/utility accents |
+| App background | `--background` | `hsl(50, 12%, 4%)` | Dark brown canvas |
+| Primary text | `--foreground` | `hsl(30, 9%, 89%)` | Cream text, light fills |
+| Surface | `--surface` | `hsl(0, 0%, 7%)` | Card/panel base (used with opacity) |
+| Muted text | `--muted-foreground` | `hsl(30, 6%, 62%)` | Secondary text, labels |
 
-### Semantic Movement Colors
+### Brand Accents
 
-| Semantic | Name | Hex | Usage |
+| Role | Token | Value | Usage |
 |---|---|---|---|
-| Positive / up | Moss | `#708B45` | Price up, positive yield, successful claim states, upward sparkline |
-| Negative / down | Storm | `#6B7A8E` | Price down, negative movement, failed/warning financial outcomes |
+| Primary / positive | `--primary` | `hsl(142, 72%, 59%)` / `#4BE182` | Green — CTAs, gain, active states |
+| Primary foreground | `--primary-foreground` | `hsl(135, 56%, 9%)` | Dark text on green backgrounds |
+| Negative / loss | `--tertiary` | `hsl(62, 100%, 40%)` | Yellow — loss states, sell actions |
+| Negative foreground | `--tertiary-foreground` | `hsl(60, 100%, 7%)` | Dark text on yellow backgrounds |
 
 ### Semantic Color Rules
 
-- **Do not** use Moss as the default CTA color.
-- **Do not** use Storm for generic destructive UI unless the action truly destroys value.
-- Always pair gain/loss color with a sign (+/−), directional copy or arrow, and numeric value.
-- For near-flat change (±0.50% or less), use neutral stone/zinc instead of forcing green or red.
-
-### CSS Token Mapping
-
-```css
---background: #151712;
---foreground: #E9E4DA;
---surface-muted: #B7B0A2;
---accent-moss: #708B45;
---accent-pond: #5D7A73;
---gain: #708B45;
---loss: #6B7A8E;
-```
+- Primary green is for CTAs, positive movement, and active UI states.
+- Yellow (tertiary) is for negative movement and sell/loss states.
+- Always pair gain/loss color with a sign (+/−) and numeric value.
+- For near-flat change (±0.50% or less), use muted-foreground instead of forcing green or yellow.
+- `text-primary` for green text. `bg-primary` for green backgrounds.
+- `text-[hsl(var(--tertiary))]` for yellow/loss text.
 
 ---
 
 ## Material System
 
-### 1. Slab Surface (default)
+### Glass Panel (`.slab-panel`, `.glass-panel`)
 
-Warm dark surface with straight edges, strong borders, quiet depth, concrete/stone tonality, architectural sectioning.
+The default surface treatment. All cards, sections, and containers use this.
 
-Use for: everything. Page backgrounds, stat cards, form sections, chart area backdrop, profile holdings rows, info sections, leaderboard containers, navigation, modals, controls.
+```css
+background: hsl(var(--foreground) / 0.06);
+backdrop-filter: blur(20px);
+border: 1px solid hsl(var(--foreground) / 0.1);
+border-radius: var(--radius); /* 0.625rem */
+box-shadow: 0 8px 32px hsl(var(--primary-foreground) / 0.08);
+```
 
-### 2. Moss Surface
+### Glass Inset (`.slab-inset`)
 
-Restrained organic accent surface.
+For recessed areas inside panels — input containers, nested sections.
 
-Use for: highlighted callouts, funding pool emphasis, selected "good" states (not price movement), recipient/mission emphasis.
+```css
+background: hsl(var(--foreground) / 0.04);
+border: 1px solid hsl(var(--outline-variant) / 0.1);
+border-radius: var(--radius);
+backdrop-filter: blur(8px);
+```
 
-Should feel earthy, not neon.
+### Data Row (`.data-row`)
+
+For list items, transaction rows, leaderboard entries.
+
+```css
+background: hsl(var(--foreground) / 0.03);
+border: 1px solid hsl(var(--foreground) / 0.06);
+border-radius: var(--radius);
+/* Hover: background 0.06, border 0.1 */
+```
 
 ---
 
@@ -94,52 +103,62 @@ Should feel earthy, not neon.
 
 ### Font Stack
 
-- **Headings / display:** Archivo
-- **Body / UI:** Inter
-- **Data / token values / addresses:** IBM Plex Mono
+- **Headings / display / UI:** Metropolis
+- **Body:** Metropolis
+- **Data / monospace:** JetBrains Mono
 
-### Type Behavior
+### Text Casing Rules
 
-- Headings should feel compact, bold, and structural.
-- Labels should be small, calm, and slightly spaced.
-- Numbers must use tabular figures.
-- Price, market cap, funded, and mined values should feel mechanically precise.
+**CRITICAL: Title case everywhere. No ALL CAPS except:**
+- Ticker symbols (e.g., MLDY, PEPE, RNBW)
+- Abbreviations (e.g., LP, USDC, ETH)
 
-### Scale
+Everything else uses title case:
+- ✅ "Explore" not "EXPLORE"
+- ✅ "Recent Funding" not "RECENT FUNDING"
+- ✅ "Today's Mining Pool" not "TODAY'S MINING POOL"
+- ✅ "Your Position" not "YOUR POSITION"
+- ✅ "Enter App" not "ENTER APP"
+- ✅ "Buy" / "Sell" / "Mine" not "BUY" / "SELL" / "MINE"
 
-| Role | Size / Weight |
-|---|---|
-| Screen title | 28 / 700 |
-| Section title | 18 / 600 |
-| Primary value | 28–32 / 700 |
-| Card value | 15–17 / 600 |
-| Label / metadata | 11–13 / 500 |
+### Type Scale
+
+| Role | Size / Weight | Class |
+|---|---|---|
+| Page title | 2rem / 600 | `.page-title` |
+| Section title | 1.125rem / 600 | Manual |
+| Primary value | 1.75–2rem / 700 | Manual |
+| Card value | 0.9375–1.0625rem / 600 | Manual |
+| Label / metadata | 0.6875–0.8125rem / 500 | Manual |
+| Kicker / category | 0.625rem / 500, tracking-[0.24em] | `.section-kicker` |
 
 ---
 
-## Shape, Spacing, and Borders
+## Shape & Spacing
 
-### Radius
+### Border Radius
 
-- `0px` for everything: cards, panels, buttons, inputs, chips, images
-- Only user avatars remain circular
+- `var(--radius)` = `0.625rem` (10px) for everything
+- User avatars: fully circular (`rounded-full`)
+- Token logos: `rounded-[var(--radius)]`
 
 ### Borders
 
-- Use borders more than shadows.
-- Prefer 1px to 1.5px visible outlines on surfaces.
-- Strong structural dividers between sections.
+- Use `hsl(var(--foreground) / 0.1)` for panel borders (soft, luminous)
+- Use `hsl(var(--foreground) / 0.06)` for subtle dividers
+- Never use hard opaque borders
 
 ### Shadows
 
-- Avoid shadows almost entirely.
-- If depth is needed, use border contrast and background color steps.
+- Soft box-shadows for depth: `0 8px 32px hsl(var(--primary-foreground) / 0.08)`
+- Button hover shadows for lift effect
+- No hard drop shadows
 
 ### Spacing
 
-- Tight vertical rhythm is good.
-- Preserve breathing room around charts, hero values, and action bars.
-- Dense lists should still have obvious touch targets (44px minimum).
+- Tight vertical rhythm is good
+- Breathing room around charts, hero values, and action bars
+- Touch targets: 44px minimum
 
 ---
 
@@ -147,158 +166,129 @@ Should feel earthy, not neon.
 
 ### Buttons
 
-- **Primary CTA:** Fog fill + Basalt text, 0px radius
-- **Secondary CTA:** slab outline, 0px radius
-- **Positive result state:** Moss text or tint, not full green fill everywhere
+- **Primary CTA (`.slab-button`):** Green fill, dark text, rounded, hover lift + glow
+- **Loss/Sell (`.slab-button-loss`):** Yellow fill, dark text, rounded
+- **Ghost (`.slab-button-ghost`):** Glass background with blur, frosted border
+- **Liquid Glass (`.btn-liquid-glass`):** Frosted glass gradient, blur, hover lift
+- **All buttons:** `border-radius: var(--radius)`, hover `translateY(-2px)`, `whileTap={{ scale: 0.98 }}`
+- **Text:** Title case, NOT uppercase. "Buy" not "BUY". Exception: ticker symbols in buttons.
 
-### Chips
+### Chips / Filters
 
-- **Active filters:** solid Fog fill with Basalt text, 0px radius
-- **Inactive filters:** subdued slab, 0px radius
-- **Tags / addresses / external links:** concrete or secondary slab
-- **Status pills:** semantic tint plus icon/text, 0px radius
+- Active: `bg-primary text-primary-foreground`, rounded
+- Inactive: glass background (`hsl(var(--foreground) / 0.06)`), rounded
+- All: `border-radius: var(--radius)`
+
+### Inputs (`.field-input`, `.input-liquid-glass`)
+
+- Glass background with blur
+- Rounded corners
+- Focus: green border glow (`hsl(var(--primary) / 0.5)`)
+- Placeholder: `text-muted-foreground`
 
 ### Charts
 
-- Default background: transparent over slab
-- Up chart: Moss
-- Down chart: Storm
-- Flat chart: neutral zinc / concrete
-- Hover tooltip: opaque slab, not glass
+- Background: transparent over page background
+- Up/positive: `hsl(var(--primary))` (green)
+- Down/negative: `hsl(var(--tertiary))` (yellow)
+- Flat: muted foreground
 
 ### Navigation
 
-- Bottom nav: opaque slab surface with strong top border
-- Active icon: Fog or Moss
-- Inactive icon: muted foreground
+- **GlobalNav:** Fixed top bar with logo left, hamburger right
+- **Landing page:** Transparent background, white hamburger lines, white logo text
+- **Inner pages:** White background, black hamburger lines, black logo text
+- **Menu overlay:** White background, black text, staggered slide-in animation
+- **Active page:** Green text in menu
+- **No bottom dock on desktop** — hamburger menu handles all navigation
+- **Mobile:** Bottom dock may be used for quick access
 
 ### Modals / Sheets
 
-- Fully opaque slab surfaces
-- Strong border separation
-- No blur or translucency
+- Glass panel background (`.glass-panel` or `.slab-panel`)
+- Rounded corners
+- Backdrop blur
+- `position: fixed` with `overflow: hidden` on body to prevent scroll
+- Content should NOT cause parent page to scroll
 
-### Token Logos
+### Cards (Explore grid)
 
-- Square with 0px radius
-- Preferred fallback: Fog letter on Moss badge, square
+- Glass panel treatment
+- Rounded corners on image and card
+- Hover: subtle lift (`translateY(-2px)`) and border brightening
 
 ---
 
 ## Motion
 
-- Target 120–180ms for micro-interactions
-- Use spring only where physicality helps
-- Price changes can briefly tint the value background (Moss wash for up, Storm wash for down)
-- Respect reduced motion everywhere
+### Easing
+
+- Default: `cubic-bezier(0.16, 1, 0.3, 1)` — smooth deceleration
+- Spring: `type: "spring", stiffness: 300, damping: 30`
+- Button press: `whileTap={{ scale: 0.98 }}`
+
+### Page Transitions
+
+- Content slides up and fades in on mount (`y: 40 → 0, opacity: 0 → 1`)
+- Duration: 700ms with stagger for child elements
+- Nav menu: full-screen overlay with staggered link animation
+
+### Scroll Animations
+
+- `whileInView` for cards and sections
+- Threshold: 0.1–0.2
+- `triggerOnce: true`
 
 ---
 
 ## Accessibility
 
 - Maintain 4.5:1 contrast for text
-- Never rely on green/red alone — add sign, arrow, and copy to change indicators
-- Keep touch targets at or above 44px
+- Never rely on green/yellow alone — add sign, arrow, and copy
+- Touch targets: 44px minimum
+- Respect `prefers-reduced-motion`
 
 ---
 
-## Screen-by-Screen Guidance
+## Screen Guidance
+
+### Landing Page
+
+- Full-screen video background (looping, muted, autoplay)
+- Rotating blurb text (single sentence, fades between messages)
+- "Enter App" button navigates to `/explore`
+- Transparent nav overlaying video
 
 ### Explore
 
-**Intent:** A trading/feed hybrid for discovering live fundraising markets.
-
-- Search bar: slab surface, 0px radius, strong border.
-- List rows: concrete strips with border dividers.
-- Sparklines use Moss (up), Storm (down), neutral stone (flat).
-- Market cap stays neutral. Percentage change gets the semantic color.
-- Active sort chip: solid Fog fill. Inactive chips: slab/subdued.
-- Token logos: square, 0px radius.
-
-**Mood:** "Market board installed in a greenhouse."
-
-### Launch
-
-**Intent:** A ritual, not a generic form.
-
-- Main form sits on a brutalist canvas.
-- Upload tile should feel like an inset opening in concrete.
-- All inputs: 0px radius, strong borders.
-- Primary action: Fog fill with Basalt text, not green.
-
-**Mood:** "Casting a permanent object into the protocol."
+- Page title: "Explore" (title case)
+- Glass card grid with images, sparklines, prices
+- Search bar with glass input styling
+- Filter chips: Bump / New / Top
 
 ### Fundraiser Detail
 
-**Intent:** The strongest expression of the brand.
+- Glass panels for Mining Pool, Your Position, About sections
+- Chart with time range chips
+- Buy/Sell buttons in title case
+- Recent Funding as ledger list with data-row styling
 
-- Hero price + chart on a severe, quiet backdrop.
-- Timeframe selector: slab chips, 0px radius.
-- "Today's Mining Pool" should feel like a structural readout.
-- "Your position" should feel dense and ledger-like.
-- Action menu: opaque slab with strong borders.
-- About / Stats / Recent Funding / Leaderboard: slab-based sections.
+### Launch
 
-**Mood:** "Concrete finance with living momentum."
+- Glass form panels
+- All inputs use `.field-input` or `.input-liquid-glass`
+- Image upload with glass inset treatment
 
 ### Profile
 
-**Intent:** Personal holdings and creator identity.
+- Holdings list with data-row styling
+- Portfolio value prominent
+- Glass panel sections
 
-- Portfolio value: large and calm.
-- Holdings rows: utilitarian and list-like.
-- Slab-based tab controls.
-- Launched fundraisers should feel like owned structures in the system.
+### About
 
-### Info / About
-
-**Intent:** Explain the protocol in a more editorial way.
-
-- Slab sections throughout.
-- Use larger spacing and calmer type than Explore.
-- This page can carry more of the "ecological public infrastructure" narrative.
-
----
-
-## Implementation Priority
-
-1. `globals.css` semantic color variables
-2. Button and chip utilities
-3. Chart colors
-4. Nav shell
-5. Action menu / modal chrome
-6. Fallback logo treatment
-
-### Utility Classes
-
-```
-.surface-slab
-.surface-slab-muted
-.surface-moss
-.chart-up
-.chart-down
-.text-gain
-.text-loss
-```
-
-### What to Keep
-
-- Mobile-first frame
-- Dense route structure
-- List-heavy market view
-- Fixed bottom navigation
-- Chart-centric fundraiser detail
-- Clear launch flow
-
-### What to Change
-
-- Replace current grayscale semantic movement colors
-- Stop using pure white buttons everywhere as the whole identity
-- Introduce warm neutrals instead of cold generic black/zinc everywhere
-- Make charts and price deltas semantically colored
-- Make the app feel more architectural and less generic crypto dashboard
-- Remove all border radius (except user avatars)
-- Remove all glass/blur/translucency
+- Editorial layout with glass sections
+- Larger spacing, calmer typography
 
 ---
 
@@ -306,12 +296,12 @@ Should feel earthy, not neon.
 
 For any new component or screen:
 
-1. Is the radius 0px? (Only avatars get circles)
-2. Does the screen still read as a funding market first?
-3. Are gain/loss semantics preserved and not diluted into branding?
-4. Is the route dense but still scannable on mobile?
-5. Are charts and hero values immediately legible?
-6. Are all surfaces opaque and matte?
-7. Does the result feel architectural instead of generic?
+1. Does it use glass panels with blur and soft borders?
+2. Is the border-radius `var(--radius)` (0.625rem)?
+3. Is all text in title case (no ALL CAPS except tickers/abbreviations)?
+4. Are buttons rounded with hover lift animations?
+5. Does it use `hsl(var(--foreground) / opacity)` for glass backgrounds?
+6. Are gain/loss semantics preserved (green = gain, yellow = loss)?
+7. Does it feel premium and refined, not raw or industrial?
 
-When in doubt, default to slab with strong borders and keep semantics neutral.
+When in doubt, use glass panel + title case + rounded corners.

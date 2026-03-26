@@ -600,7 +600,7 @@ export default function FundraiserDetailPage() {
                   <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
+                        <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Today&apos;s Mining Pool</div>
                         <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
                       </div>
                       <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
@@ -642,7 +642,7 @@ export default function FundraiserDetailPage() {
                   {hasPosition && (
                     <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                       <div className="mb-3">
-                        <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
+                        <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Your Position</div>
                         <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
                       </div>
                       {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
@@ -653,7 +653,7 @@ export default function FundraiserDetailPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium">Day {currentEpoch}</span>
-                                    <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
+                                    <span className="text-xs tracking-[0.02em] text-primary">Active</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -681,7 +681,7 @@ export default function FundraiserDetailPage() {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                                      <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                                      <span className="text-xs tracking-[0.02em] text-loss">Claimable</span>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -768,7 +768,7 @@ export default function FundraiserDetailPage() {
                   {/* About Section — mobile */}
                   <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
-                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
+                      <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
                     </div>
                     <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
@@ -869,7 +869,7 @@ export default function FundraiserDetailPage() {
                   {/* Stats Section — mobile */}
                   <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
-                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
+                      <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Stats</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
                     </div>
                     <div className="grid grid-cols-2 gap-y-4 gap-x-8">
@@ -966,7 +966,7 @@ export default function FundraiserDetailPage() {
                 {/* Recent Funding */}
                 <div className="slab-panel rounded-2xl mb-6 px-3 py-3">
                   <div className="mb-2.5">
-                    <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.03em]">Recent Funding</h2>
+                    <h2 className="text-[18px] font-semibold font-display tracking-[-0.03em]">Recent Funding</h2>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
                   </div>
                   {isHistoryLoading ? (
@@ -1027,7 +1027,7 @@ export default function FundraiserDetailPage() {
                 <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Today&apos;s Mining Pool</div>
+                      <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Today&apos;s Mining Pool</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
                     </div>
                     <div className="text-[14px] tabular-nums font-mono text-muted-foreground">
@@ -1069,7 +1069,7 @@ export default function FundraiserDetailPage() {
                 {hasPosition && (
                   <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                     <div className="mb-3">
-                      <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Your Position</div>
+                      <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Your Position</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
                     </div>
                     {(userCurrentEpochDonation > 0 || unclaimedEpochCount > 0) && (
@@ -1080,7 +1080,7 @@ export default function FundraiserDetailPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-medium">Day {currentEpoch}</span>
-                                  <span className="text-xs uppercase tracking-[0.12em] text-primary">active</span>
+                                  <span className="text-xs tracking-[0.02em] text-primary">Active</span>
                                 </div>
                               </div>
                               <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -1108,7 +1108,7 @@ export default function FundraiserDetailPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium">Day {ep.epoch.toString()}</span>
-                                    <span className="text-xs uppercase tracking-[0.12em] text-loss">claimable</span>
+                                    <span className="text-xs tracking-[0.02em] text-loss">Claimable</span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -1195,7 +1195,7 @@ export default function FundraiserDetailPage() {
                 {/* About Section */}
                 <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="mb-3">
-                    <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">About</div>
+                    <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
                   </div>
                   <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
@@ -1296,7 +1296,7 @@ export default function FundraiserDetailPage() {
                 {/* Stats Section */}
                 <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
                   <div className="mb-3">
-                    <div className="font-semibold text-[18px] font-display uppercase tracking-[-0.03em]">Stats</div>
+                    <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Stats</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
                   </div>
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8">

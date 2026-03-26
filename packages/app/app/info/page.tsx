@@ -101,7 +101,7 @@ export default function InfoPage() {
                 key={index}
                 className={`py-5 ${index > 0 ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""}`}
               >
-                <h2 className="mb-3 font-display text-[17px] font-semibold uppercase tracking-[-0.03em] text-foreground">
+                <h2 className="mb-3 font-display text-[17px] font-semibold tracking-[-0.03em] text-foreground">
                   {section.title}
                 </h2>
                 <p className="mb-4 text-[15px] leading-relaxed text-muted-foreground">
@@ -136,7 +136,7 @@ export default function InfoPage() {
                 key={index}
                 className="slab-panel px-5 py-5"
               >
-                <h2 className="mb-3 font-display text-[17px] font-semibold uppercase tracking-[-0.03em] text-foreground">
+                <h2 className="mb-3 font-display text-[17px] font-semibold tracking-[-0.03em] text-foreground">
                   {section.title}
                 </h2>
                 <p className="mb-4 text-[14px] leading-relaxed text-muted-foreground">

@@ -59,7 +59,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
             {displayName}
           </span>
           {entry.isCurrentUser && (
-            <span className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] bg-[hsl(var(--foreground)/0.04)] px-1.5 py-0.5 text-[10px] uppercase tracking-[0.12em] text-primary">You</span>
+            <span className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] bg-[hsl(var(--foreground)/0.04)] px-1.5 py-0.5 text-[10px] tracking-[0.02em] text-primary">You</span>
           )}
           {entry.isFriend && !entry.isCurrentUser && (
             <Users className="h-3 w-3 text-muted-foreground" />
@@ -69,7 +69,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
 
       {/* Funded amount */}
       <div className="text-right flex-shrink-0">
-        <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Funded</div>
+        <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Funded</div>
         <div className="mt-0.5 text-[12px] font-medium font-mono tabular-nums">{entry.donatedFormatted}</div>
       </div>
     </div>
@@ -85,7 +85,7 @@ export function Leaderboard({
     return (
       <LeaderboardShell>
         <div className="mb-3">
-          <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
+          <h2 className="text-[18px] font-semibold font-display tracking-[-0.02em]">Leaderboard</h2>
           <div className="mt-0.5 text-[12px] text-muted-foreground">Top supporters ranked by total contribution</div>
         </div>
         <div className="ledger-list">
@@ -101,7 +101,7 @@ export function Leaderboard({
     return (
       <LeaderboardShell>
         <div className="mb-3">
-          <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
+          <h2 className="text-[18px] font-semibold font-display tracking-[-0.02em]">Leaderboard</h2>
           <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
         </div>
         <div className="text-center py-4 text-muted-foreground text-[13px]">
@@ -114,7 +114,7 @@ export function Leaderboard({
   return (
     <LeaderboardShell>
       <div className="mb-3">
-        <h2 className="text-[18px] font-semibold font-display uppercase tracking-[-0.02em]">Leaderboard</h2>
+        <h2 className="text-[18px] font-semibold font-display tracking-[-0.02em]">Leaderboard</h2>
         <div className="text-[12px] text-muted-foreground mt-0.5">Top supporters ranked by total contribution</div>
       </div>
 

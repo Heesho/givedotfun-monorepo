@@ -126,7 +126,7 @@ export function NavBar({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "px-3.5 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.14em] transition-all",
+                    "px-3.5 py-2 font-display text-[12px] font-semibold tracking-[0.02em] transition-all",
                     item.isActive
                       ? "text-foreground bg-[hsl(var(--primary)/0.1)] rounded-[var(--radius)] border border-[hsl(var(--primary)/0.15)]"
                       : "text-muted-foreground hover:text-foreground link-underline"
@@ -140,7 +140,7 @@ export function NavBar({
             <Link href="/profile" className="ml-auto flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80">
               <span
                 className={cn(
-                  "font-display text-[12px] font-semibold uppercase tracking-[0.14em] transition-colors",
+                  "font-display text-[12px] font-semibold tracking-[0.02em] transition-colors",
                   isProfileActive ? "text-foreground" : "text-muted-foreground"
                 )}
               >
@@ -290,7 +290,7 @@ export function NavBar({
 
                 <div className="flex gap-14">
                   <div>
-                    <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                    <div className="mb-3 font-display text-[10px] font-semibold tracking-[0.02em] text-muted-foreground/60">
                       Navigate
                     </div>
                     <div className="flex flex-col gap-2.5">
@@ -309,7 +309,7 @@ export function NavBar({
                     </div>
                   </div>
                   <div>
-                    <div className="mb-3 font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+                    <div className="mb-3 font-display text-[10px] font-semibold tracking-[0.02em] text-muted-foreground/60">
                       Protocol
                     </div>
                     <div className="flex flex-col gap-2.5">

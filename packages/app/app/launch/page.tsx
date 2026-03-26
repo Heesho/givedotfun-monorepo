@@ -312,13 +312,13 @@ export default function LaunchPage() {
     <div className="flex items-center gap-4">
       <div className="flex shrink-0 items-center gap-4">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Pay</div>
+          <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Pay</div>
           <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
             ${formatNumber(usdcAmount)}
           </div>
         </div>
         <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Balance</div>
+          <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Balance</div>
           <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
             ${formatNumber(usdcBalance ? Number(formatUnits(usdcBalance, QUOTE_TOKEN_DECIMALS)) : 0)}
           </div>
@@ -454,7 +454,7 @@ export default function LaunchPage() {
             <button
               type="button"
               onClick={() => setLinks([...links, ""])}
-              className="text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary"
+              className="text-[12px] font-display tracking-[0.02em] text-muted-foreground transition-colors hover:text-primary"
             >
               + Add another
             </button>
@@ -599,13 +599,13 @@ export default function LaunchPage() {
         <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-3 px-4 py-3">
           <div className="flex shrink-0 items-center gap-4">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Pay</div>
+              <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Pay</div>
               <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
                 ${formatNumber(usdcAmount)}
               </div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Balance</div>
+              <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Balance</div>
               <div className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums">
                 ${formatNumber(usdcBalance ? Number(formatUnits(usdcBalance, QUOTE_TOKEN_DECIMALS)) : 0)}
               </div>
@@ -662,7 +662,7 @@ export default function LaunchPage() {
 
               {/* Message */}
               <div>
-                <h2 className="mb-2 font-display text-2xl font-bold uppercase tracking-[-0.04em] text-foreground">Fundraiser Launched!</h2>
+                <h2 className="mb-2 font-display text-2xl font-bold tracking-[-0.04em] text-foreground">Fundraiser Launched!</h2>
                 <p className="text-[15px] text-muted-foreground">
                   <span className="font-display font-semibold text-foreground">{tokenName}</span>
                   {" "}({tokenSymbol}) is now live

@@ -276,7 +276,7 @@ export default function ExplorePage() {
                   <button
                     key={tab.key}
                     onClick={() => setSortBy(tab.key)}
-                    className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${
+                    className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 items-center justify-center gap-1 px-2.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${
                       sortBy === tab.key
                         ? "bg-primary text-primary-foreground shadow-glass"
                         : "bg-[hsl(var(--foreground)/0.04)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
@@ -332,7 +332,7 @@ export default function ExplorePage() {
                         key={tab.key}
                         onClick={() => setSortBy(tab.key)}
                         className={cn(
-                          "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.1em] transition-all rounded-[var(--radius)] border",
+                          "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all rounded-[var(--radius)] border",
                           sortBy === tab.key
                             ? "bg-primary text-primary-foreground border-transparent shadow-glass"
                             : "bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--outline-variant)/0.12)] text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)]"

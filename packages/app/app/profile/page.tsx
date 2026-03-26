@@ -448,7 +448,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
                     disabled={isUsdcMinting}
-                    className="mt-0.5 text-right text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                    className="mt-0.5 text-right text-[10px] font-display tracking-[0.02em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
                   >
                     {isUsdcMinting ? "Minting..." : "Mint 1000"}
                   </button>
@@ -460,13 +460,13 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setActiveTab("holdings")}
-                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
+                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Wallet className="w-3.5 h-3.5" /> Coins
               </button>
               <button
                 onClick={() => setActiveTab("launched")}
-                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
+                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Rocket className="w-3.5 h-3.5" /> Fundraisers
               </button>
@@ -575,7 +575,7 @@ export default function ProfilePage() {
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
                       className={cn(
-                        "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold uppercase tracking-[0.12em] transition-all",
+                        "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all",
                         activeTab === tab.key
                           ? "bg-primary text-primary-foreground"
                           : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-container-high))]"
@@ -613,7 +613,7 @@ export default function ProfilePage() {
               <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
 
               <div>
-                <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Portfolio</div>
+                <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Portfolio</div>
                 <div className="mt-0.5 text-[18px] font-bold tabular-nums font-mono leading-none">
                   {totalValueUsd > 0 ? formatUsd(totalValueUsd) : "$0.00"}
                 </div>
@@ -622,7 +622,7 @@ export default function ProfilePage() {
               <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
 
               <div>
-                <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Cash</div>
+                <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Cash</div>
                 <div className="mt-0.5 text-[18px] font-semibold tabular-nums font-mono leading-none">
                   ${formattedUsdc}
                 </div>
@@ -631,7 +631,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => mintUsdc({ address: CONTRACT_ADDRESSES.usdc as `0x${string}`, abi: MOCK_MINT_ABI, functionName: "mint", args: [address!, parseUnits("1000", QUOTE_TOKEN_DECIMALS)] })}
                 disabled={isUsdcMinting}
-                className="ml-auto text-[10px] font-display uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                className="ml-auto text-[10px] font-display tracking-[0.02em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
               >
                 {isUsdcMinting ? "Minting..." : "Mint 1000"}
               </button>

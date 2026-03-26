@@ -425,7 +425,7 @@ export function AdminModal({
                       <button
                         type="button"
                         onClick={() => setLinks([...links, ""])}
-                        className="signal-hover text-[12px] font-display uppercase tracking-[0.12em] text-muted-foreground"
+                        className="signal-hover text-[12px] font-display tracking-[0.02em] text-muted-foreground"
                       >
                         + Add another
                       </button>

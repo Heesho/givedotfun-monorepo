@@ -65,7 +65,7 @@ export default function LandingPage() {
           {/* CTA button — liquid glass style */}
           <Link
             href="/explore"
-            className="btn-liquid-glass inline-flex items-center justify-center px-8 py-3.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-white w-fit"
+            className="btn-liquid-glass inline-flex items-center justify-center px-8 py-3.5 text-[12px] font-semibold tracking-[0.02em] text-white w-fit"
           >
             Enter App
           </Link>

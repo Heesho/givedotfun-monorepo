@@ -75,11 +75,11 @@ export const DonationHistoryItem = memo(function DonationHistoryItem({
 
       <div className="grid grid-cols-2 gap-x-3.5 flex-shrink-0 text-right">
         <div className="min-w-[52px]">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Funded</div>
+          <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Funded</div>
           <div className="mt-0.5 text-[12px] font-medium font-mono tabular-nums">${amount.toFixed(2)}</div>
         </div>
         <div className="min-w-[60px]">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Mining</div>
+          <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Mining</div>
           <div className="mt-0.5 flex items-center justify-end gap-1 text-[12px] font-medium font-mono tabular-nums">
             <TokenLogo name={tokenSymbol} logoUrl={logoUrl} size="xs" variant="circle" />
             {formatNumber(tokens, 0)}
