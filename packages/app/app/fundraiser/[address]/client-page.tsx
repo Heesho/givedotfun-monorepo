@@ -107,7 +107,7 @@ function LoadingSkeleton() {
         <div className="flex items-center justify-between pb-2">
           <Link
             href="/explore"
-            className="p-1.5 -ml-2 border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] hover:bg-[hsl(var(--foreground)/0.06)] transition-colors"
+            className="p-1.5 -ml-2 border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] hover:bg-[hsl(var(--foreground)/0.06)] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -481,7 +481,7 @@ export default function FundraiserDetailPage() {
         <div className="hidden lg:block lg:pt-[88px]" />
 
         {/* Scroll container */}
-        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-12 pb-4 lg:pt-0 lg:pb-16">
+        <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-2 pb-4 lg:pt-0 lg:pb-16">
           <div className="mx-auto w-full">
 
             {/* Two-column flex layout */}
@@ -493,7 +493,7 @@ export default function FundraiserDetailPage() {
                 {/* Desktop: back + ticker left, price right */}
                 <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
                   <div className="flex items-center gap-2">
-                    <Link href="/explore" className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
+                    <Link href="/explore" className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
                       <ArrowLeft className="w-4 h-4" />
                     </Link>
                     <div>
@@ -518,22 +518,22 @@ export default function FundraiserDetailPage() {
                 </div>
 
                 {/* Mobile: back arrow + token + price in one row */}
-                <div className="lg:hidden flex items-center justify-between mb-1" ref={tokenIdentityRef}>
-                  <div className="flex items-center gap-2">
+                <div className="lg:hidden flex items-center justify-between mb-2 py-1" ref={tokenIdentityRef}>
+                  <div className="flex items-center gap-2.5">
                     <Link href="/explore" className="text-muted-foreground hover:text-foreground transition-colors">
-                      <ArrowLeft className="w-4 h-4" />
+                      <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
+                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="md" />
                     <div>
-                      <div className="font-display text-[13px] font-semibold uppercase tracking-[-0.02em] leading-none">{tokenSymbol}</div>
-                      <div className="text-[11px] text-muted-foreground leading-none mt-0.5">{tokenName}</div>
+                      <div className="font-display text-[15px] font-semibold uppercase tracking-[-0.02em] leading-none">{tokenSymbol}</div>
+                      <div className="text-[12px] text-muted-foreground leading-none mt-1">{tokenName}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono text-[15px] font-semibold tabular-nums leading-none">
+                    <div className="font-mono text-[18px] font-semibold tabular-nums leading-none">
                       {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
                     </div>
-                    <div className={`text-[11px] font-mono font-medium leading-none mt-0.5 ${movementClass}`}>
+                    <div className={`text-[12px] font-mono font-medium leading-none mt-1 ${movementClass}`}>
                       {hoverData
                         ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                         : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
@@ -572,7 +572,7 @@ export default function FundraiserDetailPage() {
                       <button
                         key={tf}
                         onClick={() => setTimeframe(tf)}
-                        className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] px-2 py-2 text-[12px] font-medium font-mono transition-all ${
+                        className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] px-2 py-2 text-[12px] font-medium font-mono transition-all ${
                           timeframe === tf
                             ? displayChange >= 0
                               ? "bg-primary text-primary-foreground shadow-glass"
@@ -601,7 +601,7 @@ export default function FundraiserDetailPage() {
                 <div className="lg:hidden">
 
                   {/* Mining Pool Section — mobile */}
-                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Today&apos;s Mining Pool</div>
@@ -644,7 +644,7 @@ export default function FundraiserDetailPage() {
 
                   {/* Your Position Section — mobile */}
                   {hasPosition && (
-                    <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                    <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                       <div className="mb-3">
                         <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Your Position</div>
                         <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
@@ -770,7 +770,7 @@ export default function FundraiserDetailPage() {
                   )}
 
                   {/* About Section — mobile */}
-                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
@@ -803,7 +803,7 @@ export default function FundraiserDetailPage() {
                           href={`https://basescan.org/token/${coinAddress}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {tokenSymbol}
                         </a>
@@ -813,7 +813,7 @@ export default function FundraiserDetailPage() {
                           href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {tokenSymbol}-USDC LP
                         </a>
@@ -837,7 +837,7 @@ export default function FundraiserDetailPage() {
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                            className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                           >
                             {label}
                           </a>
@@ -871,7 +871,7 @@ export default function FundraiserDetailPage() {
                   </div>
 
                   {/* Stats Section — mobile */}
-                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Stats</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
@@ -968,7 +968,7 @@ export default function FundraiserDetailPage() {
                 </div>{/* end mobile-only sections */}
 
                 {/* Recent Funding */}
-                <div className="slab-panel rounded-2xl mb-6 px-3 py-3">
+                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-3">
                   <div className="mb-2.5">
                     <h2 className="text-[18px] font-semibold font-display tracking-[-0.03em]">Recent Funding</h2>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Latest contributions and estimated coin rewards</div>
@@ -1022,13 +1022,13 @@ export default function FundraiserDetailPage() {
 
                 {/* Fundraiser image — desktop only */}
                 {logoUrl && (
-                  <div className="slab-panel rounded-2xl mb-4 overflow-hidden">
+                  <div className="slab-panel rounded-[var(--radius)] mb-4 overflow-hidden">
                     <img src={logoUrl} alt={tokenName} className="w-full h-auto object-cover" style={{ maxHeight: "220px" }} />
                   </div>
                 )}
 
                 {/* Mining Pool Section */}
-                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Today&apos;s Mining Pool</div>
@@ -1071,7 +1071,7 @@ export default function FundraiserDetailPage() {
 
                 {/* Your Position Section */}
                 {hasPosition && (
-                  <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                  <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="mb-3">
                       <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Your Position</div>
                       <div className="text-[12px] text-muted-foreground mt-0.5">Your active mining and claimable coins from past days</div>
@@ -1197,7 +1197,7 @@ export default function FundraiserDetailPage() {
                 )}
 
                 {/* About Section */}
-                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                   <div className="mb-3">
                     <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
@@ -1230,7 +1230,7 @@ export default function FundraiserDetailPage() {
                         href={`https://basescan.org/token/${coinAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                       >
                         {tokenSymbol}
                       </a>
@@ -1240,7 +1240,7 @@ export default function FundraiserDetailPage() {
                         href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                       >
                         {tokenSymbol}-USDC LP
                       </a>
@@ -1264,7 +1264,7 @@ export default function FundraiserDetailPage() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         >
                           {label}
                         </a>
@@ -1298,7 +1298,7 @@ export default function FundraiserDetailPage() {
                 </div>
 
                 {/* Stats Section */}
-                <div className="slab-panel rounded-2xl mb-6 px-3 py-4">
+                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                   <div className="mb-3">
                     <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">Stats</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">Key metrics and coin economics for this fundraiser</div>
