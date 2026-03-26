@@ -591,12 +591,12 @@ export default function LaunchPage() {
         </div>
       </div>
 
-      {/* Mobile Bottom Action Bar */}
+      {/* Mobile Bottom Action Bar — solid black, no border */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-center lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-black lg:hidden"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
       >
-        <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-3 px-4 py-3">
+        <div className="flex w-full max-w-[520px] mx-auto items-center gap-3 px-4 py-3">
           <div className="flex shrink-0 items-center gap-4">
             <div>
               <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Pay</div>

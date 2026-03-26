@@ -51,8 +51,8 @@ export function GlobalNav() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [menuOpen]);
 
-  // Landing: white hamburger (over video), transparent header bg
-  // Inner pages: black hamburger, white header bg
+  // Landing: white elements (over video), transparent header bg
+  // Inner pages: black elements, white header bg
   // Menu open: always dark text on white bg
   const hamburgerColor = menuOpen ? "text-black" : isLanding ? "text-white" : "text-black";
   const headerBg = isLanding && !menuOpen ? "" : "bg-white";
