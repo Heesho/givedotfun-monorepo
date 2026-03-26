@@ -144,12 +144,12 @@
   }
 
   .slab-panel {
-    background: hsl(var(--surface) / 0.6);
+    background: hsl(var(--foreground) / 0.06);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--outline-variant) / 0.12);
+    border: 1px solid hsl(var(--foreground) / 0.1);
     border-radius: var(--radius);
-    box-shadow: 0 8px 32px hsl(var(--primary-foreground) / 0.06);
+    box-shadow: 0 8px 32px hsl(var(--primary-foreground) / 0.08);
   }
 
   .signal-slab-positive {
@@ -196,17 +196,17 @@
 
   .data-row {
     @apply transition-all;
-    background: hsl(var(--surface) / 0.4);
-    border: 1px solid hsl(var(--outline-variant) / 0.08);
+    background: hsl(var(--foreground) / 0.03);
+    border: 1px solid hsl(var(--foreground) / 0.06);
     border-radius: var(--radius);
   }
   .data-row:hover {
-    background: hsl(var(--surface) / 0.6);
-    border-color: hsl(var(--outline-variant) / 0.15);
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--foreground) / 0.1);
   }
 
   .data-row-alt {
-    background: hsl(var(--surface-container-lowest));
+    background: hsl(var(--foreground) / 0.02);
   }
 
   .ledger-list > * + * {
@@ -214,10 +214,10 @@
   }
 
   .glass-panel {
-    background: hsl(var(--surface) / 0.6);
+    background: hsl(var(--foreground) / 0.06);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid hsl(var(--outline-variant) / 0.12);
+    border: 1px solid hsl(var(--foreground) / 0.1);
     border-radius: var(--radius);
     box-shadow: 0 22px 56px hsl(var(--primary-foreground) / 0.08);
   }
