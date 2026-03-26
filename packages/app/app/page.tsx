@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const blurbs = [
@@ -12,7 +12,9 @@ const blurbs = [
 ] as const;
 
 export default function LandingPage() {
+  const router = useRouter();
   const [blurbIndex, setBlurbIndex] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
 
   // Rotate blurbs every 10 seconds
   useEffect(() => {
@@ -21,6 +23,16 @@ export default function LandingPage() {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Cross-dissolve: fade to black, then navigate
+  const handleEnter = useCallback(() => {
+    if (isExiting) return;
+    setIsExiting(true);
+    // Wait for fade-out to complete, then navigate
+    setTimeout(() => {
+      router.push("/explore");
+    }, 600);
+  }, [isExiting, router]);
 
   return (
     <main className="relative h-screen w-full overflow-hidden">
@@ -38,8 +50,20 @@ export default function LandingPage() {
       {/* Dark overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
 
+      {/* Fade-to-black overlay for exit transition */}
+      <motion.div
+        className="absolute inset-0 z-50 bg-black pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isExiting ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      />
+
       {/* Hero content */}
-      <div className="relative z-10 flex h-full flex-col items-start justify-end pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 md:px-10 lg:px-16 max-w-[1400px] mx-auto">
+      <motion.div
+        className="relative z-10 flex h-full flex-col items-start justify-end pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 md:px-10 lg:px-16 max-w-[1400px] mx-auto"
+        animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -20 : 0 }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      >
         {/* Logo + tagline */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -63,14 +87,15 @@ export default function LandingPage() {
           </div>
 
           {/* CTA button — liquid glass style */}
-          <Link
-            href="/explore"
-            className="btn-liquid-glass inline-flex items-center justify-center px-8 py-3.5 text-[12px] font-semibold tracking-[0.02em] text-white w-fit"
+          <button
+            onClick={handleEnter}
+            disabled={isExiting}
+            className="btn-liquid-glass inline-flex items-center justify-center px-8 py-3.5 text-[12px] font-semibold tracking-[0.02em] text-white w-fit disabled:pointer-events-none"
           >
             Enter App
-          </Link>
+          </button>
         </motion.div>
-      </div>
+      </motion.div>
     </main>
   );
 }
