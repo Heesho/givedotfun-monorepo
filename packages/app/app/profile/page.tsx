@@ -391,20 +391,15 @@ export default function ProfilePage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        {/* Mobile Header */}
-        <motion.div
-          className="page-header lg:hidden"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
+        {/* Desktop Header */}
+        <div className="page-header pt-2 lg:pt-[88px]">
           <h1 className="page-title hidden lg:block">Profile</h1>
           <p className="page-subtitle hidden lg:block">Your portfolio, holdings, and launched fundraisers.</p>
-        </motion.div>
+        </div>
 
         {/* ── Mobile layout ── */}
         <motion.div
-          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 lg:hidden"
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 pt-2 lg:hidden"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
