@@ -540,12 +540,12 @@ export default function LaunchPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 130px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 90px)",
         }}
       >
         {/* Header */}
-        <div className="page-header lg:pt-[88px]">
+        <div className="page-header pt-2 lg:pt-[88px]">
           <div className="mx-auto w-full">
             <h1 className="page-title hidden lg:block">Launch</h1>
             <p className="page-subtitle hidden lg:block">Create a fundraiser and start accepting funding.</p>
@@ -594,7 +594,7 @@ export default function LaunchPage() {
       {/* Mobile Bottom Action Bar */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 flex justify-center lg:hidden"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 60px)" }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
       >
         <div className="dock-panel -mb-px flex w-full max-w-[520px] items-center gap-3 px-4 py-3">
           <div className="flex shrink-0 items-center gap-4">
