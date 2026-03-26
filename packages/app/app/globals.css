@@ -78,15 +78,9 @@
     background: hsl(var(--background));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     letter-spacing: -0.01em;
-  }
-
-  @media (min-width: 1024px) {
-    body {
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
   }
 }
 
