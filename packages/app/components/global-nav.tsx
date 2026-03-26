@@ -89,10 +89,7 @@ export function GlobalNav() {
               {pageName}
             </span>
           )}
-          {/* Portal target for fundraiser ticker — flex row for back + ticker */}
-          {isFundraiser && !menuOpen && (
-            <div id="nav-center-slot" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-auto" />
-          )}
+          {/* Fundraiser pages have no center title — info shown in content */}
 
           {/* Landing: show give.fun text centered instead of page name */}
           {isLanding && !menuOpen && (

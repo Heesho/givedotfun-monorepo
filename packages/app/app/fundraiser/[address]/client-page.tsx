@@ -468,19 +468,7 @@ export default function FundraiserDetailPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Ticker in nav center slot — back arrow + ticker + price */}
-      {navSlot && createPortal(
-        <>
-          <Link href="/explore" className="text-black/50 hover:text-black transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="text-center">
-            <div className="font-display text-[14px] font-bold uppercase tracking-[-0.01em] text-black leading-none">{tokenSymbol}</div>
-            <div className="font-mono text-[11px] font-medium tabular-nums text-black/50 leading-none mt-0.5">{formatPrice(priceUsd)}</div>
-          </div>
-        </>,
-        navSlot
-      )}
+      {/* No ticker in nav — it's shown in the content row below */}
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
@@ -529,21 +517,27 @@ export default function FundraiserDetailPage() {
                   </div>
                 </div>
 
-                {/* Mobile: compact price + change row (ticker is in nav) */}
+                {/* Mobile: back arrow + token + price in one row */}
                 <div className="lg:hidden flex items-center justify-between mb-1" ref={tokenIdentityRef}>
                   <div className="flex items-center gap-2">
+                    <Link href="/explore" className="text-muted-foreground hover:text-foreground transition-colors">
+                      <ArrowLeft className="w-4 h-4" />
+                    </Link>
                     <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
-                    <span className="text-[13px] text-muted-foreground">{tokenName}</span>
+                    <div>
+                      <div className="font-display text-[13px] font-semibold uppercase tracking-[-0.02em] leading-none">{tokenSymbol}</div>
+                      <div className="text-[11px] text-muted-foreground leading-none mt-0.5">{tokenName}</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[15px] font-semibold tabular-nums">
+                  <div className="text-right">
+                    <div className="font-mono text-[15px] font-semibold tabular-nums leading-none">
                       {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
-                    </span>
-                    <span className={`text-[12px] font-mono font-medium ${movementClass}`}>
+                    </div>
+                    <div className={`text-[11px] font-mono font-medium leading-none mt-0.5 ${movementClass}`}>
                       {hoverData
                         ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
                         : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
-                    </span>
+                    </div>
                   </div>
                 </div>
 
