@@ -47,7 +47,7 @@ export default function LandingPage() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
           className="flex flex-col gap-3 sm:gap-4"
         >
-          <div className="min-h-[140px] sm:min-h-[180px] md:min-h-[200px] max-w-[700px]">
+          <div className="min-h-[140px] sm:min-h-[180px] md:min-h-[200px] max-w-[500px]">
             <AnimatePresence mode="wait">
               <motion.p
                 key={blurbIndex}
