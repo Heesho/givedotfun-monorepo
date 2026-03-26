@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
 const menuItems = [
   { href: "/explore", label: "Explore" },
@@ -18,15 +19,20 @@ function getPageName(pathname: string): string | null {
   if (pathname === "/launch") return "Launch";
   if (pathname === "/info") return "About";
   if (pathname === "/profile") return "Profile";
-  if (pathname.startsWith("/fundraiser/")) return null; // fundraiser has its own header
+  if (pathname.startsWith("/fundraiser/")) return null; // fundraiser injects its own title
   if (pathname === "/auctions") return "Auctions";
   return null;
+}
+
+function isFundraiserPage(pathname: string): boolean {
+  return pathname.startsWith("/fundraiser/");
 }
 
 export function GlobalNav() {
   const pathname = usePathname();
   const router = useRouter();
   const isLanding = pathname === "/";
+  const isFundraiser = isFundraiserPage(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const pageName = getPageName(pathname);
 
@@ -63,15 +69,21 @@ export function GlobalNav() {
       <div className={`fixed top-0 left-0 right-0 z-[210] pointer-events-none ${headerBg}`}>
         {/* Mobile header — compact: logo left, page name center, hamburger right */}
         <div className="flex lg:hidden items-center justify-between px-4 py-2">
-          {/* Logo icon only — no text, matches hamburger size */}
+          {/* Logo or back arrow on fundraiser pages */}
           <div className="pointer-events-auto w-9 h-9 flex items-center justify-center">
-            <Link href="/" onClick={() => setMenuOpen(false)} className="hover:opacity-80 transition-opacity">
-              <img
-                src="/media/logo-transparent.png"
-                alt="give.fun"
-                className="h-7 w-7 object-contain"
-              />
-            </Link>
+            {isFundraiser && !menuOpen ? (
+              <button onClick={() => router.back()} className="hover:opacity-80 transition-opacity">
+                <ArrowLeft className="w-5 h-5 text-black" />
+              </button>
+            ) : (
+              <Link href="/" onClick={() => setMenuOpen(false)} className="hover:opacity-80 transition-opacity">
+                <img
+                  src="/media/logo-transparent.png"
+                  alt="give.fun"
+                  className="h-7 w-7 object-contain"
+                />
+              </Link>
+            )}
           </div>
 
           {/* Page name — centered, bigger */}
