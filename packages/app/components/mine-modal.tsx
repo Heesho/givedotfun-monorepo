@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Delete, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { formatUnits, formatEther, parseUnits } from "viem";
@@ -85,20 +85,18 @@ export function MineModal({
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.documentElement.style.overflow = "hidden";
-      // Also lock all scrollable containers
-      document.querySelectorAll("[class*=overflow-y-auto], [class*=overflow-auto]").forEach((el) => {
-        (el as HTMLElement).style.overflow = "hidden";
-      });
-    }
+  // Lock scroll and restore position when modal opens (useLayoutEffect to run before paint)
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    // Restore scroll position synchronously (browser may have jumped)
+    window.scrollTo(0, scrollY);
     return () => {
       document.documentElement.style.overflow = "";
-      document.querySelectorAll("[class*=overflow-y-auto], [class*=overflow-auto]").forEach((el) => {
-        (el as HTMLElement).style.overflow = "";
-      });
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
 
