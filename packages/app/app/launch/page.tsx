@@ -541,7 +541,7 @@ export default function LaunchPage() {
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
-          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 90px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 140px)",
         }}
       >
         {/* Header */}
