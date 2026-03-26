@@ -31,8 +31,8 @@ export function TokenLogo({
   const classes = sizeClasses[size];
   const shapeClasses =
     variant === "circle"
-      ? "rounded-full border border-[hsl(var(--outline-variant)/0.12)] bg-[hsl(var(--foreground)/0.04)]"
-      : "rounded-full border border-[hsl(var(--outline-variant)/0.12)] bg-[hsl(var(--foreground)/0.04)]";
+      ? "rounded-full border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--foreground)/0.04)]"
+      : "rounded-full border border-[hsl(var(--foreground)/0.1)] bg-[hsl(var(--foreground)/0.04)]";
 
   if (logoUrl && !imgError) {
     return (

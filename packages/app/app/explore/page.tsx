@@ -139,7 +139,7 @@ function CoinCard({ coin, sparklineData }: { coin: ExploreCoin; sparklineData: n
       }`}
       style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`;
+        e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--foreground) / 0.1), 0 28px 64px hsl(0 0% 0% / 0.22)`;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = "";
@@ -307,7 +307,7 @@ export default function ExplorePage() {
                       placeholder="Search fundraisers..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-10 w-[260px] rounded-[var(--radius)] bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--outline-variant)/0.12)] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 backdrop-blur-sm transition-all focus:outline-none focus:w-[320px] focus:border-[hsl(var(--primary)/0.4)] focus:bg-[hsl(var(--foreground)/0.06)]"
+                      className="h-10 w-[260px] rounded-[var(--radius)] bg-[hsl(var(--foreground)/0.04)] border border-[hsl(var(--foreground)/0.1)] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 backdrop-blur-sm transition-all focus:outline-none focus:w-[320px] focus:border-[hsl(var(--primary)/0.4)] focus:bg-[hsl(var(--foreground)/0.06)]"
                     />
                     {searchQuery && (
                       <button
@@ -332,7 +332,7 @@ export default function ExplorePage() {
                           "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all rounded-[var(--radius)] border",
                           sortBy === tab.key
                             ? "bg-primary text-primary-foreground border-transparent shadow-glass"
-                            : "bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--outline-variant)/0.12)] text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)]"
+                            : "bg-[hsl(var(--foreground)/0.04)] border-[hsl(var(--foreground)/0.1)] text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--foreground)/0.08)]"
                         )}
                       >
                         <tab.icon className="h-3 w-3" />
@@ -376,7 +376,7 @@ export default function ExplorePage() {
                         <Link
                           href={`/fundraiser/${coin.address}`}
                           className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
-                            index > 0 ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
+                            index > 0 ? "border-t border-[hsl(var(--foreground)/0.1)]" : ""
                           } hover-slab`}
                         >
                           <div className="flex items-center gap-3">

@@ -164,7 +164,7 @@ export default function AuctionsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-8 w-8 items-center justify-center bg-[hsl(var(--foreground)/0.04)]">
+                  <div className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-8 w-8 items-center justify-center bg-[hsl(var(--foreground)/0.04)]">
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="text-right">

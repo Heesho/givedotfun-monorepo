@@ -16,7 +16,7 @@ function ProfileIcon({ isActive }: { isActive: boolean }) {
   return (
     <div
       className={cn(
-        "border border-[hsl(var(--outline-variant)/0.12)] rounded-full flex h-8 w-8 items-center justify-center overflow-hidden transition-all",
+        "border border-[hsl(var(--foreground)/0.1)] rounded-full flex h-8 w-8 items-center justify-center overflow-hidden transition-all",
         pfpUrl
           ? isActive ? "bg-[hsl(var(--foreground)/0.06)] shadow-glass" : "bg-[hsl(var(--foreground)/0.03)] opacity-70 hover:opacity-100"
           : isActive
@@ -97,7 +97,7 @@ export function NavBar({
       {/* Desktop header with glass background */}
       {desktopWide && (
         <motion.header
-          className="fixed inset-x-0 top-0 z-50 hidden lg:block border-b border-[hsl(var(--outline-variant)/0.08)]"
+          className="fixed inset-x-0 top-0 z-50 hidden lg:block border-b border-[hsl(var(--foreground)/0.08)]"
           style={{
             background: "hsl(var(--background) / 0.7)",
             backdropFilter: "blur(20px)",
@@ -266,7 +266,7 @@ export function NavBar({
             background: "linear-gradient(180deg, hsl(var(--surface-container-lowest) / 0.3) 0%, hsl(var(--background) / 0.6) 100%)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
-            boxShadow: "inset 0 1px 0 hsl(var(--outline-variant) / 0.12)",
+            boxShadow: "inset 0 1px 0 hsl(var(--foreground) / 0.1)",
           }}
         >
           <div className="mx-auto w-full lg:max-w-[1360px] xl:max-w-[1480px] px-8 py-10 xl:px-10">
@@ -324,7 +324,7 @@ export function NavBar({
                 </div>
               </div>
 
-              <div className="mt-8 flex items-center justify-between border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
+              <div className="mt-8 flex items-center justify-between border-t border-[hsl(var(--foreground)/0.1)] pt-5">
                 <div className="text-[12px] text-muted-foreground/50">
                   give.fun protocol
                 </div>

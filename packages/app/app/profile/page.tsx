@@ -80,7 +80,7 @@ function HoldingRow({
     <Link
       href={`/fundraiser/${holding.address}`}
       className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
-        isAlt ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
+        isAlt ? "border-t border-[hsl(var(--foreground)/0.1)]" : ""
       } hover-slab`}
     >
       <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ function LaunchedRow({
     <Link
       href={`/fundraiser/${fundraiser.address}`}
       className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
-        isAlt ? "border-t border-[hsl(var(--outline-variant)/0.1)]" : ""
+        isAlt ? "border-t border-[hsl(var(--foreground)/0.1)]" : ""
       } hover-slab`}
     >
       <div className="flex items-center gap-3">
@@ -452,13 +452,13 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => setActiveTab("holdings")}
-                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
+                className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-11 items-center justify-center gap-1.5 px-2.5 font-display text-[12px] font-semibold tracking-[0.02em] transition-all ${activeTab === "holdings" ? "bg-primary text-primary-foreground shadow-glass" : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Wallet className="w-3.5 h-3.5" /> Coins
               </button>
               <button
                 onClick={() => setActiveTab("launched")}
-                className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 items-center justify-center gap-2 px-3 font-display text-[11px] font-semibold tracking-[0.02em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-glass" : "bg-muted text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
+                className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-11 items-center justify-center gap-1.5 px-2.5 font-display text-[12px] font-semibold tracking-[0.02em] transition-all ${activeTab === "launched" ? "bg-primary text-primary-foreground shadow-glass" : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"}`}
               >
                 <Rocket className="w-3.5 h-3.5" /> Fundraisers
               </button>
@@ -545,11 +545,11 @@ export default function ProfilePage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-10 w-[220px] bg-[hsl(var(--surface-container-lowest))] pl-10 pr-9 text-[13px] text-foreground placeholder:text-muted-foreground/60 transition-all focus:outline-none focus:w-[280px]"
                     style={{
-                      boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)",
+                      boxShadow: "inset 0 0 0 1px hsl(var(--foreground) / 0.1)",
                       transition: "width 200ms ease, box-shadow 150ms ease",
                     }}
                     onFocus={(e) => { e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--primary) / 0.4)"; }}
-                    onBlur={(e) => { e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--outline-variant) / 0.18)"; }}
+                    onBlur={(e) => { e.currentTarget.style.boxShadow = "inset 0 0 0 1px hsl(var(--foreground) / 0.1)"; }}
                   />
                   {searchQuery && (
                     <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-foreground">
@@ -567,16 +567,11 @@ export default function ProfilePage() {
                       key={tab.key}
                       onClick={() => setActiveTab(tab.key)}
                       className={cn(
-                        "flex h-10 items-center gap-1.5 px-3.5 font-display text-[11px] font-semibold tracking-[0.02em] transition-all",
+                        "border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-11 items-center gap-1.5 px-2.5 font-display text-[12px] font-semibold tracking-[0.02em] transition-all",
                         activeTab === tab.key
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-container-high))]"
+                          ? "bg-primary text-primary-foreground shadow-glass"
+                          : "bg-[hsl(var(--foreground)/0.06)] text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                       )}
-                      style={activeTab === tab.key ? {
-                        boxShadow: "3px 3px 0 hsl(var(--primary-container))",
-                      } : {
-                        boxShadow: "inset 0 0 0 1px hsl(var(--outline-variant) / 0.15)",
-                      }}
                     >
                       <tab.icon className="h-3 w-3" />
                       {tab.label}
@@ -590,9 +585,9 @@ export default function ProfilePage() {
             <div className="mt-5 flex items-center gap-6 slab-panel px-5 py-4">
               <div className="flex items-center gap-3">
                 {pfpUrl ? (
-                  <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-9 w-9 object-cover" />
+                  <img src={pfpUrl} alt={displayName} className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] h-9 w-9 object-cover" />
                 ) : (
-                  <div className={`border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-9 w-9 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[13px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-sm font-semibold"}`}>
+                  <div className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-9 w-9 items-center justify-center text-foreground ${isAddressFallbackAvatar ? "bg-[hsl(var(--foreground)/0.04)] font-mono text-[13px] tracking-wide" : "bg-[hsl(var(--foreground)/0.04)] text-sm font-semibold"}`}>
                     {avatarFallback}
                   </div>
                 )}
@@ -602,7 +597,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
+              <div className="h-8 w-px bg-[hsl(var(--foreground)/0.1)]" />
 
               <div>
                 <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Portfolio</div>
@@ -611,7 +606,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="h-8 w-px bg-[hsl(var(--outline-variant)/0.15)]" />
+              <div className="h-8 w-px bg-[hsl(var(--foreground)/0.1)]" />
 
               <div>
                 <div className="text-[10px] tracking-[0.02em] text-muted-foreground">Cash</div>
@@ -658,7 +653,7 @@ export default function ProfilePage() {
                               href={`/fundraiser/${holding.address}`}
                               className={`group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${isPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative"}`}
                               style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
+                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--foreground) / 0.1), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
                               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; }}
                             >
                               <div className="relative h-[140px] w-full overflow-hidden bg-[hsl(var(--surface-container-lowest))]">
@@ -717,7 +712,7 @@ export default function ProfilePage() {
                               href={`/fundraiser/${fundraiser.address}`}
                               className={`group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${isPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative"}`}
                               style={{ transition: "transform 200ms ease, box-shadow 200ms ease" }}
-                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--outline-variant) / 0.3), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
+                              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `inset 0 0 0 1px hsl(var(--foreground) / 0.1), 0 28px 64px hsl(0 0% 0% / 0.22)`; }}
                               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ""; }}
                             >
                               <div className="relative h-[140px] w-full overflow-hidden bg-[hsl(var(--surface-container-lowest))]">

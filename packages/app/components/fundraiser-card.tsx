@@ -144,7 +144,7 @@ export function FundraiserCard({ coin, isTopBump = false, isNewBump = false }: F
         )}
       >
         {/* Token Logo */}
-        <div className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden bg-[hsl(var(--foreground)/0.04)]">
+        <div className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden bg-[hsl(var(--foreground)/0.04)]">
           {logoUrl ? (
             <img
               src={logoUrl}

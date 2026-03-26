@@ -444,7 +444,7 @@ export default function LaunchPage() {
                   }
                   setLinks(links.filter((_, j) => j !== i));
                 }}
-                className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
+                className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-loss"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -579,7 +579,7 @@ export default function LaunchPage() {
               {/* Right column — Recipient, Links */}
               <div className="slab-panel rounded-[var(--radius)] px-5 py-5 space-y-5">
                 {recipientSection}
-                <div className="border-t border-[hsl(var(--outline-variant)/0.1)] pt-5">
+                <div className="border-t border-[hsl(var(--foreground)/0.1)] pt-5">
                   {linksSection}
                 </div>
               </div>
@@ -658,7 +658,7 @@ export default function LaunchPage() {
               {/* Token preview */}
               {logoPreview && (
                 <div className="flex justify-center">
-                  <img src={logoPreview} alt={tokenName} className="border border-[hsl(var(--outline-variant)/0.12)] rounded-[var(--radius)] h-24 w-24 object-cover" />
+                  <img src={logoPreview} alt={tokenName} className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] h-24 w-24 object-cover" />
                 </div>
               )}
 
