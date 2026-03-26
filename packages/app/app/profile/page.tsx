@@ -191,7 +191,7 @@ function ProfileSkeleton() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="page-header lg:pt-16">
+        <div className="page-header lg:pt-[88px]">
           <div className="mx-auto w-full">
             <div className="mb-3">
               <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />

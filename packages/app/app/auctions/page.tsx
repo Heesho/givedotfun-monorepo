@@ -47,7 +47,7 @@ export default function AuctionsPage() {
         }}
       >
         {/* Header */}
-        <div className="page-header lg:pt-16">
+        <div className="page-header lg:pt-[88px]">
           <div className="mx-auto w-full">
             <h1 className="page-title">Auctions</h1>
             <p className="page-subtitle">

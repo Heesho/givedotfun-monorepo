@@ -469,7 +469,7 @@ export default function FundraiserDetailPage() {
         }}
       >
         {/* Desktop spacer for fixed header */}
-        <div className="hidden lg:block lg:pt-[72px]" />
+        <div className="hidden lg:block lg:pt-[88px]" />
 
         {/* Scroll container */}
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-12 pb-4 lg:pt-0 lg:pb-16">

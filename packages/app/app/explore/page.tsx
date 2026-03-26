@@ -239,7 +239,7 @@ export default function ExplorePage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide lg:pb-0 lg:pt-16">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide lg:pb-0 lg:pt-[88px]">
           <div className="mx-auto w-full">
             {/* ── Mobile: sticky header with title + search + sort ── */}
             <div className="sticky top-0 z-10 -mx-4 px-4 pb-3 lg:hidden"
