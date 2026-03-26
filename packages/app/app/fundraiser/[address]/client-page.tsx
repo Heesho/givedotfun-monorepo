@@ -452,19 +452,19 @@ export default function FundraiserDetailPage() {
     await executeClaim(calls);
   }, [account, claimableEpochs, fundraiserAddress, executeClaim, claimStatus]);
 
-  // Show loading skeleton while critical data loads
-  const isLoading = isSubgraphLoading || (!!address && isFundraiserStateLoading);
-
-  if (isLoading && !subgraphFundraiser) {
-    return <LoadingSkeleton />;
-  }
-
   // Portal: inject ticker + price into GlobalNav center slot on mobile
   const [navSlot, setNavSlot] = useState<HTMLElement | null>(null);
   useEffect(() => {
     const el = document.getElementById("nav-center-slot");
     if (el) setNavSlot(el);
   }, []);
+
+  // Show loading skeleton while critical data loads
+  const isLoading = isSubgraphLoading || (!!address && isFundraiserStateLoading);
+
+  if (isLoading && !subgraphFundraiser) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <main className="min-h-screen bg-background">
