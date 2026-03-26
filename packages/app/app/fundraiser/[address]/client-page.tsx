@@ -468,12 +468,17 @@ export default function FundraiserDetailPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Ticker in nav center slot */}
+      {/* Ticker in nav center slot — back arrow + ticker + price */}
       {navSlot && createPortal(
-        <div className="text-center">
-          <div className="font-display text-[13px] font-bold uppercase tracking-[-0.01em] text-black leading-none">{tokenSymbol}</div>
-          <div className="font-mono text-[11px] font-medium tabular-nums text-black/60 leading-none mt-0.5">{formatPrice(priceUsd)}</div>
-        </div>,
+        <>
+          <Link href="/explore" className="text-black/50 hover:text-black transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="text-center">
+            <div className="font-display text-[14px] font-bold uppercase tracking-[-0.01em] text-black leading-none">{tokenSymbol}</div>
+            <div className="font-mono text-[11px] font-medium tabular-nums text-black/50 leading-none mt-0.5">{formatPrice(priceUsd)}</div>
+          </div>
+        </>,
         navSlot
       )}
       <Particles className="!fixed inset-0 -z-10 bg-transparent" quantity={40} size={0.5} />
@@ -524,43 +529,21 @@ export default function FundraiserDetailPage() {
                   </div>
                 </div>
 
-                {/* Mobile: token info card — back arrow is in GlobalNav, share inline */}
-                <div className="lg:hidden">
-                  <div className={`slab-panel rounded-[var(--radius)] mb-3 flex items-center justify-between px-3 py-2.5`}>
-                    <div className="flex items-center gap-2.5">
-                      <TokenLogo name={tokenName} logoUrl={logoUrl} size="md-lg" />
-                      <div ref={tokenIdentityRef}>
-                        <div className="font-display text-[14px] font-medium uppercase tracking-[-0.02em]">{tokenSymbol}</div>
-                        <div className="text-[11px] text-muted-foreground">{tokenName}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-right">
-                        <div className="font-mono text-[18px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
-                          {hoverData && hoverData.value > 0
-                            ? formatPrice(hoverData.value)
-                            : formatPrice(priceUsd)}
-                        </div>
-                        {hoverData ? (
-                          <div className="text-[11px] font-medium font-mono text-muted-foreground mt-0.5">
-                            {new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                          </div>
-                        ) : (
-                          <div className={`text-[11px] font-medium font-mono mt-0.5 ${movementClass}`}>
-                            {`${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => {
-                          const url = typeof window !== "undefined" ? window.location.href : "";
-                          composeCast({ text: `Check out $${tokenSymbol} on give.fun`, embeds: [url] });
-                        }}
-                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]"
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                {/* Mobile: compact price + change row (ticker is in nav) */}
+                <div className="lg:hidden flex items-center justify-between mb-1" ref={tokenIdentityRef}>
+                  <div className="flex items-center gap-2">
+                    <TokenLogo name={tokenName} logoUrl={logoUrl} size="sm" />
+                    <span className="text-[13px] text-muted-foreground">{tokenName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[15px] font-semibold tabular-nums">
+                      {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
+                    </span>
+                    <span className={`text-[12px] font-mono font-medium ${movementClass}`}>
+                      {hoverData
+                        ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                        : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
+                    </span>
                   </div>
                 </div>
 
