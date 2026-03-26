@@ -41,6 +41,13 @@ export function GlobalNav() {
     setMenuOpen(false);
   }, [pathname]);
 
+  // Listen for "open-nav-menu" custom event (used by landing page Enter App)
+  useEffect(() => {
+    const handler = () => setMenuOpen(true);
+    window.addEventListener("open-nav-menu", handler);
+    return () => window.removeEventListener("open-nav-menu", handler);
+  }, []);
+
   // Body scroll lock
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
