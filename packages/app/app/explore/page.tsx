@@ -245,10 +245,7 @@ export default function ExplorePage() {
             <div className="sticky top-0 z-10 -mx-4 px-4 pb-3 lg:hidden"
               style={{ background: "linear-gradient(180deg, hsl(var(--background)) 80%, transparent 100%)" }}
             >
-              <h1 className="page-title mb-2">Explore</h1>
-              <p className="page-subtitle mb-3">
-                Discover fundraisers and mine coins by funding causes you care about.
-              </p>
+              {/* Title + subtitle hidden on mobile — page name is in the header */}
               <div className="relative mb-2">
                 <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
                 <input

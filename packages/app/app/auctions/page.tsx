@@ -49,8 +49,8 @@ export default function AuctionsPage() {
         {/* Header */}
         <div className="page-header lg:pt-[88px]">
           <div className="mx-auto w-full">
-            <h1 className="page-title">Auctions</h1>
-            <p className="page-subtitle">
+            <h1 className="page-title hidden lg:block">Auctions</h1>
+            <p className="page-subtitle hidden lg:block">
               Trade LP tokens for USDC rewards
             </p>
           </div>

@@ -398,8 +398,8 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="page-title">Profile</h1>
-          <p className="page-subtitle">Your portfolio, holdings, and launched fundraisers.</p>
+          <h1 className="page-title hidden lg:block">Profile</h1>
+          <p className="page-subtitle hidden lg:block">Your portfolio, holdings, and launched fundraisers.</p>
         </motion.div>
 
         {/* ── Mobile layout ── */}

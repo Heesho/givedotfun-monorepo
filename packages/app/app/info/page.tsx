@@ -83,8 +83,8 @@ export default function InfoPage() {
         {/* Header */}
         <div className="page-header lg:pt-[88px]">
           <div className="mx-auto w-full">
-            <h1 className="page-title">About</h1>
-            <p className="page-subtitle">How give.fun works and why it matters.</p>
+            <h1 className="page-title hidden lg:block">About</h1>
+            <p className="page-subtitle hidden lg:block">How give.fun works and why it matters.</p>
           </div>
         </div>
 

@@ -547,8 +547,8 @@ export default function LaunchPage() {
         {/* Header */}
         <div className="page-header lg:pt-[88px]">
           <div className="mx-auto w-full">
-            <h1 className="page-title">Launch</h1>
-            <p className="page-subtitle">Create a fundraiser and start accepting funding.</p>
+            <h1 className="page-title hidden lg:block">Launch</h1>
+            <p className="page-subtitle hidden lg:block">Create a fundraiser and start accepting funding.</p>
           </div>
         </div>
 
