@@ -28,12 +28,15 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  // Using margin-top instead of transform for the slide-up effect
+  // because transform on a parent breaks position:fixed on children
+  // (fixed elements become relative to the transformed parent)
   return (
     <div
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+        marginTop: visible ? 0 : 40,
+        transition: "opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), margin-top 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
       {children}
