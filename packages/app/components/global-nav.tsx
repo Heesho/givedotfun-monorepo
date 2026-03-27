@@ -20,7 +20,6 @@ function getPageName(pathname: string): string | null {
   if (pathname === "/info") return "About";
   if (pathname === "/profile") return "Profile";
   if (pathname.startsWith("/fundraiser/")) return null; // fundraiser injects its own title
-  if (pathname === "/auctions") return "Auctions";
   return null;
 }
 

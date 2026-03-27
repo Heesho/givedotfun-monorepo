@@ -467,8 +467,8 @@ export default function ExplorePage() {
                         key={coin.address}
                         layout
                         transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
                         <CoinCard

@@ -9,7 +9,6 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { CONTRACT_ADDRESSES, ERC20_ABI, MOCK_MINT_ABI, QUOTE_TOKEN_DECIMALS } from "@/lib/contracts";
 import type { UserHolding, UserLaunchedFundraiser } from "@/hooks/useUserProfile";
 import { Wallet, Rocket, Search, X } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { TokenLogo } from "@/components/token-logo";
 import { useSparklineData } from "@/hooks/useSparklineData";
@@ -391,19 +390,8 @@ export default function ProfilePage() {
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        {/* Desktop Header */}
-        <div className="page-header pt-2 lg:pt-[88px]">
-          <h1 className="page-title hidden lg:block">Profile</h1>
-          <p className="page-subtitle hidden lg:block">Your portfolio, holdings, and launched fundraisers.</p>
-        </div>
-
         {/* ── Mobile layout ── */}
-        <motion.div
-          className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 pt-2 lg:hidden"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        >
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-2 pt-2 lg:hidden">
           <div className="space-y-3">
             {/* User card — consolidated */}
             <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
@@ -514,15 +502,10 @@ export default function ProfilePage() {
               </>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* ── Desktop layout (explore-style) ── */}
-        <motion.div
-          className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-6 pt-24"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <div className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-6 pt-24">
           <div className="mx-auto w-full">
             {/* Header row: title left, tabs + search right */}
             <div className="flex items-end justify-between gap-8">
@@ -746,7 +729,7 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </main>
   );

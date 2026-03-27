@@ -1026,7 +1026,7 @@ export default function FundraiserDetailPage() {
               </div>{/* end left column */}
 
               {/* RIGHT COLUMN — desktop sidebar */}
-              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-[72px] lg:self-start">
+              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:-mt-14 lg:sticky lg:top-[72px] lg:self-start">
 
                 {/* Fundraiser image — desktop only */}
                 {logoUrl && (

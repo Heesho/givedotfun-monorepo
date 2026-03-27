@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 const INFO_SECTIONS = [
   {
     title: "What is give.fun?",
@@ -89,12 +87,7 @@ export default function InfoPage() {
         </div>
 
         {/* Mobile: glass cards stacked */}
-        <motion.div
-          className="flex-1 scrollbar-hide pb-3 pt-2 lg:hidden"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <div className="flex-1 scrollbar-hide pb-3 pt-2 lg:hidden">
           <div className="mx-auto w-full space-y-4">
             {INFO_SECTIONS.map((section, index) => (
               <div
@@ -121,15 +114,10 @@ export default function InfoPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Desktop: card grid */}
-        <motion.div
-          className="hidden lg:block flex-1 scrollbar-hide pb-6 pt-2"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
+        <div className="hidden lg:block flex-1 scrollbar-hide pb-6 pt-2">
           <div className="mx-auto w-full grid grid-cols-2 xl:grid-cols-3 gap-5">
             {INFO_SECTIONS.map((section, index) => (
               <div
@@ -156,7 +144,7 @@ export default function InfoPage() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </main>
   );
