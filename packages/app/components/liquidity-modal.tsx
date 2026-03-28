@@ -261,6 +261,12 @@ export function LiquidityModal({
             <p className="text-[13px] text-muted-foreground mt-1">
               Provide {tokenSymbol} and USDC to get LP tokens
             </p>
+            <button
+              onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
+              className="mt-1 signal-hover text-[13px] text-muted-foreground font-mono tabular-nums text-left"
+            >
+              {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} {tokenSymbol} available
+            </button>
           </div>
 
           {/* Desktop: text input */}
@@ -294,15 +300,7 @@ export function LiquidityModal({
                 {tokenAmount} {tokenSymbol}
               </span>
             </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-[11px] text-muted-foreground">{tokenSymbol}</span>
-              <button
-                onClick={() => setTokenAmount(tokenBalance.toFixed(2))}
-                className="signal-hover text-[11px] text-muted-foreground font-mono tabular-nums"
-              >
-                Balance: {tokenBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </button>
-            </div>
+            <div className="mt-1 text-[11px] text-muted-foreground">{tokenSymbol}</div>
           </div>
 
           {/* Required USDC */}
@@ -314,7 +312,7 @@ export function LiquidityModal({
               </span>
             </div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-[11px] text-muted-foreground">USDC</span>
+              <span />
               <button
                 onClick={() => {
                   if (tokenPrice <= 0) return;
@@ -329,13 +327,11 @@ export function LiquidityModal({
           </div>
 
           {/* LP Output */}
-          {tokenInputAmount > 0 && (
-            <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums">
-              <span>
-                You receive ~ {lpTokensReceived.toFixed(2)} LP tokens
-              </span>
-            </div>
-          )}
+          <div className="flex items-center justify-end gap-3 py-3 text-[11px] text-muted-foreground font-mono tabular-nums min-h-[44px]">
+            <span>
+              You receive ~ {lpTokensReceived.toFixed(2)} LP tokens
+            </span>
+          </div>
 
           {/* Spacer — mobile only */}
           <div className="flex-1 lg:hidden" />

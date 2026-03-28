@@ -74,15 +74,19 @@ export default function InfoPage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
         }}
       >
         {/* Header */}
-        <div className="page-header pt-2 lg:pt-[88px]">
+        <div className="pb-3 pt-2 lg:pt-[88px]">
           <div className="mx-auto w-full">
-            <h1 className="page-title hidden lg:block">About</h1>
-            <p className="page-subtitle hidden lg:block">How give.fun works and why it matters.</p>
+            <h1 className="hidden font-display text-[2.75rem] font-semibold leading-[0.9] tracking-[-0.04em] lg:block">
+              About
+            </h1>
+            <p className="mt-2 hidden text-[14px] leading-relaxed text-muted-foreground lg:block">
+              How give.fun works and why it matters.
+            </p>
           </div>
         </div>
 

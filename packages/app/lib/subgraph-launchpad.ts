@@ -32,6 +32,7 @@ export type SubgraphFundraiser = {
     price: string; // BigDecimal (in USDC)
     marketCap: string; // BigDecimal (in USDC)
     liquidity: string; // BigDecimal (USDC in LP)
+    volume24h: string; // BigDecimal (USDC)
     totalSupply: string; // BigDecimal
     totalMinted: string; // BigDecimal
     lastActivityAt: string; // BigInt timestamp
@@ -145,6 +146,7 @@ const FUNDRAISER_FIELDS = `
     price
     marketCap
     liquidity
+    volume24h
     totalSupply
     totalMinted
     lastActivityAt

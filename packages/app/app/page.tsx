@@ -10,6 +10,21 @@ const blurbs = [
   "Put your money where your values are. Mine the proof.",
 ] as const;
 
+const landingPartners = [
+  {
+    label: "GlazeCorp",
+    href: "https://give.fun",
+    logoSrc: "/media/landing-givefun-logo.png",
+    logoAlt: "GlazeCorp",
+  },
+  {
+    label: "stickr.net",
+    href: "https://stickr.net/",
+    logoSrc: "/media/landing-stickrnet-logo.png",
+    logoAlt: "stickr.net",
+  },
+] as const;
+
 export default function LandingPage() {
   const [blurbIndex, setBlurbIndex] = useState(0);
 
@@ -66,13 +81,32 @@ export default function LandingPage() {
             </AnimatePresence>
           </div>
 
-          {/* CTA button — opens nav menu */}
-          <button
-            onClick={handleEnter}
-            className="btn-liquid-glass inline-flex items-center justify-center px-8 py-3.5 text-[12px] font-semibold tracking-[0.02em] text-white w-fit"
-          >
-            Enter App
-          </button>
+          {/* CTA row */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button
+              onClick={handleEnter}
+              className="btn-liquid-glass inline-flex items-center justify-center w-[100px] sm:w-[140px] h-[40px] sm:h-[48px] text-[11px] sm:text-[12px] font-semibold tracking-[0.02em] text-white"
+            >
+              Enter App
+            </button>
+
+            {landingPartners.map((partner) => (
+              <a
+                key={partner.label}
+                href={partner.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-liquid-glass inline-flex items-center justify-center gap-1.5 sm:gap-2 w-[110px] sm:w-[140px] h-[40px] sm:h-[48px] text-[11px] sm:text-[12px] font-semibold tracking-[0.02em] text-white"
+              >
+                <img
+                  src={partner.logoSrc}
+                  alt={partner.logoAlt}
+                  className="h-6 w-6 sm:h-8 sm:w-8 object-contain"
+                />
+                <span>{partner.label}</span>
+              </a>
+            ))}
+          </div>
         </motion.div>
       </div>
     </main>

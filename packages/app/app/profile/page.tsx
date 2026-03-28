@@ -186,11 +186,11 @@ function ProfileSkeleton() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
-        <div className="page-header lg:pt-[88px]">
+        <div className="pb-3 pt-2 lg:pt-[88px]">
           <div className="mx-auto w-full">
             <div className="mb-3">
               <div className="mb-2 h-3 w-24 bg-secondary animate-pulse" />
@@ -386,7 +386,7 @@ export default function ProfilePage() {
       <div
         className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 76px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         }}
       >
@@ -505,7 +505,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Desktop layout (explore-style) ── */}
-        <div className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-6 pt-24">
+        <div className="hidden lg:block flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-6 pt-[88px]">
           <div className="mx-auto w-full">
             {/* Header row: title left, tabs + search right */}
             <div className="flex items-end justify-between gap-8">
