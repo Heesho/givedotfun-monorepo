@@ -1030,8 +1030,12 @@ export default function FundraiserDetailPage() {
 
                 {/* Fundraiser image — desktop only */}
                 {logoUrl && (
-                  <div className="slab-panel rounded-[var(--radius)] mb-4 overflow-hidden">
-                    <img src={logoUrl} alt={tokenName} className="w-full h-auto object-cover" style={{ maxHeight: "220px" }} />
+                  <div className="slab-panel rounded-[var(--radius)] mb-4 overflow-hidden bg-[hsl(var(--foreground)/0.03)]">
+                    <img
+                      src={logoUrl}
+                      alt={tokenName}
+                      className="block h-[220px] w-full object-contain object-top"
+                    />
                   </div>
                 )}
 
