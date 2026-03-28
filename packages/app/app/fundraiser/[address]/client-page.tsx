@@ -1031,13 +1031,11 @@ export default function FundraiserDetailPage() {
                 {/* Fundraiser image — desktop only */}
                 {logoUrl && (
                   <div className="slab-panel rounded-[var(--radius)] mb-4 overflow-hidden bg-[hsl(var(--foreground)/0.03)]">
-                    <div className="flex h-[220px] items-center justify-center px-3 py-3">
-                      <img
-                        src={logoUrl}
-                        alt={tokenName}
-                        className="block max-h-full w-auto max-w-full object-contain"
-                      />
-                    </div>
+                    <img
+                      src={logoUrl}
+                      alt={tokenName}
+                      className="block h-[220px] w-full object-cover object-top"
+                    />
                   </div>
                 )}
 
