@@ -545,7 +545,7 @@ export default function LaunchPage() {
         }}
       >
         {/* Header */}
-        <div className="pb-3 pt-2 lg:pt-[88px]">
+        <div className="hidden pb-3 lg:block lg:pt-[88px]">
           <div className="mx-auto w-full">
             <h1 className="hidden font-display text-[2.75rem] font-semibold leading-[0.9] tracking-[-0.04em] lg:block">
               Launch
@@ -557,7 +557,7 @@ export default function LaunchPage() {
         </div>
 
         {/* Mobile: single column */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide pt-2 lg:hidden">
+        <div className="flex-1 overflow-y-auto scrollbar-hide lg:hidden">
           <div className="mx-auto w-full max-w-[1040px] space-y-4 pb-6">
             <div className="slab-panel rounded-[var(--radius)] px-4 py-4 space-y-3">
               {identitySection}
