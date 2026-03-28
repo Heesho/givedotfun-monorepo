@@ -101,7 +101,7 @@ function FundraiserImageCard({
   className?: string;
 }) {
   return (
-    <div className={`slab-panel rounded-[var(--radius)] h-[220px] overflow-hidden bg-[#a9a6a0] ${className}`}>
+    <div className={`slab-panel rounded-[var(--radius)] w-full overflow-hidden bg-[#a9a6a0] ${className}`}>
       <img
         src={logoUrl}
         alt={tokenName}
@@ -507,41 +507,36 @@ export default function FundraiserDetailPage() {
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-2 pb-4 lg:pt-0 lg:pb-16">
           <div className="mx-auto w-full">
 
-            {/* Desktop top row */}
-            <div className="hidden lg:flex lg:items-start lg:gap-6 lg:mb-2">
-              <div className="lg:flex-1 lg:min-w-0 lg:flex lg:items-start lg:justify-between">
-                <div className="flex items-center gap-2">
-                  <button onClick={() => router.back()} className="rounded-[var(--radius)] p-1.5 text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.06)] hover:text-foreground">
-                    <ArrowLeft className="w-4 h-4" />
-                  </button>
-                  <div>
-                    <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
-                    <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono text-[26px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
-                    {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
-                  </div>
-                  <div className="mt-1 flex items-center justify-end gap-3 text-[13px]">
-                    <span className={`font-medium font-mono ${movementClass}`}>
-                      {hoverData
-                        ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-                        : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {logoUrl && (
-                <FundraiserImageCard logoUrl={logoUrl} tokenName={tokenName} className="w-[380px] shrink-0" />
-              )}
-            </div>
-
             {/* Two-column flex layout */}
             <div className="lg:flex lg:gap-6">
 
               {/* LEFT COLUMN */}
               <div className="lg:flex-1 lg:min-w-0">
+
+                {/* Desktop: token header + price inside chart section */}
+                <div className="hidden lg:flex lg:items-start lg:justify-between lg:gap-6 lg:mb-2">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => router.back()} className="rounded-[var(--radius)] p-1.5 text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.06)] hover:text-foreground">
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                      <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
+                      <div className="text-[13px] text-muted-foreground">{tokenName}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-[26px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
+                      {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
+                    </div>
+                    <div className="mt-1 flex items-center justify-end gap-3 text-[13px]">
+                      <span className={`font-medium font-mono ${movementClass}`}>
+                        {hoverData
+                          ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Mobile: back arrow + token + price in one row */}
                 <div className="lg:hidden flex items-center justify-between mb-2 py-1" ref={tokenIdentityRef}>
@@ -630,8 +625,8 @@ export default function FundraiserDetailPage() {
                   <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <div className="font-semibold text-[16px] font-display tracking-[-0.02em]">Today's Mining Pool</div>
-                        <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today's coin rewards</div>
+                        <div className="font-semibold text-[16px] font-display tracking-[-0.02em]">Today&apos;s Mining Pool</div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">Fund USDC to earn a share of today&apos;s coin rewards</div>
                       </div>
                       <div className="text-[12px] tabular-nums font-mono text-muted-foreground text-right shrink-0">
                         {epochEndsIn > 0 ? formatCountdown(epochEndsIn) : "\u2014"}
@@ -1044,7 +1039,16 @@ export default function FundraiserDetailPage() {
               </div>{/* end left column */}
 
               {/* RIGHT COLUMN — desktop sidebar */}
-              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-[72px] lg:self-start">
+              <div className="hidden lg:block lg:w-[420px] xl:w-[460px] lg:shrink-0">
+                {logoUrl && (
+                  <FundraiserImageCard
+                    logoUrl={logoUrl}
+                    tokenName={tokenName}
+                    className="mb-6 h-[360px] xl:h-[420px]"
+                  />
+                )}
+
+                <div className="lg:sticky lg:top-[72px] lg:self-start">
 
                 {/* Mining Pool Section */}
                 <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
@@ -1411,6 +1415,7 @@ export default function FundraiserDetailPage() {
                   </div>
                 </div>
 
+                </div>
               </div>{/* end right column / desktop sidebar */}
 
             </div>{/* end two-column flex */}

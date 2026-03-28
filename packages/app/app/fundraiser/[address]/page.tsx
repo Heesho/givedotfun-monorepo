@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getFundraiser } from "@/lib/subgraph-launchpad";
+import { getFundraiserMetadata } from "@/lib/fundraiser-metadata";
 import FundraiserDetailPage from "./client-page";
 
 const appDomain = process.env.NEXT_PUBLIC_APP_URL || "https://givedotfun.vercel.app";
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const fundraiserAddress = address.toLowerCase();
 
   // Fetch fundraiser info from subgraph
-  const fundraiser = await getFundraiser(fundraiserAddress);
+  const fundraiser = await getFundraiserMetadata(fundraiserAddress);
 
   const tokenSymbol = fundraiser?.coin?.symbol || "TOKEN";
   const fundraiserUrl = `${appDomain}/fundraiser/${fundraiserAddress}`;
