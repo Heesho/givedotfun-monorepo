@@ -17,7 +17,6 @@ import { Leaderboard } from "@/components/leaderboard";
 import { useFundraiserState } from "@/hooks/useFundraiserState";
 import { useTokenMetadata } from "@/hooks/useMetadata";
 import { useFarcaster, composeCast } from "@/hooks/useFarcaster";
-import { useDexScreener } from "@/hooks/useDexScreener";
 import { usePriceHistory } from "@/hooks/usePriceHistory";
 import { useFundHistory } from "@/hooks/useFundHistory";
 import { useRigLeaderboard } from "@/hooks/useRigLeaderboard";
@@ -90,6 +89,26 @@ function formatCountdown(seconds: number): string {
   if (h > 0) return `${h}h ${m}m`;
   if (m > 0) return `${m}m ${s}s`;
   return `${s}s`;
+}
+
+function FundraiserImageCard({
+  logoUrl,
+  tokenName,
+  className = "",
+}: {
+  logoUrl: string;
+  tokenName: string;
+  className?: string;
+}) {
+  return (
+    <div className={`slab-panel rounded-[var(--radius)] h-[220px] overflow-hidden bg-[#a9a6a0] ${className}`}>
+      <img
+        src={logoUrl}
+        alt={tokenName}
+        className="block h-full w-full object-cover object-top"
+      />
+    </div>
+  );
 }
 
 // Loading skeleton for the page
@@ -212,12 +231,6 @@ export default function FundraiserDetailPage() {
   // Fetch token metadata from IPFS
   const { metadata, logoUrl } = useTokenMetadata(fundraiserUri);
 
-  // Fetch DexScreener data for liquidity/volume/price change
-  const { pairData } = useDexScreener(
-    fundraiserAddress,
-    coinAddress,
-  );
-
   // Donation history and leaderboard
   const { donations, isLoading: isHistoryLoading } = useFundHistory(address, 10);
 
@@ -275,12 +288,14 @@ export default function FundraiserDetailPage() {
     ? Number(formatUnits(accountUsdcBalance, QUOTE_TOKEN_DECIMALS))
     : 0;
 
-  // Stats from subgraph (primary) + DexScreener (fallback)
-  // Multiply by 2 since subgraph liquidity is just USDC side of the pool
+  // Stats from subgraph only.
+  // Multiply by 2 since subgraph liquidity is just the USDC side of the pool.
   const liquidityUsd = subgraphFundraiser?.coin?.liquidity
     ? parseFloat(subgraphFundraiser.coin.liquidity) * 2
-    : (pairData?.liquidity?.usd ?? 0);
-  const volume24h = pairData?.volume?.h24 ?? 0;
+    : 0;
+  const volume24h = subgraphFundraiser?.coin?.volume24h
+    ? parseFloat(subgraphFundraiser.coin.volume24h)
+    : 0;
 
   // Revenue from subgraph (BigDecimal strings already in quote token units)
   const treasuryRevenue = subgraphFundraiser?.treasuryRevenue
@@ -486,44 +501,47 @@ export default function FundraiserDetailPage() {
         }}
       >
         {/* Desktop spacer for fixed header */}
-        <div className="hidden lg:block lg:pt-[88px]" />
+        <div className="hidden lg:block lg:pt-[112px]" />
 
         {/* Scroll container */}
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide pt-2 pb-4 lg:pt-0 lg:pb-16">
           <div className="mx-auto w-full">
+
+            {/* Desktop top row */}
+            <div className="hidden lg:flex lg:items-start lg:gap-6 lg:mb-2">
+              <div className="lg:flex-1 lg:min-w-0 lg:flex lg:items-start lg:justify-between">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => router.back()} className="rounded-[var(--radius)] p-1.5 text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.06)] hover:text-foreground">
+                    <ArrowLeft className="w-4 h-4" />
+                  </button>
+                  <div>
+                    <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
+                    <div className="text-[13px] text-muted-foreground">{tokenName}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono text-[26px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
+                    {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
+                  </div>
+                  <div className="mt-1 flex items-center justify-end gap-3 text-[13px]">
+                    <span className={`font-medium font-mono ${movementClass}`}>
+                      {hoverData
+                        ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                        : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {logoUrl && (
+                <FundraiserImageCard logoUrl={logoUrl} tokenName={tokenName} className="w-[380px] shrink-0" />
+              )}
+            </div>
 
             {/* Two-column flex layout */}
             <div className="lg:flex lg:gap-6">
 
               {/* LEFT COLUMN */}
               <div className="lg:flex-1 lg:min-w-0">
-
-                {/* Desktop: back + ticker left, price right */}
-                <div className="hidden lg:flex lg:items-start lg:justify-between lg:mb-2">
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => router.back()} className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] p-1.5 transition-colors hover:bg-[hsl(var(--foreground)/0.06)]">
-                      <ArrowLeft className="w-4 h-4" />
-                    </button>
-                    <div>
-                      <div className="font-display text-[22px] font-semibold uppercase tracking-[-0.03em]">{tokenSymbol}</div>
-                      <div className="text-[13px] text-muted-foreground">{tokenName}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-mono text-[26px] font-semibold tabular-nums leading-none tracking-[-0.02em]">
-                      {hoverData && hoverData.value > 0 ? formatPrice(hoverData.value) : formatPrice(priceUsd)}
-                    </div>
-                    <div className="mt-1 flex items-center justify-end gap-3 text-[13px]">
-                      <span className={`font-medium font-mono ${movementClass}`}>
-                        {hoverData
-                          ? new Date(hoverData.time * 1000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-                          : `${displayChange >= 0 ? "+" : ""}${displayChange.toFixed(2)}%`}
-                      </span>
-                      <span className="text-muted-foreground/40">|</span>
-                      <span className="text-muted-foreground">Mcap <span className="text-foreground font-mono">{formatMarketCap(marketCapUsd)}</span></span>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Mobile: back arrow + token + price in one row */}
                 <div className="lg:hidden flex items-center justify-between mb-2 py-1" ref={tokenIdentityRef}>
@@ -580,11 +598,11 @@ export default function FundraiserDetailPage() {
                       <button
                         key={tf}
                         onClick={() => setTimeframe(tf)}
-                        className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] px-2 py-2 text-[12px] font-medium font-mono transition-all ${
+                        className={`border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] min-w-[40px] px-2 py-2 text-[12px] font-medium font-mono transition-all ${
                           timeframe === tf
                             ? displayChange >= 0
-                              ? "bg-primary text-primary-foreground shadow-glass"
-                              : "bg-loss text-loss-foreground shadow-glass"
+                              ? "bg-primary text-black shadow-glass"
+                              : "bg-loss text-black shadow-glass"
                             : "bg-secondary text-muted-foreground hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
                         }`}
                       >
@@ -596,8 +614,8 @@ export default function FundraiserDetailPage() {
                   <div className="hidden lg:flex lg:gap-2">
                     {isConnected ? (
                       <>
-                        <button onClick={() => { setTradeMode("buy"); setShowTradeModal(true); }} className="slab-button rounded-[var(--radius)] px-6 text-[11px]">Buy</button>
-                        <button onClick={() => { setTradeMode("sell"); setShowTradeModal(true); }} disabled={userCoinBalance <= 0} className={`slab-button slab-button-loss rounded-[var(--radius)] px-6 text-[11px] ${userCoinBalance <= 0 ? "opacity-50" : ""}`}>Sell</button>
+                        <button onClick={() => { setTradeMode("buy"); setShowTradeModal(true); }} className="slab-button rounded-[var(--radius)] min-w-[92px] px-8 text-[11px]">Buy</button>
+                        <button onClick={() => { setTradeMode("sell"); setShowTradeModal(true); }} disabled={userCoinBalance <= 0} className={`slab-button slab-button-loss rounded-[var(--radius)] min-w-[92px] px-8 text-[11px] ${userCoinBalance <= 0 ? "opacity-50" : ""}`}>Sell</button>
                       </>
                     ) : (
                       <button onClick={() => connect()} disabled={isConnecting || isInFrame === true} className="slab-button rounded-[var(--radius)] px-8 text-[11px] disabled:opacity-50">{isConnecting ? "Connecting..." : "Connect Wallet"}</button>
@@ -1026,18 +1044,7 @@ export default function FundraiserDetailPage() {
               </div>{/* end left column */}
 
               {/* RIGHT COLUMN — desktop sidebar */}
-              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:-mt-14 lg:sticky lg:top-[72px] lg:self-start">
-
-                {/* Fundraiser image — desktop only */}
-                {logoUrl && (
-                  <div className="slab-panel rounded-[var(--radius)] mb-4 overflow-hidden bg-[hsl(var(--foreground)/0.03)]">
-                    <img
-                      src={logoUrl}
-                      alt={tokenName}
-                      className="block h-[220px] w-full object-cover object-top"
-                    />
-                  </div>
-                )}
+              <div className="hidden lg:block lg:w-[380px] lg:shrink-0 lg:sticky lg:top-[72px] lg:self-start">
 
                 {/* Mining Pool Section */}
                 <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">

@@ -63,6 +63,13 @@ function addCommas(s: string): string {
   return dec !== undefined ? `${withCommas}.${dec}` : withCommas;
 }
 
+function truncateDecimals(value: string, maxDecimals: number): string {
+  const [whole, dec] = value.split(".");
+  if (!dec || maxDecimals <= 0) return whole;
+  const trimmed = dec.slice(0, maxDecimals).replace(/0+$/, "");
+  return trimmed ? `${whole}.${trimmed}` : whole;
+}
+
 // Number pad button component
 function NumPadButton({
   value,
@@ -167,6 +174,13 @@ export function TradeModal({
   const availableDisplay = isBuy
     ? `$${Number(displayBalance).toFixed(2)} available`
     : `${formatCoin(Number(displayBalance))} ${tokenSymbol} available`;
+
+  const maxFillAmount = useMemo(() => {
+    const rawBalance = isBuy
+      ? formatUnits(userQuoteBalance, QUOTE_TOKEN_DECIMALS)
+      : formatEther(userUnitBalance);
+    return truncateDecimals(rawBalance, isBuy ? 2 : 6);
+  }, [isBuy, userQuoteBalance, userUnitBalance]);
 
   // ---- Allowance check (skip approve if sufficient) -----------------------
   const routerAddress = CONTRACT_ADDRESSES.uniV2Router as `0x${string}`;
@@ -434,9 +448,13 @@ export function TradeModal({
             <h1 className="text-2xl font-semibold font-display tracking-tight lg:text-xl">
               {isBuy ? "Buy" : "Sell"} {tokenSymbol}
             </h1>
-            <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
+            <button
+              type="button"
+              onClick={() => setAmount(maxFillAmount)}
+              className="mt-1 signal-hover text-[13px] text-left text-muted-foreground font-mono tabular-nums"
+            >
               {availableDisplay}
-            </p>
+            </button>
           </div>
 
           {/* Desktop: text input for amount */}

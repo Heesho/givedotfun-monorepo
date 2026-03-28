@@ -44,6 +44,13 @@ function addCommas(s: string): string {
   return dec !== undefined ? `${withCommas}.${dec}` : withCommas;
 }
 
+function truncateDecimals(value: string, maxDecimals: number): string {
+  const [whole, dec] = value.split(".");
+  if (!dec || maxDecimals <= 0) return whole;
+  const trimmed = dec.slice(0, maxDecimals).replace(/0+$/, "");
+  return trimmed ? `${whole}.${trimmed}` : whole;
+}
+
 function NumPadButton({
   value,
   onClick,
@@ -130,6 +137,10 @@ export function MineModal({
   // User USDC balance
   const userBalance = fundraiserState?.accountQuoteBalance ?? 0n;
   const displayBalance = Number(formatUnits(userBalance, QUOTE_TOKEN_DECIMALS));
+  const maxFillAmount = useMemo(
+    () => truncateDecimals(formatUnits(userBalance, QUOTE_TOKEN_DECIMALS), 2),
+    [userBalance]
+  );
   const insufficientBalance = parsedInput > 0n && parsedInput > userBalance;
 
   // Current epoch pool stats
@@ -290,9 +301,13 @@ export function MineModal({
             <h1 className="text-2xl font-semibold font-display tracking-tight lg:text-xl">
               Mine {tokenSymbol}
             </h1>
-            <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
+            <button
+              type="button"
+              onClick={() => setAmount(maxFillAmount)}
+              className="mt-1 signal-hover text-[13px] text-left text-muted-foreground font-mono tabular-nums"
+            >
               ${displayBalance.toFixed(2)} available
-            </p>
+            </button>
           </div>
 
           {/* Desktop: text input */}
