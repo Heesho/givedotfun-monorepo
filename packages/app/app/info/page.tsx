@@ -79,7 +79,7 @@ export default function InfoPage() {
         }}
       >
         {/* Header */}
-        <div className="pb-3 pt-2 lg:pt-[88px]">
+        <div className="hidden pb-3 lg:block lg:pt-[88px]">
           <div className="mx-auto w-full">
             <h1 className="hidden font-display text-[2.75rem] font-semibold leading-[0.9] tracking-[-0.04em] lg:block">
               About
@@ -91,7 +91,7 @@ export default function InfoPage() {
         </div>
 
         {/* Mobile: glass cards stacked */}
-        <div className="flex-1 scrollbar-hide pb-3 pt-2 lg:hidden">
+        <div className="flex-1 scrollbar-hide pb-3 lg:hidden">
           <div className="mx-auto w-full space-y-4">
             {INFO_SECTIONS.map((section, index) => (
               <div
