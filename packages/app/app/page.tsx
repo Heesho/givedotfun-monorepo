@@ -13,13 +13,13 @@ const blurbs = [
 const landingPartners = [
   {
     label: "GlazeCorp",
-    href: "https://give.fun",
+    href: "https://glazecorp.io/",
     logoSrc: "/media/landing-givefun-logo.png",
     logoAlt: "GlazeCorp",
   },
   {
     label: "stickr.net",
-    href: "https://stickr.net/",
+    href: "https://stickrnet.vercel.app/",
     logoSrc: "/media/landing-stickrnet-logo.png",
     logoAlt: "stickr.net",
   },
