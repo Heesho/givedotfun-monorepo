@@ -221,6 +221,18 @@
     box-shadow: 0 22px 56px hsl(var(--primary-foreground) / 0.08);
   }
 
+  .glass-modal-shell {
+    @apply relative flex h-full w-full max-w-[520px] flex-col lg:h-auto;
+    border-radius: 0;
+    background-clip: padding-box;
+  }
+
+  @media (min-width: 1024px) {
+    .glass-modal-shell {
+      border-radius: var(--radius);
+    }
+  }
+
   /* Liquid glass button — Apple-style frosted glass */
   .btn-liquid-glass {
     position: relative;
