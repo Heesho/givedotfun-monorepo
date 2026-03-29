@@ -267,8 +267,8 @@ Account for fixed nav + safe area:
 
 ### Modals / Sheets
 
-- **Mobile:** Full-screen with `bg-background` (solid, no glass — prevents white corner bleed)
-- **Desktop:** Centered with `glass-panel` + `rounded-[var(--radius)]`
+- **Mobile:** Full-screen glass shell with `glass-panel` + theme tint, square corners to avoid edge bleed
+- **Desktop:** Centered glass shell with `glass-panel` + `rounded-[var(--radius)]`
 - **Input rows:** `py-2.5` padding (compact)
 - **Number pad buttons:** Glass borders, `hsl(var(--foreground) / 0.1)`
 - **Backdrop:** Blur + fixed position, body scroll lock (`overflow: hidden`)
