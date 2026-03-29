@@ -48,7 +48,6 @@ export function AuctionModal({
   const { execute, status, error, reset } = useBatchedTransaction();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
 
   // Allowance check — skip approve when sufficient
   const lpTokenAddress = auctionState?.lpToken;
@@ -173,7 +172,7 @@ export function AuctionModal({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} glass-modal-shell lg:max-h-[90vh]`}
+        className={`${colorPositive ? "signal-theme-positive" : "signal-theme-negative"} glass-panel glass-modal-shell lg:max-h-[90vh]`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -212,7 +211,7 @@ export function AuctionModal({
               </div>
 
               {/* You Pay */}
-              <div className={`${signalSlabClass} px-3 py-4`}>
+              <div className="slab-inset px-3 py-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You pay</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
@@ -230,7 +229,7 @@ export function AuctionModal({
               </div>
 
               {/* You Receive */}
-              <div className={`${signalSlabClass} mt-2 px-3 py-4`}>
+              <div className="slab-inset mt-2 px-3 py-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You receive</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">

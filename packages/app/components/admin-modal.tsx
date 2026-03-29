@@ -80,7 +80,6 @@ export function AdminModal({
   initialLogoUrl,
   colorPositive = true,
 }: AdminModalProps) {
-  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
   // Metadata fields — initialized from parent's already-loaded IPFS data
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -295,7 +294,7 @@ export function AdminModal({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} glass-modal-shell lg:max-h-[80vh] lg:overflow-y-auto`}
+        className={`${colorPositive ? "signal-theme-positive" : "signal-theme-negative"} glass-panel glass-modal-shell lg:max-h-[80vh] lg:overflow-y-auto`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
@@ -316,7 +315,7 @@ export function AdminModal({
         {/* Scrollable Content */}
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-2 lg:px-5 lg:pt-0">
           <div className="space-y-4 pb-6">
-            <div className={`${signalSlabClass} px-3 py-3`}>
+            <div className="slab-panel px-3 py-3">
               <div className="section-kicker">Profile</div>
               <div className="mt-1 text-[13px] text-muted-foreground">
                 Update the coin identity, supporter message, and public links.
@@ -461,7 +460,7 @@ export function AdminModal({
               </button>
             </div>
 
-            <div className={`${signalSlabClass} px-3 py-3`}>
+            <div className="slab-panel px-3 py-3">
               <div className="section-kicker">Contract Settings</div>
               <div className="mt-1 text-[13px] text-muted-foreground">
                 Update the on-chain payout and treasury routing addresses.

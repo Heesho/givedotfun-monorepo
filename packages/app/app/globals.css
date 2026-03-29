@@ -228,17 +228,6 @@
     background-clip: padding-box;
   }
 
-  .glass-modal-shell::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.9;
-    background:
-      radial-gradient(circle at top left, hsl(var(--signal) / 0.18), transparent 38%),
-      linear-gradient(180deg, hsl(var(--foreground) / 0.08), transparent 40%);
-  }
-
   .glass-modal-shell::after {
     content: "";
     position: absolute;

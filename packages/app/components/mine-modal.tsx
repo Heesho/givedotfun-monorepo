@@ -91,7 +91,6 @@ export function MineModal({
   const { fundraiserState } = useFundraiserState(fundraiserAddress, account);
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
-  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
 
   // Lock scroll and restore position when modal opens (useLayoutEffect to run before paint)
   useLayoutEffect(() => {
@@ -278,7 +277,7 @@ export function MineModal({
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`${colorPositive ? "signal-theme-positive glass-panel glass-panel-positive" : "signal-theme-negative glass-panel glass-panel-negative"} glass-modal-shell lg:max-h-[90vh]`}
+        className={`${colorPositive ? "signal-theme-positive" : "signal-theme-negative"} glass-panel glass-modal-shell lg:max-h-[90vh]`}
         style={{
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
         }}
@@ -313,7 +312,7 @@ export function MineModal({
 
           {/* Desktop: text input */}
           <div className="hidden lg:block mb-4">
-            <div className={`${signalSlabClass} px-3 py-3`}>
+            <div className="slab-inset px-3 py-3">
               <label className="text-[12px] text-muted-foreground font-display mb-1.5 block">Amount (USD)</label>
               <div className="flex items-center gap-2">
                 <span className="text-[15px] text-muted-foreground">$</span>
@@ -338,7 +337,7 @@ export function MineModal({
           </div>
 
           {/* Mobile: amount display */}
-          <div className={`lg:hidden ${signalSlabClass} px-3 py-2.5`}>
+          <div className="lg:hidden slab-inset px-3 py-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -388,7 +387,7 @@ export function MineModal({
           <div className="flex-1 lg:hidden" />
 
           <div className="mb-3 sm:mb-4 lg:mt-2">
-            <div className={`${signalSlabClass} p-1`}>
+            <div className="slab-inset p-1">
               {/* Message input */}
               <input
                 type="text"
