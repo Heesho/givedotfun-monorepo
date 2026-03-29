@@ -48,6 +48,7 @@ export function AuctionModal({
   const { execute, status, error, reset } = useBatchedTransaction();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const signalSlabClass = colorPositive ? "signal-slab-positive" : "signal-slab-negative";
 
   // Allowance check — skip approve when sufficient
   const lpTokenAddress = auctionState?.lpToken;
@@ -178,7 +179,7 @@ export function AuctionModal({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
+        <div className="flex items-center justify-between px-4 pb-2 lg:px-5 lg:pb-3 lg:pt-2">
           <button
             onClick={onClose}
             className="border border-[hsl(var(--foreground)/0.1)] rounded-full -ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
@@ -190,7 +191,7 @@ export function AuctionModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col px-4">
+        <div className="flex-1 min-h-0 flex flex-col px-4 lg:px-5 lg:flex-initial">
           {/* Loading state */}
           {isLoading && (
             <div className="flex items-center justify-center py-10">
@@ -201,8 +202,8 @@ export function AuctionModal({
           {!isLoading && (
             <>
               {/* Title */}
-              <div className="mt-4 mb-6">
-                <h1 className="text-2xl font-semibold font-display tracking-tight">
+              <div className="mt-4 mb-6 lg:mt-2 lg:mb-4">
+                <h1 className="text-2xl font-semibold font-display tracking-tight lg:text-xl">
                   Buy USDC
                 </h1>
                 <p className="text-[13px] text-muted-foreground mt-1 font-mono tabular-nums">
@@ -211,7 +212,7 @@ export function AuctionModal({
               </div>
 
               {/* You Pay */}
-              <div className="slab-inset px-3 py-4">
+              <div className={`${signalSlabClass} px-3 py-4`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You pay</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">
@@ -229,7 +230,7 @@ export function AuctionModal({
               </div>
 
               {/* You Receive */}
-              <div className="slab-inset mt-2 px-3 py-4">
+              <div className={`${signalSlabClass} mt-2 px-3 py-4`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-muted-foreground font-display">You receive</span>
                   <span className="text-lg font-semibold font-mono tabular-nums">

@@ -91,6 +91,7 @@ export function MineModal({
   const { fundraiserState } = useFundraiserState(fundraiserAddress, account);
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
+  const signalSlabClass = colorPositive ? "signal-slab-positive" : "signal-slab-negative";
 
   // Lock scroll and restore position when modal opens (useLayoutEffect to run before paint)
   useLayoutEffect(() => {
@@ -312,7 +313,7 @@ export function MineModal({
 
           {/* Desktop: text input */}
           <div className="hidden lg:block mb-4">
-            <div className="slab-inset px-3 py-3">
+            <div className={`${signalSlabClass} px-3 py-3`}>
               <label className="text-[12px] text-muted-foreground font-display mb-1.5 block">Amount (USD)</label>
               <div className="flex items-center gap-2">
                 <span className="text-[15px] text-muted-foreground">$</span>
@@ -337,7 +338,7 @@ export function MineModal({
           </div>
 
           {/* Mobile: amount display */}
-          <div className="lg:hidden slab-inset px-3 py-2.5">
+          <div className={`lg:hidden ${signalSlabClass} px-3 py-2.5`}>
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">Pay</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
@@ -387,32 +388,34 @@ export function MineModal({
           <div className="flex-1 lg:hidden" />
 
           <div className="mb-3 sm:mb-4 lg:mt-2">
-            {/* Message input */}
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={defaultMessage}
-              maxLength={100}
-              className="field-input h-11 px-4 text-[14px]"
-            />
+            <div className={`${signalSlabClass} p-1`}>
+              {/* Message input */}
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={defaultMessage}
+                maxLength={100}
+                className="w-full rounded-[calc(var(--radius)-4px)] bg-[hsl(var(--foreground)/0.04)] px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:bg-[hsl(var(--foreground)/0.08)]"
+              />
 
-            {/* Action button */}
-            <button
-              disabled={buttonDisabled}
-              onClick={handleConfirm}
-              className={`-mt-px flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] ${
-                buttonDisabled
-                  ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
-                  : isSuccess
-                  ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
-                  : colorPositive ? "slab-button" : "slab-button slab-button-loss"
-              }`}
-            >
-              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isSuccess && <CheckCircle className="w-4 h-4" />}
-              {buttonLabel}
-            </button>
+              {/* Action button */}
+              <button
+                disabled={buttonDisabled}
+                onClick={handleConfirm}
+                className={`mt-1 flex h-11 w-full items-center justify-center gap-2 px-4 text-[11px] ${
+                  buttonDisabled
+                    ? colorPositive ? "slab-button opacity-50" : "slab-button slab-button-loss opacity-50"
+                    : isSuccess
+                    ? colorPositive ? "slab-button opacity-70" : "slab-button slab-button-loss opacity-70"
+                    : colorPositive ? "slab-button" : "slab-button slab-button-loss"
+                }`}
+              >
+                {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isSuccess && <CheckCircle className="w-4 h-4" />}
+                {buttonLabel}
+              </button>
+            </div>
           </div>
 
           {/* Number pad — mobile only */}

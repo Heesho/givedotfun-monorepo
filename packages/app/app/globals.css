@@ -223,6 +223,7 @@
 
   .glass-modal-shell {
     @apply relative flex h-full w-full max-w-[520px] flex-col lg:h-auto;
+    overflow: hidden;
     border-radius: 0;
     background-clip: padding-box;
   }
