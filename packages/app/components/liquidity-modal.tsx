@@ -297,10 +297,9 @@ export function LiquidityModal({
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground font-display">You provide</span>
               <span className="text-lg font-semibold font-mono tabular-nums">
-                {tokenAmount} {tokenSymbol}
+                {tokenAmount}
               </span>
             </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">{tokenSymbol}</div>
           </div>
 
           {/* Required USDC */}
