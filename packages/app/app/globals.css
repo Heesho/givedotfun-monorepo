@@ -224,8 +224,13 @@
   .glass-modal-shell {
     @apply relative flex h-full w-full max-w-[520px] flex-col lg:h-auto;
     overflow: hidden;
+    background: hsl(var(--background));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
     border-radius: 0;
     background-clip: padding-box;
+    box-shadow: none;
   }
 
   .glass-modal-shell::after {
@@ -234,9 +239,7 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.16),
-      inset 0 0 0 1px hsl(var(--foreground) / 0.04);
+    box-shadow: none;
   }
 
   .glass-modal-shell > * {
@@ -246,7 +249,18 @@
 
   @media (min-width: 1024px) {
     .glass-modal-shell {
+      background: hsl(var(--foreground) / 0.06);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid hsl(var(--foreground) / 0.1);
       border-radius: var(--radius);
+      box-shadow: 0 22px 56px hsl(var(--primary-foreground) / 0.08);
+    }
+
+    .glass-modal-shell::after {
+      box-shadow:
+        inset 0 1px 0 hsl(var(--foreground) / 0.16),
+        inset 0 0 0 1px hsl(var(--foreground) / 0.04);
     }
   }
 
