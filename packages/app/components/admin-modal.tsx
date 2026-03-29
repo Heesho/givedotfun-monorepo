@@ -80,6 +80,7 @@ export function AdminModal({
   initialLogoUrl,
   colorPositive = true,
 }: AdminModalProps) {
+  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
   // Metadata fields — initialized from parent's already-loaded IPFS data
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -301,7 +302,7 @@ export function AdminModal({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-2">
+        <div className="flex items-center justify-between px-4 pb-2 lg:px-5 lg:pb-3 lg:pt-2">
           <button
             onClick={onClose}
             className="border border-[hsl(var(--foreground)/0.1)] rounded-full -ml-2 p-2 transition-colors hover:bg-[hsl(var(--foreground)/0.08)]"
@@ -313,9 +314,9 @@ export function AdminModal({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-2">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 pt-2 lg:px-5 lg:pt-0">
           <div className="space-y-4 pb-6">
-            <div className="slab-panel px-3 py-3">
+            <div className={`${signalSlabClass} px-3 py-3`}>
               <div className="section-kicker">Profile</div>
               <div className="mt-1 text-[13px] text-muted-foreground">
                 Update the coin identity, supporter message, and public links.
@@ -460,7 +461,7 @@ export function AdminModal({
               </button>
             </div>
 
-            <div className="slab-panel px-3 py-3">
+            <div className={`${signalSlabClass} px-3 py-3`}>
               <div className="section-kicker">Contract Settings</div>
               <div className="mt-1 text-[13px] text-muted-foreground">
                 Update the on-chain payout and treasury routing addresses.
