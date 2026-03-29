@@ -84,7 +84,7 @@ export function MineModal({
   const { fundraiserState } = useFundraiserState(fundraiserAddress, account);
   const { metadata } = useTokenMetadata(fundraiserState?.fundraiserUri);
   const defaultMessage = metadata?.defaultMessage || "gm";
-  const signalSlabClass = colorPositive ? "signal-slab-positive" : "signal-slab-negative";
+  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
 
   // Lock scroll and restore position when modal opens (useLayoutEffect to run before paint)
   useLayoutEffect(() => {

@@ -48,7 +48,7 @@ export function AuctionModal({
   const { execute, status, error, reset } = useBatchedTransaction();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-  const signalSlabClass = colorPositive ? "signal-slab-positive" : "signal-slab-negative";
+  const signalSlabClass = colorPositive ? "slab-panel signal-slab-positive" : "slab-panel signal-slab-negative";
 
   // Allowance check — skip approve when sufficient
   const lpTokenAddress = auctionState?.lpToken;
