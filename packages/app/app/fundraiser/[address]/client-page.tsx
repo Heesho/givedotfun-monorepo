@@ -1068,7 +1068,7 @@ export default function FundraiserDetailPage() {
               </div>{/* end left column */}
 
               {/* RIGHT COLUMN — desktop sidebar */}
-              <div className="hidden lg:block lg:w-[420px] xl:w-[460px] lg:shrink-0">
+              <div className="hidden lg:block lg:w-[380px] lg:shrink-0">
                 {logoUrl && (
                   <FundraiserImageCard
                     logoUrl={logoUrl}
