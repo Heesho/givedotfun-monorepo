@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } fr
 import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Share2, Loader2, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Share2, Loader2, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatEther, formatUnits } from "viem";
 import { MineModal } from "@/components/mine-modal";
@@ -652,8 +652,57 @@ export default function FundraiserDetailPage() {
                     </p>
                   </div>
 
+                  {/* Inline links */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
+                    {coinAddress && (
+                        <a
+                          href={`https://basescan.org/token/${coinAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[12px] text-muted-foreground/70 transition-colors hover:text-foreground"
+                        >
+                          {tokenSymbol} <ArrowUpRight className="inline h-3 w-3" />
+                        </a>
+                      )}
+                      {subgraphFundraiser?.coin?.lpPair && (
+                        <a
+                          href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[12px] text-muted-foreground/70 transition-colors hover:text-foreground"
+                        >
+                          {tokenSymbol}-USDC LP <ArrowUpRight className="inline h-3 w-3" />
+                        </a>
+                      )}
+                      {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
+                        let label: string;
+                        try {
+                          const hostname = new URL(link).hostname.replace("www.", "");
+                          if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
+                          else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
+                          else if (hostname.includes("discord")) label = "Discord";
+                          else if (hostname.includes("github.com")) label = "GitHub";
+                          else if (hostname.includes("warpcast.com")) label = "Warpcast";
+                          else label = hostname;
+                        } catch {
+                          label = link;
+                        }
+                        return (
+                          <a
+                            key={i}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[12px] text-muted-foreground/70 transition-colors hover:text-foreground"
+                          >
+                            {label} <ArrowUpRight className="inline h-3 w-3" />
+                          </a>
+                        );
+                      })}
+                  </div>
+
                   {/* Fundraising metrics — 3 columns */}
-                  <div className="grid grid-cols-3 gap-6 mb-4">
+                  <div className="grid grid-cols-3 gap-6">
                     <div>
                       <div className="text-muted-foreground text-[11px] font-medium tracking-[0.04em] mb-1">Total Donated</div>
                       <div className="font-mono text-[22px] font-bold tabular-nums leading-none">
@@ -672,55 +721,6 @@ export default function FundraiserDetailPage() {
                         {totalSupporters > 0 ? totalSupporters.toLocaleString() : "0"}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Links */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {coinAddress && (
-                      <a
-                        href={`https://basescan.org/token/${coinAddress}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                      >
-                        {tokenSymbol}
-                      </a>
-                    )}
-                    {subgraphFundraiser?.coin?.lpPair && (
-                      <a
-                        href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                      >
-                        {tokenSymbol}-USDC LP
-                      </a>
-                    )}
-                    {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
-                      let label: string;
-                      try {
-                        const hostname = new URL(link).hostname.replace("www.", "");
-                        if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
-                        else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
-                        else if (hostname.includes("discord")) label = "Discord";
-                        else if (hostname.includes("github.com")) label = "GitHub";
-                        else if (hostname.includes("warpcast.com")) label = "Warpcast";
-                        else label = hostname;
-                      } catch {
-                        label = link;
-                      }
-                      return (
-                        <a
-                          key={i}
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                        >
-                          {label}
-                        </a>
-                      );
-                    })}
                   </div>
                 </div>
 
