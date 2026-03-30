@@ -305,6 +305,15 @@ export default function FundraiserDetailPage() {
     ? parseFloat(subgraphFundraiser.teamRevenue)
     : 0;
 
+  // Fundraising metrics
+  const totalDonatedUsd = subgraphFundraiser?.totalDonated
+    ? parseFloat(subgraphFundraiser.totalDonated)
+    : 0;
+  const totalDonatedToCause = totalDonatedUsd / 2;
+  const totalSupporters = subgraphFundraiser?.uniqueDonors
+    ? parseInt(subgraphFundraiser.uniqueDonors)
+    : 0;
+
   // Launcher address from subgraph
   const launcherAddress = subgraphFundraiser?.launcher?.id || null;
 
@@ -388,6 +397,7 @@ export default function FundraiserDetailPage() {
   const costPerToken = currentEpochTotalDonated > 0
     ? currentEpochTotalDonated / currentEpochEmission
     : 0;
+  const projectedDailyDonation = (currentEpochEmission * priceUsd) / 2;
 
   // Pending claims
   const pendingTokens = Number(formatEther(totalPending));
@@ -618,6 +628,102 @@ export default function FundraiserDetailPage() {
                   </div>
                 </div>
 
+                {/* About Section — shows on both mobile and desktop in left column */}
+                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
+                  {/* Name + deployed by + description */}
+                  <div className="mb-4">
+                    <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">
+                      {subgraphFundraiser?.coin?.name || tokenSymbol}
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-muted-foreground/60 mt-0.5">
+                      <span>Deployed by</span>
+                      {launcherAddress ? (
+                        <span className="text-foreground/80 font-medium font-mono">
+                          <AddressLink address={launcherAddress} />
+                        </span>
+                      ) : (
+                        <span className="text-foreground font-medium">--</span>
+                      )}
+                      <span>·</span>
+                      <span>{launchDateStr}</span>
+                    </div>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed mt-2">
+                      {metadata?.description || "A Karma Coin. Supporters fund and claim each day\u0027s coin rewards proportional to their share."}
+                    </p>
+                  </div>
+
+                  {/* Fundraising metrics — 3 columns */}
+                  <div className="grid grid-cols-3 gap-6 mb-4">
+                    <div>
+                      <div className="text-muted-foreground text-[11px] font-medium tracking-[0.04em] mb-1">Total Donated</div>
+                      <div className="font-mono text-[22px] font-bold tabular-nums leading-none">
+                        {totalDonatedToCause > 0 ? formatMarketCap(totalDonatedToCause) : "$0"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[11px] font-medium tracking-[0.04em] mb-1">Daily Projection</div>
+                      <div className="font-mono text-[22px] font-bold tabular-nums leading-none">
+                        {projectedDailyDonation > 0 ? formatMarketCap(projectedDailyDonation) : "$0"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-[11px] font-medium tracking-[0.04em] mb-1">Supporters</div>
+                      <div className="font-mono text-[22px] font-bold tabular-nums leading-none">
+                        {totalSupporters > 0 ? totalSupporters.toLocaleString() : "0"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Links */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {coinAddress && (
+                      <a
+                        href={`https://basescan.org/token/${coinAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                      >
+                        {tokenSymbol}
+                      </a>
+                    )}
+                    {subgraphFundraiser?.coin?.lpPair && (
+                      <a
+                        href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                      >
+                        {tokenSymbol}-USDC LP
+                      </a>
+                    )}
+                    {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
+                      let label: string;
+                      try {
+                        const hostname = new URL(link).hostname.replace("www.", "");
+                        if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
+                        else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
+                        else if (hostname.includes("discord")) label = "Discord";
+                        else if (hostname.includes("github.com")) label = "GitHub";
+                        else if (hostname.includes("warpcast.com")) label = "Warpcast";
+                        else label = hostname;
+                      } catch {
+                        label = link;
+                      }
+                      return (
+                        <a
+                          key={i}
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
+                        >
+                          {label}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* MOBILE ONLY sections */}
                 <div className="lg:hidden">
 
@@ -790,107 +896,6 @@ export default function FundraiserDetailPage() {
                     </div>
                   )}
 
-                  {/* About Section — mobile */}
-                  <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
-                    <div className="mb-3">
-                      <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
-                      <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
-                    </div>
-                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-                      <span>Deployed by</span>
-                      {launcherAddress ? (
-                        <span className="text-foreground font-medium font-mono">
-                          <AddressLink address={launcherAddress} />
-                        </span>
-                      ) : (
-                        <span className="text-foreground font-medium">--</span>
-                      )}
-                      <span className="text-muted-foreground/60">·</span>
-                      <span className="text-muted-foreground/60">{launchDateStr}</span>
-                    </div>
-                    {metadata?.description && (
-                      <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                        {metadata.description}
-                      </p>
-                    )}
-                    {!metadata?.description && (
-                      <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                        A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {coinAddress && (
-                        <a
-                          href={`https://basescan.org/token/${coinAddress}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                        >
-                          {tokenSymbol}
-                        </a>
-                      )}
-                      {subgraphFundraiser?.coin?.lpPair && (
-                        <a
-                          href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                        >
-                          {tokenSymbol}-USDC LP
-                        </a>
-                      )}
-                      {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
-                        let label: string;
-                        try {
-                          const hostname = new URL(link).hostname.replace("www.", "");
-                          if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
-                          else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
-                          else if (hostname.includes("discord")) label = "Discord";
-                          else if (hostname.includes("github.com")) label = "GitHub";
-                          else if (hostname.includes("warpcast.com")) label = "Warpcast";
-                          else label = hostname;
-                        } catch {
-                          label = link;
-                        }
-                        return (
-                          <a
-                            key={i}
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                          >
-                            {label}
-                          </a>
-                        );
-                      })}
-                    </div>
-                    {isConnected && (
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => setShowLiquidityModal(true)}
-                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
-                        >
-                          Liquidity
-                        </button>
-                        <button
-                          onClick={() => setShowAuctionModal(true)}
-                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
-                        >
-                          Auction
-                        </button>
-                        {isOwner && (
-                          <button
-                            onClick={() => setShowAdminModal(true)}
-                            className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
-                          >
-                            Admin
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
                   {/* Stats Section — mobile */}
                   <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                     <div className="mb-3">
@@ -984,6 +989,30 @@ export default function FundraiserDetailPage() {
                         </>
                       )}
                     </div>
+                    {isConnected && (
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[hsl(var(--foreground)/0.06)]">
+                        <button
+                          onClick={() => setShowLiquidityModal(true)}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
+                        >
+                          Liquidity
+                        </button>
+                        <button
+                          onClick={() => setShowAuctionModal(true)}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
+                        >
+                          Auction
+                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={() => setShowAdminModal(true)}
+                            className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
+                          >
+                            Admin
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                 </div>{/* end mobile-only sections */}
@@ -1219,107 +1248,6 @@ export default function FundraiserDetailPage() {
                   </div>
                 )}
 
-                {/* About Section */}
-                <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
-                  <div className="mb-3">
-                    <div className="font-semibold text-[18px] font-display tracking-[-0.03em]">About</div>
-                    <div className="text-[12px] text-muted-foreground mt-0.5">Fundraiser details, links, and team actions</div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-2">
-                    <span>Deployed by</span>
-                    {launcherAddress ? (
-                      <span className="text-foreground font-medium font-mono">
-                        <AddressLink address={launcherAddress} />
-                      </span>
-                    ) : (
-                      <span className="text-foreground font-medium">--</span>
-                    )}
-                    <span className="text-muted-foreground/60">·</span>
-                    <span className="text-muted-foreground/60">{launchDateStr}</span>
-                  </div>
-                  {metadata?.description && (
-                    <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                      {metadata.description}
-                    </p>
-                  )}
-                  {!metadata?.description && (
-                    <p className="text-[13px] text-muted-foreground leading-relaxed mb-2">
-                      A Karma Coin. Supporters fund and claim each day&apos;s coin rewards proportional to their share.
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {coinAddress && (
-                      <a
-                        href={`https://basescan.org/token/${coinAddress}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                      >
-                        {tokenSymbol}
-                      </a>
-                    )}
-                    {subgraphFundraiser?.coin?.lpPair && (
-                      <a
-                        href={`https://basescan.org/address/${subgraphFundraiser.coin.lpPair}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                      >
-                        {tokenSymbol}-USDC LP
-                      </a>
-                    )}
-                    {metadata?.links && metadata.links.length > 0 && metadata.links.map((link, i) => {
-                      let label: string;
-                      try {
-                        const hostname = new URL(link).hostname.replace("www.", "");
-                        if (hostname.includes("twitter.com") || hostname.includes("x.com")) label = "Twitter";
-                        else if (hostname.includes("t.me") || hostname.includes("telegram")) label = "Telegram";
-                        else if (hostname.includes("discord")) label = "Discord";
-                        else if (hostname.includes("github.com")) label = "GitHub";
-                        else if (hostname.includes("warpcast.com")) label = "Warpcast";
-                        else label = hostname;
-                      } catch {
-                        label = link;
-                      }
-                      return (
-                        <a
-                          key={i}
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="border border-[hsl(var(--foreground)/0.1)] rounded-[var(--radius)] flex items-center gap-1.5 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-[hsl(var(--foreground)/0.08)] hover:text-foreground"
-                        >
-                          {label}
-                        </a>
-                      );
-                    })}
-                  </div>
-                  {isConnected && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setShowLiquidityModal(true)}
-                        className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
-                      >
-                        Liquidity
-                      </button>
-                      <button
-                        onClick={() => setShowAuctionModal(true)}
-                        className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
-                      >
-                        Auction
-                      </button>
-                      {isOwner && (
-                        <button
-                          onClick={() => setShowAdminModal(true)}
-                          className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
-                        >
-                          Admin
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-
                 {/* Stats Section */}
                 <div className="slab-panel rounded-[var(--radius)] mb-6 px-3 py-4">
                   <div className="mb-3">
@@ -1413,6 +1341,30 @@ export default function FundraiserDetailPage() {
                       </>
                     )}
                   </div>
+                    {isConnected && (
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[hsl(var(--foreground)/0.06)]">
+                        <button
+                          onClick={() => setShowLiquidityModal(true)}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
+                        >
+                          Liquidity
+                        </button>
+                        <button
+                          onClick={() => setShowAuctionModal(true)}
+                          className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
+                        >
+                          Auction
+                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={() => setShowAdminModal(true)}
+                            className={`${coinActionButtonClass} rounded-[var(--radius)] col-span-2 text-[11px]`}
+                          >
+                            Admin
+                          </button>
+                        )}
+                      </div>
+                    )}
                 </div>
 
                 </div>

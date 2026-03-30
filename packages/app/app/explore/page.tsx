@@ -83,22 +83,27 @@ function Sparkline({
 
 function SkeletonCard() {
   return (
-    <div className="slab-panel flex flex-col gap-3 p-5">
-      <div className="flex items-center gap-3">
-        <div className="h-11 w-11 shrink-0 bg-secondary animate-pulse" />
-        <div className="flex-1 space-y-2">
-          <div className="h-5 w-20 bg-secondary animate-pulse" />
-          <div className="h-3.5 w-28 bg-secondary animate-pulse" />
+    <div className="slab-panel flex flex-col overflow-hidden">
+      <div className="h-[172px] w-full bg-secondary animate-pulse" />
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 space-y-2">
+            <div className="h-5 w-20 bg-secondary animate-pulse" />
+            <div className="h-3.5 w-32 bg-secondary animate-pulse" />
+          </div>
+          <div className="h-9 w-[100px] bg-secondary animate-pulse" />
         </div>
-        <div className="h-5 w-16 bg-secondary animate-pulse" />
-      </div>
-      <div className="slab-inset h-28 animate-pulse" />
-      <div className="flex items-end justify-between">
-        <div className="space-y-1.5">
-          <div className="h-3 w-16 bg-secondary animate-pulse" />
-          <div className="h-6 w-20 bg-secondary animate-pulse" />
+        <div className="h-3 w-full bg-secondary animate-pulse" />
+        <div className="flex items-end justify-between pt-1">
+          <div className="space-y-1.5">
+            <div className="h-6 w-24 bg-secondary animate-pulse" />
+            <div className="h-3 w-20 bg-secondary animate-pulse" />
+          </div>
+          <div className="space-y-1.5 text-right">
+            <div className="ml-auto h-3 w-16 bg-secondary animate-pulse" />
+            <div className="ml-auto h-3 w-10 bg-secondary animate-pulse" />
+          </div>
         </div>
-        <div className="h-4 w-12 bg-secondary animate-pulse" />
       </div>
     </div>
   );
@@ -106,20 +111,15 @@ function SkeletonCard() {
 
 function SkeletonRow() {
   return (
-    <div className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 px-3 py-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(140px,0.8fr)_120px] lg:gap-6 lg:px-4">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 bg-secondary animate-pulse" />
-        <div className="space-y-2">
-          <div className="h-4 w-16 bg-secondary animate-pulse" />
-          <div className="h-3 w-24 bg-secondary animate-pulse" />
-        </div>
+    <div className="flex items-center gap-3 py-4">
+      <div className="h-10 w-10 bg-secondary animate-pulse flex-shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 w-16 bg-secondary animate-pulse" />
+        <div className="h-3 w-24 bg-secondary animate-pulse" />
       </div>
-      <div className="flex justify-center">
-        <div className="h-8 w-16 bg-secondary animate-pulse" />
-      </div>
-      <div className="text-right space-y-2">
-        <div className="ml-auto h-4 w-14 bg-secondary animate-pulse" />
-        <div className="ml-auto h-3 w-10 bg-secondary animate-pulse" />
+      <div className="text-right space-y-2 flex-shrink-0">
+        <div className="ml-auto h-4 w-20 bg-secondary animate-pulse" />
+        <div className="ml-auto h-3 w-16 bg-secondary animate-pulse" />
       </div>
     </div>
   );
@@ -164,42 +164,43 @@ function CoinCard({ coin, sparklineData }: { coin: ExploreCoin; sparklineData: n
         )}
       </div>
 
-      {/* Content: 2x2 grid — name/chart top, mcap/change bottom */}
-      <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 p-4">
-        {/* Top left: name */}
-        <div className="min-w-0">
-          <div className="truncate font-display text-[18px] font-semibold uppercase leading-none tracking-[-0.03em]">
-            {coin.tokenSymbol.length > 10
-              ? `${coin.tokenSymbol.slice(0, 10)}...`
-              : coin.tokenSymbol}
-          </div>
-          <div className="mt-1 truncate text-[13px] text-muted-foreground">
-            {coin.tokenName}
-          </div>
+      {/* Content */}
+      <div className="flex flex-1 flex-col p-4">
+        {/* Name as headline */}
+        <div className="truncate font-display text-[17px] font-semibold leading-tight tracking-[-0.02em]">
+          {coin.tokenName}
         </div>
 
-        {/* Top right: sparkline */}
-        <div className="flex items-center">
-          <Sparkline
-            data={sparklineData}
-            isPositive={isPositive}
-            className="h-9 w-[100px]"
-          />
+        {/* Description — always 2 lines of space */}
+        <div className="mt-1 min-h-[2.5rem]">
+          <p className="text-[13px] leading-[1.35] text-muted-foreground line-clamp-2">
+            {coin.description || `Support ${coin.tokenName} and earn ${coin.tokenSymbol} tokens.`}
+          </p>
         </div>
 
-        {/* Bottom left: market cap */}
-        <div>
-          <div className="font-mono text-[20px] font-semibold tabular-nums leading-none">
-            {coin.marketCapUsd > 0 ? formatMarketCap(coin.marketCapUsd) : "--"}
+        {/* Metrics pinned to bottom */}
+        <div className="mt-auto pt-3">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="font-mono text-[20px] font-semibold tabular-nums leading-none">
+                {coin.totalDonatedUsd > 0 ? formatMarketCap(coin.totalDonatedUsd) : "$0"} <span className="text-[13px] font-normal text-muted-foreground">raised</span>
+              </div>
+              <div className="mt-1 text-[12px] text-muted-foreground tabular-nums">
+                {coin.uniqueDonors > 0 ? `${coin.uniqueDonors.toLocaleString()} supporter${coin.uniqueDonors !== 1 ? "s" : ""}` : "No supporters yet"}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[12px] text-muted-foreground tabular-nums font-mono">
+                {coin.marketCapUsd > 0 ? formatMarketCap(coin.marketCapUsd) : "--"} mcap
+              </div>
+              <div className={cn(
+                "text-[12px] tabular-nums font-mono",
+                isPositive ? "positive-value" : "negative-value"
+              )}>
+                {changeStr}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Bottom right: % change */}
-        <div className={cn(
-          "flex items-center justify-end font-mono text-[15px] font-semibold tabular-nums",
-          isPositive ? "positive-value" : "negative-value"
-        )}>
-          {changeStr}
         </div>
       </div>
     </Link>
@@ -350,21 +351,20 @@ export default function ExplorePage() {
               )}
             </section>
 
-            {/* ── Mobile: fundraiser rows ── */}
+            {/* ── Mobile: fundraiser cards (1-col) ── */}
             <section className="overflow-hidden lg:hidden">
-              {/* Mobile rows */}
               {isLoading && (
-                <div>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <SkeletonRow key={i} />
+                <div className="grid grid-cols-1 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonCard key={i} />
                   ))}
                 </div>
               )}
 
               {!isLoading && coins.length > 0 && (
-                <div>
+                <div className="grid grid-cols-1 gap-4">
                   <AnimatePresence initial={false}>
-                    {coins.map((coin, index) => (
+                    {coins.map((coin) => (
                       <motion.div
                         key={coin.address}
                         layout
@@ -373,59 +373,15 @@ export default function ExplorePage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <Link
-                          href={`/fundraiser/${coin.address}`}
-                          className={`grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-2 py-4 transition-colors duration-200 ${
-                            index > 0 ? "border-t border-[hsl(var(--foreground)/0.1)]" : ""
-                          } hover-slab`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <TokenLogo
-                              name={coin.tokenName}
-                              logoUrl={coin.logoUrl}
-                              size="md-lg"
-                            />
-                            <div className="min-w-0">
-                              <div className="truncate font-display text-[15px] font-semibold uppercase tracking-[-0.02em]">
-                                {coin.tokenSymbol.length > 10
-                                  ? `${coin.tokenSymbol.slice(0, 10)}...`
-                                  : coin.tokenSymbol}
-                              </div>
-                              <div className="truncate text-[13px] text-muted-foreground">
-                                {coin.tokenName}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex justify-end">
-                            <Sparkline
-                              data={(() => {
-                                const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
-                                if (hourly.length > 1) return hourly;
-                                if (coin.sparklinePrices.length > 1) return coin.sparklinePrices;
-                                return [coin.priceUsd, coin.priceUsd];
-                              })()}
-                              isPositive={coin.change24h >= 0}
-                            />
-                          </div>
-
-                          <div className="text-right">
-                            <div className="font-medium text-[15px] tabular-nums font-mono">
-                              {coin.marketCapUsd > 0
-                                ? formatMarketCap(coin.marketCapUsd)
-                                : "--"}
-                            </div>
-                            <div className={`text-[13px] tabular-nums font-mono ${
-                              coin.marketCapUsd > 0
-                                ? coin.change24h >= 0 ? "positive-value" : "negative-value"
-                                : "text-muted-foreground"
-                            }`}>
-                              {coin.marketCapUsd > 0
-                                ? `${coin.change24h >= 0 ? "+" : ""}${coin.change24h.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
-                                : "--"}
-                            </div>
-                          </div>
-                        </Link>
+                        <CoinCard
+                          coin={coin}
+                          sparklineData={(() => {
+                            const hourly = getSparkline(coin.coinAddress, coin.priceUsd);
+                            if (hourly.length > 1) return hourly;
+                            if (coin.sparklinePrices.length > 1) return coin.sparklinePrices;
+                            return [coin.priceUsd, coin.priceUsd];
+                          })()}
+                        />
                       </motion.div>
                     ))}
                   </AnimatePresence>

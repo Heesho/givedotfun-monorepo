@@ -68,6 +68,8 @@ export type SubgraphFundraiser = {
   halvingPeriod: string;
   minDonation: string;
   epochDuration: string;
+  totalDonated: string;
+  uniqueDonors: string;
 };
 
 export type SubgraphCoinListItem = {
@@ -91,10 +93,14 @@ export type SubgraphCoinListItem = {
   fundraiser: {
     id: string; // Fundraiser contract address
     uri: string;
+    totalDonated: string;
+    uniqueDonors: string;
     metadata?: {
       id: string;
       uri: string;
       image?: string | null;
+      description?: string | null;
+      recipientName?: string | null;
     } | null;
     launcher: { id: string };
     auction: string;
@@ -182,6 +188,8 @@ const FUNDRAISER_FIELDS = `
   halvingPeriod
   minDonation
   epochDuration
+  totalDonated
+  uniqueDonors
 `;
 
 const COIN_LIST_FIELDS = `
@@ -209,10 +217,14 @@ const COIN_LIST_FIELDS = `
   fundraiser {
     id
     uri
+    totalDonated
+    uniqueDonors
     metadata {
       id
       uri
       image
+      description
+      recipientName
     }
     launcher { id }
     auction

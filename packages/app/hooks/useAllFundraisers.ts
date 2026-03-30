@@ -30,6 +30,11 @@ export type CoinListItem = {
   totalMinted: bigint;
   lastActivityAt: number;         // Unix timestamp
   createdAt: number;
+  // Fundraising data
+  totalDonatedUsd: number;       // Total USDC donated
+  uniqueDonors: number;          // Number of unique donors
+  description: string | null;    // From IPFS metadata
+  recipientName: string | null;  // From IPFS metadata
 };
 
 export type SortOption = "bump" | "top" | "new";
@@ -126,6 +131,10 @@ function coinToCoinListItem(u: SubgraphCoinListItem): CoinListItem {
     totalMinted: BigInt(Math.floor(totalMinted * 1e18)),
     lastActivityAt: parseInt(u.lastActivityAt) || 0,
     createdAt: parseInt(u.createdAt) || 0,
+    totalDonatedUsd: parseFloat(u.fundraiser.totalDonated) || 0,
+    uniqueDonors: parseInt(u.fundraiser.uniqueDonors) || 0,
+    description: u.fundraiser.metadata?.description ?? null,
+    recipientName: u.fundraiser.metadata?.recipientName ?? null,
   };
 }
 
