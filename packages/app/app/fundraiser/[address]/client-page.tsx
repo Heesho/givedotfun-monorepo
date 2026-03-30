@@ -101,7 +101,7 @@ function FundraiserImageCard({
   className?: string;
 }) {
   return (
-    <div className={`slab-panel rounded-[var(--radius)] w-full overflow-hidden bg-[#a9a6a0] ${className}`}>
+    <div className={`rounded-[var(--radius)] w-full overflow-hidden ${className}`}>
       <img
         src={logoUrl}
         alt={tokenName}
@@ -1073,7 +1073,7 @@ export default function FundraiserDetailPage() {
                   <FundraiserImageCard
                     logoUrl={logoUrl}
                     tokenName={tokenName}
-                    className="mb-4 mt-3"
+                    className="mb-4"
                   />
                 )}
 
