@@ -105,7 +105,7 @@ function FundraiserImageCard({
       <img
         src={logoUrl}
         alt={tokenName}
-        className="block h-full w-full object-cover object-top"
+        className="w-full aspect-square object-cover"
       />
     </div>
   );
@@ -990,7 +990,7 @@ export default function FundraiserDetailPage() {
                       )}
                     </div>
                     {isConnected && (
-                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[hsl(var(--foreground)/0.06)]">
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 ">
                         <button
                           onClick={() => setShowLiquidityModal(true)}
                           className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
@@ -1073,7 +1073,7 @@ export default function FundraiserDetailPage() {
                   <FundraiserImageCard
                     logoUrl={logoUrl}
                     tokenName={tokenName}
-                    className="mb-6 h-[360px] xl:h-[420px]"
+                    className="mb-4 mt-3"
                   />
                 )}
 
@@ -1342,7 +1342,7 @@ export default function FundraiserDetailPage() {
                     )}
                   </div>
                     {isConnected && (
-                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[hsl(var(--foreground)/0.06)]">
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 ">
                         <button
                           onClick={() => setShowLiquidityModal(true)}
                           className={`${coinActionButtonClass} rounded-[var(--radius)] text-[11px]`}
